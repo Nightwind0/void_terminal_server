@@ -35,7 +35,7 @@
 #include "VoidCommandTransmit.h"
 #include "VoidCommandDock.h"
 #include "VoidCommandBeam.h"
-
+#include "VoidCommandAttack.h"
 
 
 const char * VoidServerThread::endr = "\n\r";
@@ -58,6 +58,7 @@ void VoidServerThread::add_command(VoidCommand * cmd)
 
 PGresult * VoidServerThread::DBExec(const std::string &query)
 {
+    ResourceMaster::GetInstance()->Log(DEBUG2, "<DBExec: " + PrepareForSQL(query) + ">");
     return PQexec(m_dbconn, query.c_str());
 }
 
@@ -106,6 +107,20 @@ void VoidServerThread::HandleSystemMessage(const Message &msg)
 	Send(Color()->get(LIGHTRED) + endr +  "This session has been kicked by a log in from the same user." + endr);
 	throw ShutdownException(true);
     }
+    if(msg.GetString() == "SHIPEXPLODE")
+    {
+	Send(Color()->get(BLACK, BG_RED) + "Your ship has been destroyed!!" + endr);
+	Send(Color()->get(YELLOW) + "Your escape pod explodes forth from the wreckage carrying you with it!" + endr);
+
+	throw ShipDestroyedException();
+    }
+    if(msg.GetString() == "PLAYERDEATH")
+    {
+	Send(Color()->get(BLACK, BG_RED) + "Your escape pod has been destroyed!!!!" + endr);
+	Send(Color()->get(LIGHTRED) + "Your player is dead, and you will be disallowed from signing on for 24 hours." + endr);
+	
+	throw DeathException();
+    }
 }
 
 void VoidServerThread::HandleLocalMessage(const Message &msg)
@@ -125,6 +140,9 @@ void VoidServerThread::HandleLocalMessage(const Message &msg)
 	break;
     case Message::ADMIN:
 	Send(endr + Color()->get(GRAY) + " -- " + msg.GetString() + " -- ");
+	break;
+    case Message::BATTLE:
+	Send(endr + Color()->get(LIGHTRED) + "++ " + Color()->get(WHITE) +  msg.GetString() + Color()->get(LIGHTRED) + " ++" + endr);
 	break;
     default:
 	break;
@@ -259,6 +277,10 @@ bool     VoidServerThread::run()
 	{
 	    return true;
 	}
+	catch(ShipDestroyedException dsh)
+	{
+	    return true;
+	}
 
 
 }
@@ -281,7 +303,7 @@ std::string VoidServerThread::DisplayNews()
     PGresult *dbresult;
     int rows=0;
     os << endr << Color()->get(RED,BG_WHITE) << "    NEWS    " << endr;
-    std::string query = "SELECT DPOSTED,SMESSAGE,BURGENT FROM news WHERE BINACTIVE=FALSE;";
+    std::string query = "SELECT DPOSTED,SMESSAGE,BURGENT FROM news WHERE BINACTIVE=FALSE order by nkey asc;";
     
     dbresult = PQexec(m_dbconn, query.c_str());
 
@@ -636,7 +658,7 @@ bool VoidServerThread::RegisterNewLogin()
 
 
 
-    Send(Color()->get(GREEN) + "Please enter a VALID e-mail address. The administrator of this game will" + endr + "be contacting you by this address and verifying it's validity.");
+    SendWordWrapped(Color()->get(GREEN) + "Please enter a VALID e-mail address. The administrator of this game will" + endr + "be contacting you by this address and verifying it's validity. It will NOT be given out.",80);
 
     Send(endr + Color()->get(WHITE) + "E-mail address: " + Color()->get(LIGHTBLUE));
     std::string email = ReceiveLine();
@@ -910,23 +932,6 @@ void VoidServerThread::ChoosePlayer()
 	ResourceMaster::GetInstance()->Log(DEBUG, "Player: " + PrepareForSQL(m_player->GetName()) + " joins realm.");
 
 
-	ShipHandle *ship;
-
-
-	if(m_player->GetCurrentShip().IsNull())
-	{
-	    ship = NULL;
-
-	    ResourceMaster::GetInstance()->Log(ERROR, "<Player has no ship>");
-	    // TODO: Here they would get a new ship. For now, they just lose I guess
-	    return;
-	}
-
-	Integer shipi(ShipHandle::FieldName(ShipHandle::NKEY),IntToString(m_player->GetCurrentShip()));
-	PrimaryKey shipkey(&shipi);
-
-	ship = new ShipHandle(m_dbconn, shipkey,false);
-
 	return;
 	
     }				 
@@ -982,17 +987,21 @@ void VoidServerThread::SendWordWrapped(const std::string &str, int screen_width)
 std::string VoidServerThread::CommandPrompt()
 {
     Integer ship = m_player->GetCurrentShip();
+
+ 
     Integer shipkey(ShipHandle::FieldName(ShipHandle::NKEY), ship.GetAsString());
-
     PrimaryKey key(&shipkey);
-
     ShipHandle shiphandle(m_dbconn, key);
+
+ 
 
     
     std::string sector = shiphandle.GetSector().GetAsString();
     Send(Color()->get(RED) + "[" + Color()->get(WHITE) + sector +  Color()->get(RED) + "] "  +
 	 Color()->get(PURPLE) + "(" +GetPlayer()->GetTurnsLeft().GetAsString() + ")"+
 	 Color()->get(CYAN) + "Command:" + Color()->get(GRAY) + ' ');
+
+ 
 
     return ReceiveLine();
 }
@@ -1128,25 +1137,77 @@ void        VoidServerThread::Service()
 
 
     ResourceMaster::GetInstance()->SetThreadForPlayer(this,(std::string) GetPlayer()->GetName());
+
+    bool done = false;
       
     SetTurnsLeft();
 
-    m_player->Lock();
-    m_player->SetLastPlay(Universe::GetToday(m_dbconn));
-    m_player->Unlock();
-    
-
-    
     Send(Color()->get(YELLOW) + "Check your mail? (Y/n) :");
     std::string checkmail = ReceiveLine();
     LOWERCASE(checkmail);
-
+    
     if(CompStrings(checkmail,"yes"))
     {
 	PostCommand("checkmail","");
     }
 
-    bool done = false;
+    if(m_player->GetIsDead())
+    {
+	std::string checkdeadtime = "select extract(day from age(now(),dlastplay)) from player where sname = '" + m_player->GetName().GetAsString() + "';";
+
+	PGresult *dbresult= DBExec(checkdeadtime);
+
+	int days = atoi(PQgetvalue(dbresult,0,0));
+
+	PQclear(dbresult);
+
+	if(days < 1)
+	{
+	    Send(Color()->get(RED) + "Sorry, you are still dead. You will remain dead until 24 hours have passed since your death." + endr);
+	    done = true;
+	}
+	else
+	{
+	    m_player->Lock();
+	    m_player->SetIsDead(false);
+	    m_player->Unlock();
+	    try{
+	    Send(Color()->get(LIGHTGREEN) + "You have come back from the dead! You start with a new ship!" + endr);
+	    }
+	    catch(SocketException e)
+	    {
+		// An exception here means they dont get their new ship, so we have to set them as dead again
+		m_player->Lock();
+		m_player->SetIsDead(true);
+		m_player->Unlock();
+	    }
+	    ShipHandle * ship = CreateNewShip(0);
+	    ship->Lock();
+	    ship->SetSector(0);
+	    ship->Unlock();
+	    
+	    m_player->Lock();
+	    m_player->SetCurrentShip(ship->GetNkey());
+	    m_player->Unlock();
+
+	}
+	
+    }
+    
+
+    // not an else, because it could have changed since the if
+    if(!m_player->GetIsDead())
+    {
+	
+	m_player->Lock();
+	m_player->SetLastPlay(Universe::GetToday(m_dbconn));
+	m_player->Unlock();
+    
+    }
+    
+  
+
+
 
     while(!done)
     {
@@ -1167,6 +1228,13 @@ void        VoidServerThread::Service()
 		    gotinput = true;
 		    ResourceMaster::GetInstance()->Log(AUDIT, "<Got command: " + line + ">");
 		}
+		catch(DBException dbe)
+		{
+		    ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + PrepareForSQL(dbe.GetMessage()) + ">");
+		    std::cerr << "DB Exception: " << dbe.GetMessage() << std::endl;
+		    done = true;
+		    break;
+		}
 		catch(SocketException e)
 		{
 		    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(e.GetType())) + ">");
@@ -1174,6 +1242,23 @@ void        VoidServerThread::Service()
 		    gotinput = true;
 		    break;
 
+		}
+
+		catch(exception ex)
+		{
+		    done = true;
+		    break;
+		}
+		catch(DeathException de)
+		{
+		    Send(Color()->get(GREEN) + "You will now be disconnected." + endr);
+		    done = true;
+		    gotinput = true;
+		    break;
+		}
+		catch(ShipDestroyedException sde)
+		{
+		    
 		}
 	    }
 	    
@@ -1275,6 +1360,10 @@ void        VoidServerThread::Service()
 	    done = true;
 	    break;
 	}
+	catch(ControlException ce)
+	{
+	    
+	}
     }
 
 
@@ -1313,7 +1402,7 @@ VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
     add_command(new VoidCommandTow(this));
     add_command(new VoidCommandCheckMail(this));
     add_command(new VoidCommandMail(this));
-
+    add_command(new VoidCommandAttack(this));
 
 }
 

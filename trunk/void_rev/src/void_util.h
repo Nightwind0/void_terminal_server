@@ -96,6 +96,10 @@ class ShipDestroyedException : public ControlException
     virtual ~ShipDestroyedException();
 };
 
+class DeathException : public ShipDestroyedException
+{
+};
+
                                                                                 
 bool CompStrings(std::string s1, std::string s2);
 std::string PrepareForSQL(std::string message);

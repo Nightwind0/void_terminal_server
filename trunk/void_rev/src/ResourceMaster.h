@@ -51,6 +51,8 @@ class ResourceMaster
     void SendMessageAll(DatagramSocket *socket, Message *msg);
 
 
+    void SendSystemMail(const std::string &to, const std::string &msg);
+
     void SetThreadForPlayer(const VoidServerThread *t, const std::string &player);
     void RemoveThreadForPlayer(const std::string &player);
 

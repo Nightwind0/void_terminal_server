@@ -33,7 +33,9 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandCheckMail.h \
 			VoidCommandCheckMail.cxx \
 			VoidCommandMail.h \
-			VoidCommandMail.cxx
+			VoidCommandMail.cxx \
+			VoidCommandAttack.h \
+			VoidCommandAttack.cxx
 
 
 

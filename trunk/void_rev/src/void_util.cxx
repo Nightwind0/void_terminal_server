@@ -266,5 +266,27 @@ std::vector<std::string> WordsFromString(const std::string &str)
     return words;
 
 }
+ControlException::ControlException()
+{
+}
 
+ControlException::~ControlException()
+{
+}
+
+
+
+
+
+
+
+
+
+ShipDestroyedException::ShipDestroyedException()
+{
+}
+
+ShipDestroyedException::~ShipDestroyedException()
+{
+}
 

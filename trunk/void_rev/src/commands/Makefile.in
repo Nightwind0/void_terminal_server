@@ -120,7 +120,9 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandCheckMail.h \
 			VoidCommandCheckMail.cxx \
 			VoidCommandMail.h \
-			VoidCommandMail.cxx
+			VoidCommandMail.cxx \
+			VoidCommandAttack.h \
+			VoidCommandAttack.cxx
 
 
 INCLUDES = -I@top_srcdir@/src \
@@ -141,7 +143,7 @@ am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
-	VoidCommandCheckMail.lo VoidCommandMail.lo
+	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -152,6 +154,7 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/VoidCommand.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandAttack.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandBeam.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandCheckMail.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDisplay.Plo \
@@ -221,6 +224,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommand.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandAttack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandBeam.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandCheckMail.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDisplay.Plo@am__quote@

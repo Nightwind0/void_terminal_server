@@ -150,7 +150,7 @@ void SerialObject::Unlock()
 	
     }
 
-
+    m_lock = false;
 
     ResourceMaster::GetInstance()->ReleaseResource(GetType(),m_key);
 }
