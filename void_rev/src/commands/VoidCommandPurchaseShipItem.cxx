@@ -99,6 +99,13 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 
     int nummissiles = atoi(arguments.c_str());
 
+    if(nummissiles <0)
+    {
+	Send(Color()->get(RED) + "A positive number, wise guy." + endr);
+
+	return true;
+    }
+
     ShipHandle * ship = create_handle_to_current_ship(get_thread()->GetPlayer());
     ShipTypeHandle shiptype = ship->GetShipTypeHandle();
 
