@@ -116,13 +116,19 @@ void VoidCommandStatus::ShowStatus()
     os << SendValue("Credits:",PQgetvalue(dbresult,0,1)) << endr;
     os << SendRow("Turns:",PQgetvalue(dbresult,0,2), "600") << endr; // TODO: Get actual turns per day value
 
-    Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), PQgetvalue(dbresult,0,22));
-    PrimaryKey key(&towship);
-    ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
-    ShipTypeHandle tsthandle= towshiphandle.GetShipTypeHandle();
 
     int tps = atoi(PQgetvalue(dbresult,0,30));
-    tps += tsthandle.GetTurnsPerSector();
+    
+    if(!PQgetisnull(dbresult,0,22))
+    {
+	Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), PQgetvalue(dbresult,0,22));
+	PrimaryKey key(&towship);
+	ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
+	ShipTypeHandle tsthandle= towshiphandle.GetShipTypeHandle();
+	
+	
+	tps += tsthandle.GetTurnsPerSector();
+    }
 
     os << SendValue("Turns/Sector", IntToString(tps)) << endr;
     os << SendValue("Points:",PQgetvalue(dbresult,0,3)) << endr;

@@ -112,7 +112,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	whichoutpost = atoi(selection.c_str()) -1;
     }
     
-    std::string outpostname = PQgetvalue(dbresult,0,whichoutpost);
+    std::string outpostname = PQgetvalue(dbresult,whichoutpost,0);
     
 //    PQclear(dbresult);
 
@@ -134,9 +134,9 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     
 	std::string visited;
 	
-	int days = -atoi(PQgetvalue(dbresult,0,9));
-	int hours = -atoi(PQgetvalue(dbresult,0,10));
-	int minutes = -atoi(PQgetvalue(dbresult,0,11));
+	int days = -atoi(PQgetvalue(dbresult,whichoutpost,9));
+	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,10));
+	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,11));
 	
 	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,0,8) ;
 	visited += Color()->get(WHITE) + ' ';
@@ -181,9 +181,9 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     int cur_holds = ship_plasma + ship_metals + ship_carbon;
     int empty_holds = max_holds - cur_holds;
     
-    bool buyplasma = (PQgetvalue(dbresult,0,2) == "t") ;
-    bool buymetals = (PQgetvalue(dbresult,0,3) == "t");
-    bool buycarbon = (PQgetvalue(dbresult,0,4) == "t");
+    bool buyplasma = ((std::string)PQgetvalue(dbresult,whichoutpost,2) == "t") ;
+    bool buymetals = ((std::string)PQgetvalue(dbresult,whichoutpost,3) == "t");
+    bool buycarbon = ((std::string)PQgetvalue(dbresult,whichoutpost,4) == "t");
 
     int plasma_price = 50; // TODO: From settings table
     int carbon_price = 20; // TODO: From settings table
@@ -193,6 +193,8 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     double buyrate = atof(PQgetvalue(dbresult,0,5));
     double sellrate = atof(PQgetvalue(dbresult,0,6));
+
+    PQclear(dbresult);
 
     
     get_thread()->Send(Color()->get(WHITE) + IntToString(credits) + Color()->get(CYAN) + " credits" + endr);
