@@ -181,12 +181,13 @@ int VoidCommandAttack::CreateEscapePodForPlayer(const std::string player)
 
 void VoidCommandAttack::MoveShipRandomly(ShipHandle *ship)
 {
+    const int NUMJUMPS = 3;
     int cursec = (int)ship->GetSector();
 
     srand(time(NULL));
 
     /// @todo get value from config table
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < NUMJUMPS; i++)
     {
 	std::vector<int> adj = Universe::GetAdjacentSectors(cursec);
 	
@@ -385,22 +386,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
 	PQclear(dbresult);
 
-	Send(Color()->get(YELLOW) + "You have " + Color()->get(WHITE) + IntToString(missiles) + Color()->get(YELLOW) + " available, with max attack of " +
-	     Color()->get(WHITE) + IntToString(maxattack) + endr);
-	Send(Color()->get(YELLOW) + "How many missiles to fire? " + Color()->get(WHITE));
 
-	std::string nmstr;
-	
-	try{
-	    nmstr = ReceiveLine();
-	}
-	catch(ControlException e)
-	{
-	    
-	}
-	catch(SocketException se)
-	{
-	}
 
 
 
@@ -429,6 +415,23 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	    PQclear(dbresult);
 	    delete ship;
 	    return true; // TODO: Break?
+	}
+
+	Send(Color()->get(YELLOW) + "You have " + Color()->get(WHITE) + IntToString(missiles) + Color()->get(YELLOW) + " available, with max attack of " +
+	     Color()->get(WHITE) + IntToString(maxattack) + endr);
+	Send(Color()->get(YELLOW) + "How many missiles to fire? " + Color()->get(WHITE));
+
+	std::string nmstr;
+	
+	try{
+	    nmstr = ReceiveLine();
+	}
+	catch(ControlException e)
+	{
+	    
+	}
+	catch(SocketException se)
+	{
 	}
 
 	

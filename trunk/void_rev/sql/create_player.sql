@@ -8,7 +8,8 @@ npoints integer,
 kalliance varchar(30) REFERENCES Alliance(SNAME),
 kcurrentship integer REFERENCES Ship(nkey),
 dfirstplay timestamp,
-dlastplay timestamp
+dlastplay timestamp,
+bdead boolean
 );
 GRANT ALL ON Player to void;
 

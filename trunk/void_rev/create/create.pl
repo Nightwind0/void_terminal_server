@@ -26,9 +26,9 @@ my @suffixes = ("Hut", "Palace", "Mall", "Space Port", "Dungeon", "Spot", "Place
 
 
 sub gaussian_rand {
-    my ($u1, $u2);  # uniformly distributed random numbers
-    my $w;          # variance, then a weight
-    my ($g1, $g2);  # gaussian-distributed numbers
+    my ($u1, $u2); 
+    my $w;         
+    my ($g1, $g2); 
 
     do {
         $u1 = 2 * rand() - 1;
