@@ -1,6 +1,6 @@
-noinst_LIBRARIES = libthread.a
+noinst_LTLIBRARIES = libthread.la
 
-libthread_a_SOURCES =  Thread.cxx \
+libthread_la_SOURCES =  Thread.cxx \
 			Mutex.cxx \
 			Semaphore.cxx \
 			Condition.cxx 

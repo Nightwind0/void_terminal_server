@@ -1,6 +1,6 @@
-noinst_LIBRARIES = libhandles.a
+noinst_LTLIBRARIES = libhandles.la
 
-libhandles_a_SOURCES =  SerialObject.cxx \
+libhandles_la_SOURCES =  SerialObject.cxx \
 			LoginHandle.cxx \
 			OutpostHandle.cxx \
 			PlayerHandle.cxx \
@@ -10,5 +10,6 @@ libhandles_a_SOURCES =  SerialObject.cxx \
 INCLUDES = -I@top_srcdir@/src/ \
 		-I@top_srcdir@/src/handles/ \
 		-I@top_srcdir@/src/commands/ \
+		-I@top_srcdir@/src/commands/dock/ \
 		-I@top_srcdir@/src/thread/ \
 		-I@top_srcdir@/src/socket/

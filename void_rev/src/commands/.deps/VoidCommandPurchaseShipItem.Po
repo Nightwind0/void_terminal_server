@@ -80,7 +80,8 @@ VoidCommandPurchaseShipItem.o VoidCommandPurchaseShipItem.o:  \
   /usr/include/bits/socket.h /usr/include/bits/sockaddr.h \
   /usr/include/asm/socket.h /usr/include/asm/sockios.h \
   ../../src/Message.h ../../src/socket/Socket.h \
-  ../../src/ResourceMaster.h VoidCommandDockArmoryMissiles.h \
+  ../../src/ResourceMaster.h \
+  ../../src/commands/dock/VoidCommandDockArmoryMissiles.h \
   VoidCommandPurchaseShipItem.h /usr/include/c++/3.2.2/sstream \
   /usr/include/c++/3.2.2/istream /usr/include/c++/3.2.2/ios \
   /usr/include/c++/3.2.2/bits/localefwd.h \
@@ -372,7 +373,7 @@ VoidCommand.h:
 
 ../../src/ResourceMaster.h:
 
-VoidCommandDockArmoryMissiles.h:
+../../src/commands/dock/VoidCommandDockArmoryMissiles.h:
 
 VoidCommandPurchaseShipItem.h:
 

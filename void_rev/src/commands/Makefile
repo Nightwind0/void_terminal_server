@@ -59,26 +59,38 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+host_alias = 
+host_triplet = i686-pc-linux-gnu
 
 EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
 AMTAR = ${SHELL} /home/dpalm/src/void_rev/missing --run tar
+AS = @AS@
 AWK = gawk
 CC = gcc
 CXX = g++
 DEPDIR = .deps
+DLLTOOL = @DLLTOOL@
+ECHO = echo
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+LIBTOOL = $(SHELL) $(top_builddir)/libtool
+LN_S = ln -s
+OBJDUMP = @OBJDUMP@
 PACKAGE = server
-RANLIB = @RANLIB@
-STRIP = 
+RANLIB = ranlib
+STRIP = strip
 VERSION = 0.0.1.0
 am__include = include
 am__quote = 
 install_sh = /home/dpalm/src/void_rev/install-sh
-noinst_LIBRARIES = libcommand.a
+noinst_LTLIBRARIES = libcommand.la
 
-libcommand_a_SOURCES = VoidCommand.cxx \
+SUBDIRS = dock
+
+libcommand_la_LIBADD = dock/libcommanddock.la
+
+libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
 			VoidCommandHail.cxx \
 			VoidCommandMove.cxx \
@@ -88,100 +100,90 @@ libcommand_a_SOURCES = VoidCommand.cxx \
 			VoidCommandWho.cxx \
 			VoidCommandSubCommands.cxx \
 			VoidCommandDock.cxx \
-			VoidCommandDockShipYard.cxx \
-			VoidCommandDockShipYardList.cxx \
-			VoidCommandDockShipYardBuy.cxx \
-			VoidCommandDockShipYardSpec.cxx	 \
 			VoidCommandBeam.cxx \
-			VoidCommandDockArmory.cxx \
-			VoidCommandDockArmoryMissiles.cxx \
 			VoidCommandPurchaseShipItem.cxx \
-			VoidCommandDockShipYardHolds.cxx \
-			VoidCommandTow.cxx
+			VoidCommandTow.cxx 
 
 
 INCLUDES = -I../../src \
 		-I../../src/handles/ \
 		-I../../src/socket/ \
-		-I../../src/thread/ 
+		-I../../src/thread/ \
+		-I../../src/commands/dock
 
 subdir = src/commands
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
-LIBRARIES = $(noinst_LIBRARIES)
+LTLIBRARIES = $(noinst_LTLIBRARIES)
 
-libcommand_a_AR = $(AR) cru
-libcommand_a_LIBADD =
-am_libcommand_a_OBJECTS = VoidCommand.$(OBJEXT) \
-	VoidCommandDisplay.$(OBJEXT) VoidCommandHail.$(OBJEXT) \
-	VoidCommandMove.$(OBJEXT) VoidCommandPort.$(OBJEXT) \
-	VoidCommandStatus.$(OBJEXT) VoidCommandTransmit.$(OBJEXT) \
-	VoidCommandWho.$(OBJEXT) VoidCommandSubCommands.$(OBJEXT) \
-	VoidCommandDock.$(OBJEXT) VoidCommandDockShipYard.$(OBJEXT) \
-	VoidCommandDockShipYardList.$(OBJEXT) \
-	VoidCommandDockShipYardBuy.$(OBJEXT) \
-	VoidCommandDockShipYardSpec.$(OBJEXT) VoidCommandBeam.$(OBJEXT) \
-	VoidCommandDockArmory.$(OBJEXT) \
-	VoidCommandDockArmoryMissiles.$(OBJEXT) \
-	VoidCommandPurchaseShipItem.$(OBJEXT) \
-	VoidCommandDockShipYardHolds.$(OBJEXT) VoidCommandTow.$(OBJEXT)
-libcommand_a_OBJECTS = $(am_libcommand_a_OBJECTS)
+libcommand_la_LDFLAGS =
+libcommand_la_DEPENDENCIES = dock/libcommanddock.la
+am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
+	VoidCommandHail.lo VoidCommandMove.lo VoidCommandPort.lo \
+	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
+	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
+	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo
+libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"server\" -DVERSION=\"0.0.1.0\" 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"server\" -DVERSION=\"0.0.1.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 CPPFLAGS = 
 LDFLAGS = 
 LIBS = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-DEP_FILES = ./$(DEPDIR)/VoidCommand.Po \
-	./$(DEPDIR)/VoidCommandBeam.Po \
-	./$(DEPDIR)/VoidCommandDisplay.Po \
-	./$(DEPDIR)/VoidCommandDock.Po \
-	./$(DEPDIR)/VoidCommandDockArmory.Po \
-	./$(DEPDIR)/VoidCommandDockArmoryMissiles.Po \
-	./$(DEPDIR)/VoidCommandDockShipYard.Po \
-	./$(DEPDIR)/VoidCommandDockShipYardBuy.Po \
-	./$(DEPDIR)/VoidCommandDockShipYardHolds.Po \
-	./$(DEPDIR)/VoidCommandDockShipYardList.Po \
-	./$(DEPDIR)/VoidCommandDockShipYardSpec.Po \
-	./$(DEPDIR)/VoidCommandHail.Po \
-	./$(DEPDIR)/VoidCommandMove.Po \
-	./$(DEPDIR)/VoidCommandPort.Po \
-	./$(DEPDIR)/VoidCommandPurchaseShipItem.Po \
-	./$(DEPDIR)/VoidCommandStatus.Po \
-	./$(DEPDIR)/VoidCommandSubCommands.Po \
-	./$(DEPDIR)/VoidCommandTow.Po \
-	./$(DEPDIR)/VoidCommandTransmit.Po \
-	./$(DEPDIR)/VoidCommandWho.Po
+DEP_FILES = ./$(DEPDIR)/VoidCommand.Plo \
+	./$(DEPDIR)/VoidCommandBeam.Plo \
+	./$(DEPDIR)/VoidCommandDisplay.Plo \
+	./$(DEPDIR)/VoidCommandDock.Plo \
+	./$(DEPDIR)/VoidCommandHail.Plo \
+	./$(DEPDIR)/VoidCommandMove.Plo \
+	./$(DEPDIR)/VoidCommandPort.Plo \
+	./$(DEPDIR)/VoidCommandPurchaseShipItem.Plo \
+	./$(DEPDIR)/VoidCommandStatus.Plo \
+	./$(DEPDIR)/VoidCommandSubCommands.Plo \
+	./$(DEPDIR)/VoidCommandTow.Plo \
+	./$(DEPDIR)/VoidCommandTransmit.Plo \
+	./$(DEPDIR)/VoidCommandWho.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
-	-o $@
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = -g -O2
-DIST_SOURCES = $(libcommand_a_SOURCES)
-DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libcommand_a_SOURCES)
+DIST_SOURCES = $(libcommand_la_SOURCES)
 
-all: all-am
+RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
+	uninstall-info-recursive all-recursive install-data-recursive \
+	install-exec-recursive installdirs-recursive install-recursive \
+	uninstall-recursive check-recursive installcheck-recursive
+DIST_COMMON = Makefile.am Makefile.in
+DIST_SUBDIRS = $(SUBDIRS)
+SOURCES = $(libcommand_la_SOURCES)
+
+all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .cxx .o .obj
+.SUFFIXES: .cxx .lo .o .obj
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --gnu  src/commands/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
-AR = ar
-
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libcommand.a: $(libcommand_a_OBJECTS) $(libcommand_a_DEPENDENCIES) 
-	-rm -f libcommand.a
-	$(libcommand_a_AR) libcommand.a $(libcommand_a_OBJECTS) $(libcommand_a_LIBADD)
-	$(RANLIB) libcommand.a
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test -z "$dir" && dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+libcommand.la: $(libcommand_la_OBJECTS) $(libcommand_la_DEPENDENCIES) 
+	$(CXXLINK)  $(libcommand_la_LDFLAGS) $(libcommand_la_OBJECTS) $(libcommand_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -189,26 +191,19 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/VoidCommand.Po
-include ./$(DEPDIR)/VoidCommandBeam.Po
-include ./$(DEPDIR)/VoidCommandDisplay.Po
-include ./$(DEPDIR)/VoidCommandDock.Po
-include ./$(DEPDIR)/VoidCommandDockArmory.Po
-include ./$(DEPDIR)/VoidCommandDockArmoryMissiles.Po
-include ./$(DEPDIR)/VoidCommandDockShipYard.Po
-include ./$(DEPDIR)/VoidCommandDockShipYardBuy.Po
-include ./$(DEPDIR)/VoidCommandDockShipYardHolds.Po
-include ./$(DEPDIR)/VoidCommandDockShipYardList.Po
-include ./$(DEPDIR)/VoidCommandDockShipYardSpec.Po
-include ./$(DEPDIR)/VoidCommandHail.Po
-include ./$(DEPDIR)/VoidCommandMove.Po
-include ./$(DEPDIR)/VoidCommandPort.Po
-include ./$(DEPDIR)/VoidCommandPurchaseShipItem.Po
-include ./$(DEPDIR)/VoidCommandStatus.Po
-include ./$(DEPDIR)/VoidCommandSubCommands.Po
-include ./$(DEPDIR)/VoidCommandTow.Po
-include ./$(DEPDIR)/VoidCommandTransmit.Po
-include ./$(DEPDIR)/VoidCommandWho.Po
+include ./$(DEPDIR)/VoidCommand.Plo
+include ./$(DEPDIR)/VoidCommandBeam.Plo
+include ./$(DEPDIR)/VoidCommandDisplay.Plo
+include ./$(DEPDIR)/VoidCommandDock.Plo
+include ./$(DEPDIR)/VoidCommandHail.Plo
+include ./$(DEPDIR)/VoidCommandMove.Plo
+include ./$(DEPDIR)/VoidCommandPort.Plo
+include ./$(DEPDIR)/VoidCommandPurchaseShipItem.Plo
+include ./$(DEPDIR)/VoidCommandStatus.Plo
+include ./$(DEPDIR)/VoidCommandSubCommands.Plo
+include ./$(DEPDIR)/VoidCommandTow.Plo
+include ./$(DEPDIR)/VoidCommandTransmit.Plo
+include ./$(DEPDIR)/VoidCommandWho.Plo
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -224,8 +219,78 @@ distclean-depend:
 	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' \
 	$(CXXDEPMODE) $(depcomp) \
 	$(CXXCOMPILE) -c -o $@ `cygpath -w $<`
+
+.cxx.lo:
+	source='$<' object='$@' libtool=yes \
+	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' \
+	$(CXXDEPMODE) $(depcomp) \
+	$(LTCXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 CXXDEPMODE = depmode=gcc3
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+	-rm -f libtool
 uninstall-info-am:
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+$(RECURSIVE_TARGETS):
+	@set fnord $$MAKEFLAGS; amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $$MAKEFLAGS; amf=$$2; \
+	dot_seen=no; \
+	case "$@" in \
+	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
+	  *) list='$(SUBDIRS)' ;; \
+	esac; \
+	rev=''; for subdir in $$list; do \
+	  if test "$$subdir" = "."; then :; else \
+	    rev="$$subdir $$rev"; \
+	  fi; \
+	done; \
+	rev="$$rev ."; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
 
 ETAGS = etags
 ETAGSFLAGS =
@@ -241,10 +306,15 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	       END { for (i in files) print i; }'`; \
 	mkid -fID $$unique
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+	  fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
@@ -288,21 +358,34 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    (cd $$subdir && \
+	      $(MAKE) $(AM_MAKEFLAGS) \
+	        top_distdir="$(top_distdir)" \
+	        distdir=../$(distdir)/$$subdir \
+	        distdir) \
+	      || exit 1; \
+	  fi; \
+	done
 check-am: all-am
-check: check-am
-all-am: Makefile $(LIBRARIES)
+check: check-recursive
+all-am: Makefile $(LTLIBRARIES)
+installdirs: installdirs-recursive
+installdirs-am:
 
-installdirs:
-
-install: install-am
-install-exec: install-exec-am
-install-data: install-data-am
-uninstall: uninstall-am
+install: install-recursive
+install-exec: install-exec-recursive
+install-data: install-data-recursive
+uninstall: uninstall-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
 	  INSTALL_STRIP_FLAG=-s \
@@ -318,20 +401,21 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-am
+clean: clean-recursive
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	mostlyclean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 
 distclean-am: clean-am distclean-compile distclean-depend \
-	distclean-generic distclean-tags
+	distclean-generic distclean-libtool distclean-tags
 
-dvi: dvi-am
+dvi: dvi-recursive
 
 dvi-am:
 
-info: info-am
+info: info-recursive
 
 info-am:
 
@@ -339,32 +423,41 @@ install-data-am:
 
 install-exec-am:
 
-install-info: install-info-am
+install-info: install-info-recursive
 
 install-man:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 uninstall-am: uninstall-info-am
 
-.PHONY: GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES distclean distclean-compile \
-	distclean-depend distclean-generic distclean-tags distdir dvi \
-	dvi-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-info-am
+uninstall-info: uninstall-info-recursive
+
+.PHONY: $(RECURSIVE_TARGETS) GTAGS all all-am check check-am clean \
+	clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-recursive distclean distclean-compile distclean-depend \
+	distclean-generic distclean-libtool distclean-recursive \
+	distclean-tags distdir dvi dvi-am dvi-recursive info info-am \
+	info-recursive install install-am install-data install-data-am \
+	install-data-recursive install-exec install-exec-am \
+	install-exec-recursive install-info install-info-am \
+	install-info-recursive install-man install-recursive \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am installdirs-recursive maintainer-clean \
+	maintainer-clean-generic maintainer-clean-recursive mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	mostlyclean-recursive tags tags-recursive uninstall \
+	uninstall-am uninstall-info-am uninstall-info-recursive \
+	uninstall-recursive
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

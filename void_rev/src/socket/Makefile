@@ -59,26 +59,34 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+host_alias = 
+host_triplet = i686-pc-linux-gnu
 
 EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
 AMTAR = ${SHELL} /home/dpalm/src/void_rev/missing --run tar
+AS = @AS@
 AWK = gawk
 CC = gcc
 CXX = g++
 DEPDIR = .deps
+DLLTOOL = @DLLTOOL@
+ECHO = echo
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+LIBTOOL = $(SHELL) $(top_builddir)/libtool
+LN_S = ln -s
+OBJDUMP = @OBJDUMP@
 PACKAGE = server
-RANLIB = @RANLIB@
-STRIP = 
+RANLIB = ranlib
+STRIP = strip
 VERSION = 0.0.1.0
 am__include = include
 am__quote = 
 install_sh = /home/dpalm/src/void_rev/install-sh
-noinst_LIBRARIES = libsocket.a
+noinst_LTLIBRARIES = libsocket.la
 
-libsocket_a_SOURCES = Socket.cxx 
+libsocket_la_SOURCES = Socket.cxx 
 
 INCLUDES = -I../../src/ \
 		-I../../src/handles/ \
@@ -89,49 +97,54 @@ INCLUDES = -I../../src/ \
 subdir = src/socket
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
-LIBRARIES = $(noinst_LIBRARIES)
+LTLIBRARIES = $(noinst_LTLIBRARIES)
 
-libsocket_a_AR = $(AR) cru
-libsocket_a_LIBADD =
-am_libsocket_a_OBJECTS = Socket.$(OBJEXT)
-libsocket_a_OBJECTS = $(am_libsocket_a_OBJECTS)
+libsocket_la_LDFLAGS =
+libsocket_la_LIBADD =
+am_libsocket_la_OBJECTS = Socket.lo
+libsocket_la_OBJECTS = $(am_libsocket_la_OBJECTS)
 
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"server\" -DVERSION=\"0.0.1.0\" 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"server\" -DVERSION=\"0.0.1.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 CPPFLAGS = 
 LDFLAGS = 
 LIBS = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-DEP_FILES = ./$(DEPDIR)/Socket.Po
+DEP_FILES = ./$(DEPDIR)/Socket.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
-	-o $@
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = -g -O2
-DIST_SOURCES = $(libsocket_a_SOURCES)
+DIST_SOURCES = $(libsocket_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libsocket_a_SOURCES)
+SOURCES = $(libsocket_la_SOURCES)
 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cxx .o .obj
+.SUFFIXES: .cxx .lo .o .obj
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --gnu  src/socket/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
-AR = ar
-
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libsocket.a: $(libsocket_a_OBJECTS) $(libsocket_a_DEPENDENCIES) 
-	-rm -f libsocket.a
-	$(libsocket_a_AR) libsocket.a $(libsocket_a_OBJECTS) $(libsocket_a_LIBADD)
-	$(RANLIB) libsocket.a
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test -z "$dir" && dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+libsocket.la: $(libsocket_la_OBJECTS) $(libsocket_la_DEPENDENCIES) 
+	$(CXXLINK)  $(libsocket_la_LDFLAGS) $(libsocket_la_OBJECTS) $(libsocket_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -139,7 +152,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/Socket.Po
+include ./$(DEPDIR)/Socket.Plo
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -155,7 +168,22 @@ distclean-depend:
 	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' \
 	$(CXXDEPMODE) $(depcomp) \
 	$(CXXCOMPILE) -c -o $@ `cygpath -w $<`
+
+.cxx.lo:
+	source='$<' object='$@' libtool=yes \
+	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' \
+	$(CXXDEPMODE) $(depcomp) \
+	$(LTCXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 CXXDEPMODE = depmode=gcc3
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+	-rm -f libtool
 uninstall-info-am:
 
 ETAGS = etags
@@ -221,7 +249,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LTLIBRARIES)
 
 installdirs:
 
@@ -251,12 +279,13 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 
 distclean-am: clean-am distclean-compile distclean-depend \
-	distclean-generic distclean-tags
+	distclean-generic distclean-libtool distclean-tags
 
 dvi: dvi-am
 
@@ -282,19 +311,21 @@ maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 uninstall-am: uninstall-info-am
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES distclean distclean-compile \
-	distclean-depend distclean-generic distclean-tags distdir dvi \
-	dvi-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic tags uninstall uninstall-am \
+	clean-libtool clean-noinstLTLIBRARIES distclean \
+	distclean-compile distclean-depend distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am info \
+	info-am install install-am install-data install-data-am \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool tags uninstall uninstall-am \
 	uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
