@@ -1,0 +1,62 @@
+LDFLAGS = -lpthreadcc -lsocketcc -lpq
+OBJECT_FILES = VoidServerThread.o void_util.o tcpserver.o ResourceMaster.o PrimaryKey.o Field.o Resource.o SerialObject.o LoginHandle.o PlayerHandle.o \
+	ShipTypeHandle.o ShipHandle.o OutpostHandle.o VoidCommand.o VoidCommandDisplay.o VoidCommandMove.o VoidCommandPort.o VoidCommandStatus.o Universe.o \
+	EdgeLoadThread.o VoidCommandWho.o Message.o VoidCommandHail.o VoidCommandTransmit.o
+DEBUG_FLAGS  = -g
+
+
+server: server.cxx $(OBJECT_FILES) void_util.h
+	g++ $(DEBUG_FLAGS) server.cxx $(OBJECT_FILES) -o server  $(LDFLAGS)
+VoidServerThread.o: VoidServerThread.cxx VoidServerThread.h tcpserver.o
+	g++ $(DEBUG_FLAGS) -c VoidServerThread.cxx
+tcpserver.o: tcpserver.cpp tcpserver.h
+	g++ $(DEBUG_FLAGS) -c tcpserver.cpp
+void_util.o: void_util.h void_util.cxx
+	g++ $(DEBUG_FLAGS) -c void_util.cxx
+ResourceMaster.o: ResourceMaster.h ResourceMaster.cxx
+	g++ $(DEBUG_FLAGS) -c ResourceMaster.cxx
+PrimaryKey.o: PrimaryKey.h PrimaryKey.cxx Field.o
+	g++ $(DEBUG_FLAGS) -c PrimaryKey.cxx
+Field.o: Field.cxx Field.h
+	g++ $(DEBUG_FLAGS) -c Field.cxx
+Resource.o: Resource.cxx Resource.h
+	g++ $(DEBUG_FLAGS) -c Resource.cxx
+SerialObject.o: SerialObject.cxx SerialObject.h
+	g++ $(DEBUG_FLAGS) -c SerialObject.cxx
+LoginHandle.o: LoginHandle.h LoginHandle.cxx
+	g++ $(DEBUG_FLAGS) -c LoginHandle.cxx
+PlayerHandle.o: PlayerHandle.h PlayerHandle.cxx
+	g++ $(DEBUG_FLAGS) -c PlayerHandle.cxx
+ShipTypeHandle.o: ShipTypeHandle.h ShipTypeHandle.cxx
+	g++ $(DEBUG_FLAGS) -c ShipTypeHandle.cxx
+ShipHandle.o: ShipHandle.h ShipHandle.cxx
+	g++ $(DEBUG_FLAGS) -c ShipHandle.cxx
+OutpostHandle.o: OutpostHandle.h OutpostHandle.cxx
+	g++ $(DEBUG_FLAGS) -c OutpostHandle.cxx
+VoidCommand.o: VoidCommand.h VoidCommand.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommand.cxx
+VoidCommandDisplay.o: VoidCommandDisplay.h VoidCommandDisplay.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommandDisplay.cxx
+VoidCommandMove.o: VoidCommandMove.h VoidCommandMove.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommandMove.cxx
+VoidCommandPort.o: VoidCommandPort.h VoidCommandPort.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommandPort.cxx
+VoidCommandStatus.o: VoidCommandStatus.h VoidCommandStatus.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommandStatus.cxx
+VoidCommandWho.o: VoidCommandWho.h VoidCommandWho.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommandWho.cxx
+VoidCommandTransmit.o: VoidCommandTransmit.h VoidCommandTransmit.cxx
+	g++ $(DEBUG_FLAGS) -c VoidCommandTransmit.cxx
+Universe.o: Universe.h Universe.cxx
+	g++ $(DEBUG_FLAGS) -c Universe.cxx
+EdgeLoadThread.o: EdgeLoadThread.h EdgeLoadThread.cxx
+	g++ $(DEBUG_FLAGS) -c EdgeLoadThread.cxx
+Message.o: Message.h Message.cxx
+	g++ $(DEBUG_FLAGS) -c Message.cxx
+VoidCommandHail.o: VoidCommandHail.cxx VoidCommandHail.h
+	g++ $(DEBUG_FLAGS) -c VoidCommandHail.cxx
+
+clean:
+	rm server *.o -f 
+control: control.cxx
+	g++ control.cxx -o control

@@ -1,0 +1,12 @@
+CREATE TABLE Edges( 
+NSECTOR Integer REFERENCES Sectors(NSECTOR) NOT NULL,
+NEDGE Integer NOT NULL,
+NSECTOR2 Integer REFERENCES Sectors(NSECTOR) NOT NULL,
+UNIQUE(NSECTOR,NEDGE)
+);
+
+CREATE INDEX nsector_idx on Edges (nsector);
+CREATE INDEX nsector2_idx on Edges (nsector2);
+
+GRANT ALL ON EDGES TO void;
+
