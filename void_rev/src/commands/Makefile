@@ -81,7 +81,7 @@ OBJDUMP = @OBJDUMP@
 PACKAGE = voidserver
 RANLIB = ranlib
 STRIP = strip
-VERSION = 0.0.2.5
+VERSION = 0.0.2.7
 am__include = include
 am__quote = 
 install_sh = /home/dpalm/src/void_rev/install-sh
@@ -125,6 +125,8 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandAttack.cxx \
 			EscapePodBehavior.h \
 			EscapePodBehavior.cxx \
+			SectorCommBehavior.h \
+			SectorCommBehavior.cxx \
 			VoidCommandClaim.cxx \
 			VoidCommandClaim.h	
 
@@ -148,10 +150,10 @@ am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
 	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo \
-	EscapePodBehavior.lo VoidCommandClaim.lo
+	EscapePodBehavior.lo SectorCommBehavior.lo VoidCommandClaim.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.2.5\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DHAVE_LIBPQ=1 -DSTDC_HEADERS=1 -DHAVE_ARPA_INET_H=1 -DHAVE_NETDB_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_UNISTD_H=1 -DHAVE__BOOL=1 -DHAVE_STDBOOL_H=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_SYS_SOCKET_H=1 -DSELECT_TYPE_ARG1=int -DSELECT_TYPE_ARG234=\(fd_set\ \*\) -DSELECT_TYPE_ARG5=\(struct\ timeval\ \*\) -DRETSIGTYPE=void -DHAVE_GETHOSTBYNAME=1 -DHAVE_INET_NTOA=1 -DHAVE_MEMSET=1 -DHAVE_SELECT=1 -DHAVE_SOCKET=1 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.2.7\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DHAVE_LIBPQ=1 -DSTDC_HEADERS=1 -DHAVE_ARPA_INET_H=1 -DHAVE_NETDB_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_UNISTD_H=1 -DHAVE__BOOL=1 -DHAVE_STDBOOL_H=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_SYS_SOCKET_H=1 -DSELECT_TYPE_ARG1=int -DSELECT_TYPE_ARG234=\(fd_set\ \*\) -DSELECT_TYPE_ARG5=\(struct\ timeval\ \*\) -DRETSIGTYPE=void -DHAVE_GETHOSTBYNAME=1 -DHAVE_INET_NTOA=1 -DHAVE_MEMSET=1 -DHAVE_SELECT=1 -DHAVE_SOCKET=1 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 CPPFLAGS = 
 LDFLAGS = 
@@ -159,6 +161,7 @@ LIBS = -lpq
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 DEP_FILES = ./$(DEPDIR)/EscapePodBehavior.Plo \
+	./$(DEPDIR)/SectorCommBehavior.Plo \
 	./$(DEPDIR)/VoidCommand.Plo \
 	./$(DEPDIR)/VoidCommandAttack.Plo \
 	./$(DEPDIR)/VoidCommandBeam.Plo \
@@ -231,6 +234,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/EscapePodBehavior.Plo
+include ./$(DEPDIR)/SectorCommBehavior.Plo
 include ./$(DEPDIR)/VoidCommand.Plo
 include ./$(DEPDIR)/VoidCommandAttack.Plo
 include ./$(DEPDIR)/VoidCommandBeam.Plo

@@ -12,7 +12,7 @@
 using std::min;
 
 
-VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread)
+VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread),SectorCommBehavior(thread)
 {
 }
 VoidCommandAttack::~VoidCommandAttack()
@@ -159,56 +159,7 @@ void VoidCommandAttack::KillPlayer(const std::string &player)
 }
 
 
-/// @todo Move this out to a class for multiple inheritance
 
-std::list<std::string> VoidCommandAttack::get_players_in_sector(int sector)
-{
-    std::list<std::string> playerlist;
-    std::string query = "select player.sname from player,ship where ship.ksector = '" + IntToString(sector)
-	+  "' and player.kcurrentship = ship.nkey;";
-
-    PGresult *dbresult = get_thread()->DBExec(query);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Get players in sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    int numplayers = PQntuples(dbresult);
-
-    for(int i=0;i<numplayers;i++)
-    {
-	playerlist.push_back(PQgetvalue(dbresult,i,0));
-    }
-
-    PQclear(dbresult);
-
-    return playerlist;
-}
-
-void VoidCommandAttack::SendMsgToSector(const std::string &str, int sec, const std::string &exceptplayer)
-{
-    Message msg;
-    msg.SetType(Message::BATTLE);
-    msg.SetFrom("SYSTEM");
-
-
-    msg.SetString(str);
-
-    std::list<std::string> players = get_players_in_sector(sec);
-
-    for(std::list<std::string>::iterator iter = players.begin();
-	iter != players.end(); iter++)
-    {
-	if(*iter != exceptplayer)
-	    ResourceMaster::GetInstance()->SendMessage(get_thread()->GetLocalSocket(), *iter, &msg);
-    }
-    
-    
-}
 
 
 bool VoidCommandAttack::HandleCommand(const string &command, const string &arguments, bool bFromPost)

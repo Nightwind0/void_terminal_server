@@ -5,11 +5,12 @@
 #include "VoidCommand.h"
 #include "VoidServerThread.h"
 #include "EscapePodBehavior.h"
+#include "SectorCommBehavior.h"
 #include <string>
 
 using std::string;
 
-class VoidCommandAttack : public VoidCommand, public EscapePodBehavior
+class VoidCommandAttack : public VoidCommand, public EscapePodBehavior, public SectorCommBehavior
 {
  public:
     VoidCommandAttack(VoidServerThread *thread);
@@ -28,9 +29,6 @@ class VoidCommandAttack : public VoidCommand, public EscapePodBehavior
     // void MoveShipRandomly(ShipHandle *ship);
  private:
 
-    std::list<std::string> get_players_in_sector(int); /// @todo make this in common with the same on in VoidCommandTransmit
-
-    void SendMsgToSector( const std::string &str, int sec, const std::string &exceptplayer);
 
 
     void remove_sentinels(int num, const std::string &player);

@@ -5,12 +5,13 @@
 #include "Universe.h"
 #include "void_util.h"
 #include <sstream>
+#include "ResourceMaster.h"
 
 using std::ostringstream;
 using std::left;
 using std::right;
 
-VoidCommandClaim::VoidCommandClaim(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread)
+VoidCommandClaim::VoidCommandClaim(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread), SectorCommBehavior(thread)
 {
 }
 VoidCommandClaim::~VoidCommandClaim()
@@ -171,19 +172,44 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
     }
 
 
+    player->Lock();
+    /// @todo get point value from config table
+    player->SetPoints(player->GetPoints() + 500);
+    player->Unlock();
+
+
     ShipHandle oshiph = ShipHandle::HandleFromNkey(get_thread()->GetDBConn(),shipdestnum);
+
+    
 
     oshiph.Lock();
     oshiph.SetOwner(playername);
     oshiph.Unlock();
     
-    
-    if(occupied)
-	Send(Color()->get(PURPLE) + "You force the captain into an escape pod." + endr + "The escape pod jettisons off into space." + endr);    
 
+    std::string shipname = oshiph.GetName();
+
+    Event claimevent(Event::SHIPCLAIMED);
+    claimevent.SetActor(playername);
+    if(occupied) claimevent.SetSubject(oplayer); // We display who was forced out if anyone was
+    claimevent.SetShipName(shipname);
+    
+    get_thread()->LogEvent(claimevent);
+
+    ResourceMaster::GetInstance()->SendSystemMail(oplayer, playername + " boarded and claimed " + shipname + "!" + endr);
+    SendMsgToSector(playername + " boards " + shipname + endr, sector, playername);
+
+    if(occupied)
+    {
+	ResourceMaster::GetInstance()->SendSystemMail(oplayer, playername + " forced you off " + shipname + " into an escape pod!" + endr);
+	SendMsgToSector(playername + " forces " + oplayer + " off his ship!", sector,playername);
+	Send(Color()->get(PURPLE) + "You force " + Color()->get(LIGHTCYAN) + oplayer + Color()->get(PURPLE) + " into an escape pod." + endr + "The escape pod jettisons off into space." + endr);    
+    }
+
+    SendMsgToSector(playername + " claims " + shipname + endr, sector,playername);
 
     Send(Color()->get(GREEN) + "You have taken ownership of this craft." + endr);
-    
+    Send(Color()->get(WHITE) + "500 " + Color()->get(GREEN) + " points." + endr);
     delete ship;
     return true;
     

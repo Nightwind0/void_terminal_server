@@ -5,11 +5,12 @@
 #include "VoidCommand.h"
 #include "VoidServerThread.h"
 #include "EscapePodBehavior.h"
+#include "SectorCommBehavior.h"
 #include <string>
 
 using std::string;
 
-class VoidCommandClaim : public VoidCommand, public EscapePodBehavior
+class VoidCommandClaim : public VoidCommand, public EscapePodBehavior, public SectorCommBehavior
 {
  public:
     VoidCommandClaim(VoidServerThread *thread);

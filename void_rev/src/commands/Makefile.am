@@ -38,6 +38,8 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandAttack.cxx \
 			EscapePodBehavior.h \
 			EscapePodBehavior.cxx \
+			SectorCommBehavior.h \
+			SectorCommBehavior.cxx \
 			VoidCommandClaim.cxx \
 			VoidCommandClaim.h	
 
