@@ -344,6 +344,8 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
     Send(Color()->get(YELLOW) + "Engaging with ship " + IntToString(othership) + endr);
 
+    bool firstattack = true;
+
     do
     {
 
@@ -440,14 +442,39 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
 	PQclear(dbresult);
 	
+	bool bplayerinship = false;
+
+	std::string playerinship = "select count(1) from player where kcurrentship = '" + IntToString(othership) + "';";
+
+	dbresult = get_thread()->DBExec(playerinship);
+
+	if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+	{
+	    DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
+	    PQclear(dbresult);
+	    delete ship;
+	    throw e;
+	}
 
 
+	if(atoi(PQgetvalue(dbresult,0,0)) == 1)
+	{
+	    bplayerinship = true;
+	}
+
+	PQclear(dbresult);
 	
 	
 	int nm = atoi(nmstr.c_str());
 
 	if(nm == 0)
 	    break;
+	if(firstattack)
+	{
+	    RM->SendSystemMail(oplayer, player + " fired missiles at " + oshipname + endr);
+	    firstattack = false;
+	}
+
 
 	if(nm < 0) nm = 0;
 	
@@ -549,26 +576,27 @@ bool VoidCommandAttack::CommandAttack(int othership)
 		RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, &deathmsg);
 		
 		/// @todo mail player
-
-		KillPlayer(oplayer);
+		if(bplayerinship)
+		    KillPlayer(oplayer);
 
 	    }
 	    else
 	    {
 
 
+		if(bplayerinship)
+		{
+		    int escapepodnum = CreateEscapePodForPlayer(oplayer);
 
-		int escapepodnum = CreateEscapePodForPlayer(oplayer);
+		    Integer epi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(escapepodnum));
+		    PrimaryKey key(&epi);
 
-		Integer epi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(escapepodnum));
-		PrimaryKey key(&epi);
-
-		ShipHandle escapepod(get_thread()->GetDBConn(), key);
-		escapepod.Lock();
-		escapepod.SetSector(cursector);
-		escapepod.Unlock();
-		MoveShipRandomly(&escapepod);
-
+		    ShipHandle escapepod(get_thread()->GetDBConn(), key);
+		    escapepod.Lock();
+		    escapepod.SetSector(cursector);
+		    escapepod.Unlock();
+		    MoveShipRandomly(&escapepod);
+		}
 		/// @todo mail player
 
 		get_thread()->GetPlayer()->Lock();
@@ -576,10 +604,14 @@ bool VoidCommandAttack::CommandAttack(int othership)
 		get_thread()->GetPlayer()->Unlock();
 
 		Send(Color()->get(BLACK,BG_RED) + "*** YOU HAVE DESTROYED THE OTHER SHIP ***" + endr);
-		Send(Color()->get(BROWN) + "An escape pod explodes off into space." + endr);
 
-		Message explodemsg(Message::SYSTEM, "SHIPEXPLODE");
-		RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, &explodemsg);
+		if(bplayerinship)
+		{
+		    
+		    Send(Color()->get(BROWN) + "An escape pod explodes off into space." + endr);
+		    Message explodemsg(Message::SYSTEM, "SHIPEXPLODE");
+		    RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, &explodemsg);
+		}
 
 	    }
 		    
