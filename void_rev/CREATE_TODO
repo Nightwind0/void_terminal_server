@@ -1,0 +1,3 @@
+Script must create the database and void user.
+Script must run the .sql files
+Configure.ac must require a postgres installation

@@ -93,6 +93,12 @@ sub generate_outpost_name
 }
 
 
+sub create_database
+{
+    exec "createdb void";
+    exec "createuser void";
+}
+
 sub create_outposts
 {
     my $num_outposts = shift;
@@ -423,7 +429,9 @@ sub claim_territory()
 
 
 srand(time());
-#&create_sectors($numsectors) ;
+&create_database();
+&create_sectors_db();
+&create_sectors($numsectors) ;
 &create_outposts(500);
 
 $dbh->disconnect();
