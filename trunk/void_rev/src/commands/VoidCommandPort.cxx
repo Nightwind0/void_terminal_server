@@ -47,7 +47,8 @@ bool VoidCommandPort::HandleCommand(const string &command, const string &argumen
 int VoidCommandPort::BuyGoods(const std::string &goods, int price_each,  int units_available)
 {
     get_thread()->Send(Color()->get(GREEN) + "You have " + Color()->get(YELLOW) +  IntToString(units_available) + " " + goods  + endr);
-    get_thread()->Send(Color()->get(GREEN) + "We will pay you " + Color()->get(BLACK,BG_WHITE) +  IntToString(price_each * units_available) + Color()->get(GREEN) +  " for it. Y/n");
+    get_thread()->Send(Color()->get(GREEN) + "We pay " + Color()->get(WHITE) + IntToString(price_each) + Color()->get(GREEN) + " per unit." + endr);
+    get_thread()->Send(Color()->get(GREEN) + "We will pay you " + Color()->get(BLACK,BG_WHITE) +  IntToString(price_each * units_available) + Color()->get(GREEN) +  " for the lot. Y/n");
     
     string answer = get_thread()->ReceiveLine();
     
