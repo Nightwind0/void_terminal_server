@@ -42,6 +42,11 @@ Socket::~Socket()
 
 void Socket::Close()
 {
+    unsigned int opt = 1;
+    setsockopt(m_socketid, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	
+
+    shutdown(m_socketid, 2);
     close(m_socketid);
 }
    
@@ -126,7 +131,7 @@ void TCPSocket::Bind(int port, const std::string &addr)
 
     if(res == -1)
     {
-	throw SocketException(BINDERROR, res);
+	throw SocketException(BINDERROR, errno);
     }
 }
 

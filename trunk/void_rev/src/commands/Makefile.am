@@ -29,7 +29,11 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommand.h \
 		        VoidCommandStatus.h \
 			VoidCommandHail.h \
-			VoidCommandSubCommands.h
+			VoidCommandSubCommands.h \
+			VoidCommandCheckMail.h \
+			VoidCommandCheckMail.cxx \
+			VoidCommandMail.h \
+			VoidCommandMail.cxx
 
 
 

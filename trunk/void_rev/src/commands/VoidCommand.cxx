@@ -27,6 +27,29 @@ VoidCommand::~VoidCommand()
 {
 }
 
+
+bool VoidCommand::isValidPlayer(const std::string playername)const
+{
+    std::string query = "select count(0) from player where sname = '" + playername + "';";
+
+    PGresult * dbresult = get_thread()->DBExec(query);
+
+    if(PQntuples(dbresult) != 1)
+    {
+	PQclear(dbresult);
+	return false;
+    }
+
+    if(atoi(PQgetvalue(dbresult,0,0)) != 1)
+    {
+	PQclear(dbresult);
+	return false;
+    }
+
+    PQclear(dbresult);
+    return true;
+}
+
 void VoidCommand::Send(const std::string &str) const
 {
     get_thread()->Send(str);
