@@ -69,12 +69,39 @@ LoginHandle * VoidServerThread::GetLogin() const
     return m_login;
 }
 
+void VoidServerThread::LogEvent(const Event &event)
+{
+    std::ostringstream stmt;
+    stmt <<  "insert into eventlog values(now(), '" << event.GetActor() << "','" << event.GetSubject() << "','"
+	 << (int)event.GetType() << "','" << PrepareForSQL(event.GetMessage()) << "','" 
+	 << event.GetShipType() <<"','" << PrepareForSQL(event.GetShipName()) << "');";
+
+    PGresult * dbresult = DBExec(stmt.str());
+
+    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
+    {
+
+	PQclear(dbresult);
+	throw DBException(PQerrorMessage(m_dbconn));
+    }
+
+
+    
+
+    
+}
+
 void VoidServerThread::HandleSystemMessage(const Message &msg)
 {
     ResourceMaster::GetInstance()->Log(DEBUG2, "<System Message=" + msg.GetString());
     if(msg.GetString() == "SHUTDOWN")
     {
 	Send(Color()->get(LIGHTRED) + endr + "**** " + Color()->get(BLACK, BG_RED) + "IMMEDIATE SYSTEM SHUTDOWN" + Color()->get(LIGHTRED) + " ****" + endr);
+	throw ShutdownException(false);
+    }
+    if(msg.GetString() == "KILL")
+    {
+	Send(Color()->get(LIGHTRED) + endr +  "This session has been kicked by a log in from the same user." + endr);
 	throw ShutdownException(true);
     }
 }
@@ -474,9 +501,17 @@ bool VoidServerThread::Login()
 	    
 	    if (login_name == logint)
 	    {
-		Send(Color()->get(LIGHTRED) + "Sorry, you are already logged in." + endr);
-		ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN : " + loginid + " tried to log in multiple times.>");
-		return false;
+		// This login is already in use on the system.
+		// Kill the other login so that we can proceed
+		ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN: " + loginid + " KILLED EXISTING LOGIN>");
+		Message msg(Message::SYSTEM, "KILL");
+	       
+		ResourceMaster::GetInstance()->
+		    SendMessage(m_unixsocket,
+				(*i)->GetPlayer()->GetName().GetAsString(),
+		    &msg);
+
+	    
 	    }
 	}
     }
@@ -954,9 +989,46 @@ std::string VoidServerThread::CommandPrompt()
 
     
     std::string sector = shiphandle.GetSector().GetAsString();
-    Send(Color()->get(RED) + "[" + Color()->get(WHITE) + sector +  Color()->get(RED) + "] " + Color()->get(CYAN) + "Command:" + Color()->get(GRAY) + ' ');
+    Send(Color()->get(RED) + "[" + Color()->get(WHITE) + sector +  Color()->get(RED) + "] "  +
+	 Color()->get(PURPLE) + "(" +GetPlayer()->GetTurnsLeft().GetAsString() + ")"+
+	 Color()->get(CYAN) + "Command:" + Color()->get(GRAY) + ' ');
 
     return ReceiveLine();
+}
+
+void VoidServerThread::SetTurnsLeft()
+{
+    std::string sql = "select extract( doy from dlastplay), extract (year from dlastplay), extract(doy from now()), extract(year from now()) from player where sname = '" + GetPlayer()->GetName().GetAsString() 
+	+ "';";
+
+    bool fill_turns = false;
+
+    PGresult *dbresult = DBExec(sql);
+
+    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    {
+
+	DBException e(PQresultErrorMessage(dbresult));
+	PQclear(dbresult);
+	throw e;
+    }
+
+
+    int play_doy = atoi(PQgetvalue(dbresult,0,0));
+    int play_year = atoi(PQgetvalue(dbresult,0,1));
+    int cur_doy = atoi(PQgetvalue(dbresult,0,2));
+    int cur_year = atoi(PQgetvalue(dbresult,0,3));
+
+    if(cur_year > play_year || cur_doy > play_doy)
+	fill_turns = true;
+
+    if(fill_turns)
+    {
+	GetPlayer()->Lock();
+	GetPlayer()->SetTurnsLeft(600); // TODO: GET FROM CONFIG TABLE!!!! DUH!!!
+	GetPlayer()->Unlock();
+    }
+		   
 }
 
  
@@ -1050,6 +1122,7 @@ void        VoidServerThread::Service()
     ResourceMaster::GetInstance()->SetThreadForPlayer(this,(std::string) GetPlayer()->GetName());
       
 
+    SetTurnsLeft();
 
     bool done = false;
 
@@ -1162,6 +1235,7 @@ void        VoidServerThread::Service()
         }
 	catch(ShutdownException ex)
 	{
+	    
 	    done = true;
 	}
 	catch(DBException e)

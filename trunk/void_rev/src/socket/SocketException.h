@@ -6,7 +6,7 @@ enum SocketError{CREATEERROR, BINDERROR, LISTENERROR, ACCEPTERROR, CONNREFUSED, 
 class SocketException
 {
  public:
-    SocketException(SocketError type, int err = 0):m_type(type){}
+    SocketException(SocketError type, int err = 0):m_type(type), m_errno(err){}
 
     SocketError GetType()const;
 

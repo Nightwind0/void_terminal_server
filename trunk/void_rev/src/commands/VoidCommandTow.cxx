@@ -85,6 +85,9 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
 {
 
     ShipHandle * ship = create_handle_to_current_ship(get_player());
+    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
+
+    int tps = (int)shiptype.GetTurnsPerSector();
 
 //    PlayerHandle * player = get_thread()->GetPlayer();
 
@@ -133,7 +136,15 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
 
 
     Send(Color()->get(GREEN) + std::string(endr) + "You are now towing." + endr);
+    
+    Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipdestnum));
+    PrimaryKey key(&towship);
+    ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
+    ShipTypeHandle tsthandle= towshiphandle.GetShipTypeHandle();
 
+    tps += tsthandle.GetTurnsPerSector();
+    
+    Send(Color()->get(GREEN) + "You now take " + Color()->get(WHITE) + IntToString(tps) + Color()->get(GREEN) + " turns per sector." + endr);
 
     
     delete ship;

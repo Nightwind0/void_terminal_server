@@ -114,8 +114,17 @@ void VoidCommandStatus::ShowStatus()
     os << Color()->get(CYAN,BG_WHITE) << "        Status        " +  Color()->blackout() +endr;
     os << SendValue("Player Name:",PQgetvalue(dbresult,0,0)) << endr;
     os << SendValue("Credits:",PQgetvalue(dbresult,0,1)) << endr;
-    os << SendRow("Turns:",PQgetvalue(dbresult,0,2), "500") << endr; // TODO: Get actual turns per day value
-    os << SendValue("Turns/Sector", PQgetvalue(dbresult,0,30)) << endr;
+    os << SendRow("Turns:",PQgetvalue(dbresult,0,2), "600") << endr; // TODO: Get actual turns per day value
+
+    Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), PQgetvalue(dbresult,0,22));
+    PrimaryKey key(&towship);
+    ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
+    ShipTypeHandle tsthandle= towshiphandle.GetShipTypeHandle();
+
+    int tps = atoi(PQgetvalue(dbresult,0,30));
+    tps += tsthandle.GetTurnsPerSector();
+
+    os << SendValue("Turns/Sector", IntToString(tps)) << endr;
     os << SendValue("Points:",PQgetvalue(dbresult,0,3)) << endr;
     os << SendValue("Alliance:",PQgetvalue(dbresult,0,4)) << endr;
     // os << SendRow("Ship:",PQgetvalue(dbresult,0,5), PQgetvalue(dbresult,0,6)) << endr;

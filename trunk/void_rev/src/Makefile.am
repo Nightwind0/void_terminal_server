@@ -1,6 +1,6 @@
 bin_PROGRAMS = voidserver voidcontrol
 
-voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
+voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h Event.h Event.cxx
 
 
 

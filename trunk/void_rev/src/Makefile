@@ -87,7 +87,7 @@ am__quote =
 install_sh = /home/dpalm/src/void_rev/install-sh
 bin_PROGRAMS = voidserver voidcontrol
 
-voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
+voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h Event.h Event.cxx
 
 voidcontrol_SOURCES = control.cxx
 
@@ -122,7 +122,7 @@ am_voidserver_OBJECTS = server.$(OBJEXT) VoidServerThread.$(OBJEXT) \
 	EdgeLoadThread.$(OBJEXT) Field.$(OBJEXT) PrimaryKey.$(OBJEXT) \
 	Resource.$(OBJEXT) ResourceMaster.$(OBJEXT) Universe.$(OBJEXT) \
 	void_util.$(OBJEXT) Message.$(OBJEXT) \
-	VoidThreadSpawner.$(OBJEXT)
+	VoidThreadSpawner.$(OBJEXT) Event.$(OBJEXT)
 voidserver_OBJECTS = $(am_voidserver_OBJECTS)
 voidserver_DEPENDENCIES = commands/libcommand.la handles/libhandles.la \
 	socket/libsocket.la thread/libthread.la
@@ -136,8 +136,9 @@ LIBS = -lpq
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 DEP_FILES = ./$(DEPDIR)/EdgeLoadThread.Po \
-	./$(DEPDIR)/Field.Po ./$(DEPDIR)/Message.Po \
-	./$(DEPDIR)/PrimaryKey.Po ./$(DEPDIR)/Resource.Po \
+	./$(DEPDIR)/Event.Po ./$(DEPDIR)/Field.Po \
+	./$(DEPDIR)/Message.Po ./$(DEPDIR)/PrimaryKey.Po \
+	./$(DEPDIR)/Resource.Po \
 	./$(DEPDIR)/ResourceMaster.Po \
 	./$(DEPDIR)/Universe.Po \
 	./$(DEPDIR)/VoidServerThread.Po \
@@ -223,6 +224,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/EdgeLoadThread.Po
+include ./$(DEPDIR)/Event.Po
 include ./$(DEPDIR)/Field.Po
 include ./$(DEPDIR)/Message.Po
 include ./$(DEPDIR)/PrimaryKey.Po
