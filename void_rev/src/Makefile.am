@@ -6,7 +6,7 @@ server_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx Pr
 control_SOURCES = control.cxx
 
 
-control_LDADD = socket/libsocket.a
+control_LDADD = socket/libsocket.la
 
 SUBDIRS = commands handles thread socket
 
