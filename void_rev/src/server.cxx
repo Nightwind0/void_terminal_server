@@ -27,8 +27,7 @@ int main()
 {
     int socket_num;
     int socket_num2;
-    sockaddr_un local_addr;
-    sockaddr_un remote_addr;
+
     char str[65536];
     PGconn *RMconn;
 
@@ -54,9 +53,7 @@ int main()
 
 
     ResourceMaster::GetInstance()->SetDBConn(RMconn);
-//    ResourceMaster::GetInstance()->LoadEdges(); // TODO: Make this depend on a setting from the config table
 
-//    server = new TCPServer(VOID_PORT,5,1,10,1,void_thread,false); // ipV6 support? Switch that false to a true and blammo.
 
     
     cout << "Void Revolution Server: Version " << VOID_VER_MAJOR << '.' << VOID_VER_MINOR << '.' << VOID_VER_INCR << endl;
@@ -164,7 +161,7 @@ int main()
     delete unixsocket;
 
     try{
-
+	// Seeing this in the log means we got a clean shutdown. yay
 	ResourceMaster::GetInstance()->Log(DEBUG,"[Void Server Shutdown]");
     }
     catch(DBException e)
