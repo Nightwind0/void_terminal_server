@@ -33,15 +33,15 @@ infodir = ${prefix}/info
 mandir = ${prefix}/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
-pkgdatadir = $(datadir)/server
-pkglibdir = $(libdir)/server
-pkgincludedir = $(includedir)/server
+pkgdatadir = $(datadir)/voidserver
+pkglibdir = $(libdir)/voidserver
+pkgincludedir = $(includedir)/voidserver
 top_builddir = ../..
 
-ACLOCAL = ${SHELL} /home/dpalm/src/test/void_rev/missing --run aclocal-1.6
-AUTOCONF = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoconf
-AUTOMAKE = ${SHELL} /home/dpalm/src/test/void_rev/missing --run automake-1.6
-AUTOHEADER = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoheader
+ACLOCAL = ${SHELL} /home/dpalm/src/void_rev/missing --run aclocal-1.6
+AUTOCONF = ${SHELL} /home/dpalm/src/void_rev/missing --run autoconf
+AUTOMAKE = ${SHELL} /home/dpalm/src/void_rev/missing --run automake-1.6
+AUTOHEADER = ${SHELL} /home/dpalm/src/void_rev/missing --run autoheader
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = /usr/bin/install -c
@@ -65,7 +65,7 @@ host_triplet = i686-pc-linux-gnu
 EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
-AMTAR = ${SHELL} /home/dpalm/src/test/void_rev/missing --run tar
+AMTAR = ${SHELL} /home/dpalm/src/void_rev/missing --run tar
 AS = @AS@
 AWK = gawk
 CC = gcc
@@ -77,13 +77,13 @@ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 OBJDUMP = @OBJDUMP@
-PACKAGE = server
+PACKAGE = voidserver
 RANLIB = ranlib
 STRIP = strip
 VERSION = 0.0.1.0
 am__include = include
 am__quote = 
-install_sh = /home/dpalm/src/test/void_rev/install-sh
+install_sh = /home/dpalm/src/void_rev/install-sh
 noinst_LTLIBRARIES = libhandles.la
 
 libhandles_la_SOURCES = SerialObject.cxx \
@@ -119,7 +119,7 @@ am_libhandles_la_OBJECTS = SerialObject.lo LoginHandle.lo \
 	ShipTypeHandle.lo
 libhandles_la_OBJECTS = $(am_libhandles_la_OBJECTS)
 
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"server\" -DVERSION=\"0.0.1.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.1.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 CPPFLAGS = 
 LDFLAGS = 

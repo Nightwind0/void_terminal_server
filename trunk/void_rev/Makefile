@@ -33,15 +33,15 @@ infodir = ${prefix}/info
 mandir = ${prefix}/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
-pkgdatadir = $(datadir)/server
-pkglibdir = $(libdir)/server
-pkgincludedir = $(includedir)/server
+pkgdatadir = $(datadir)/voidserver
+pkglibdir = $(libdir)/voidserver
+pkgincludedir = $(includedir)/voidserver
 top_builddir = .
 
-ACLOCAL = ${SHELL} /home/dpalm/src/test/void_rev/missing --run aclocal-1.6
-AUTOCONF = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoconf
-AUTOMAKE = ${SHELL} /home/dpalm/src/test/void_rev/missing --run automake-1.6
-AUTOHEADER = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoheader
+ACLOCAL = ${SHELL} /home/dpalm/src/void_rev/missing --run aclocal-1.6
+AUTOCONF = ${SHELL} /home/dpalm/src/void_rev/missing --run autoconf
+AUTOMAKE = ${SHELL} /home/dpalm/src/void_rev/missing --run automake-1.6
+AUTOHEADER = ${SHELL} /home/dpalm/src/void_rev/missing --run autoheader
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = /usr/bin/install -c
@@ -65,7 +65,7 @@ host_triplet = i686-pc-linux-gnu
 EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
-AMTAR = ${SHELL} /home/dpalm/src/test/void_rev/missing --run tar
+AMTAR = ${SHELL} /home/dpalm/src/void_rev/missing --run tar
 AS = @AS@
 AWK = gawk
 CC = gcc
@@ -77,13 +77,13 @@ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 OBJDUMP = @OBJDUMP@
-PACKAGE = server
+PACKAGE = voidserver
 RANLIB = ranlib
 STRIP = strip
 VERSION = 0.0.1.0
 am__include = include
 am__quote = 
-install_sh = /home/dpalm/src/test/void_rev/install-sh
+install_sh = /home/dpalm/src/void_rev/install-sh
 SUBDIRS = src
 
 sql_scripts = sql
@@ -96,7 +96,7 @@ EXTRA_DIST = $(sql_scripts) \
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
-CONFIG_CLEAN_FILES = src/commands/dock/Makefile
+CONFIG_CLEAN_FILES =
 DIST_SOURCES =
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
@@ -127,8 +127,6 @@ $(srcdir)/configure:  $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENC
 
 $(ACLOCAL_M4):  configure.ac 
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-src/commands/dock/Makefile: $(top_builddir)/config.status $(top_srcdir)/src/commands/dock/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -251,7 +249,6 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/src/commands/dock
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \

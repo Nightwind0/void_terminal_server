@@ -1,17 +1,17 @@
-bin_PROGRAMS = server control
+bin_PROGRAMS = voidserver voidcontrol
 
-server_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
-
-
-
-control_SOURCES = control.cxx
+voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
 
 
-control_LDADD = socket/libsocket.la
+
+voidcontrol_SOURCES = control.cxx
+
+
+voidcontrol_LDADD = socket/libsocket.la
 
 SUBDIRS = commands handles thread socket
 
-server_LDADD = commands/libcommand.la \
+voidserver_LDADD = commands/libcommand.la \
 	handles/libhandles.la \
 	socket/libsocket.la \
 	thread/libthread.la \
