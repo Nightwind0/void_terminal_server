@@ -13,7 +13,11 @@ libcommanddock_la_SOURCES = 	VoidCommandDockShipYard.cxx \
 			VoidCommandDockShipYardList.h \
 			VoidCommandDockShipYardBuy.h  \
 			VoidCommandDockShipYardSpec.h \
-			VoidCommandDockShipYard.h
+			VoidCommandDockShipYard.h \
+			VoidCommandDockArmorySentinels.cxx \
+			VoidCommandDockArmorySentinels.h \
+			VoidCommandDockArmoryShields.cxx \
+			VoidCommandDockArmoryShields.h
 
 
 
