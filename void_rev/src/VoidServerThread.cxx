@@ -37,6 +37,7 @@
 #include "VoidCommandBeam.h"
 #include "VoidCommandAttack.h"
 #include "VoidCommandClaim.h"
+#include "VoidCommandComputer.h"
 
 const char * VoidServerThread::endr = "\n\r";
 
@@ -882,6 +883,7 @@ void VoidServerThread::StartNewPlayer()
     m_player->Lock();
     m_player->SetCurrentShip(ship->GetNkey());
     m_player->SetCredits(10000); // TODO: Get from configuration
+    m_player->SetPoints(0);
     m_player->Unlock();
     
     Send(Color()->get(BLACK,BG_WHITE) + "Press Enter..." + Color()->get(BLACK) + endr);
@@ -1404,6 +1406,7 @@ VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
     add_command(new VoidCommandMail(this));
     add_command(new VoidCommandAttack(this));
     add_command(new VoidCommandClaim(this));
+    add_command(new VoidCommandComputer(this));
 
 }
 

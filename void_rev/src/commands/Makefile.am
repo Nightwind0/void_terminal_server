@@ -1,8 +1,8 @@
 noinst_LTLIBRARIES = libcommand.la
 
-SUBDIRS = dock behaviors
+SUBDIRS = dock behaviors computer
 
-libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la
+libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la computer/libcommandcomputer.la
 
 libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
@@ -37,7 +37,9 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandAttack.h \
 			VoidCommandAttack.cxx \
 			VoidCommandClaim.cxx \
-			VoidCommandClaim.h	
+			VoidCommandClaim.h \
+			VoidCommandComputer.h \
+			VoidCommandComputer.cxx
 
 
 INCLUDES = 	-I@top_srcdir@/src \
@@ -45,4 +47,5 @@ INCLUDES = 	-I@top_srcdir@/src \
 		-I@top_srcdir@/src/socket/ \
 		-I@top_srcdir@/src/thread/ \
 		-I@top_srcdir@/src/commands/dock \
+		-I@top_srcdir@/src/commands/computer/ \
 		-I@top_srcdir@/src/commands/behaviors

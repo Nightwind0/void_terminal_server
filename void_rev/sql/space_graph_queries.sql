@@ -1,3 +1,7 @@
+-- Mark all sectors adjacent to stardock as federation
+
+update sectors set kterritory = 0 where nsector in (
+select nsector2 from edges where nsector = 895 union select nsector from edges where nsector2 = 895 );
 
 -- Get All Adjacent Sectors for Sector 29
 select nsector2 from edges where nsector = 29 union select nsector from edges where nsector2 = 29;
