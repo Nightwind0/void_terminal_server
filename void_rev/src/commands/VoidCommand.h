@@ -37,6 +37,8 @@ class VoidCommand
 
     PlayerHandle * get_player() const;
 
+    bool isValidPlayer(const std::string playername)const;
+
     ShipHandle *create_handle_to_current_ship(PlayerHandle * player) const;
     PlayerHandle *create_handle_to_player_in_ship(int ship)const;
     bool move_player_to_sector(int sector);

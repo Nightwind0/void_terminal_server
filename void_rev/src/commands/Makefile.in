@@ -116,7 +116,11 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommand.h \
 		        VoidCommandStatus.h \
 			VoidCommandHail.h \
-			VoidCommandSubCommands.h
+			VoidCommandSubCommands.h \
+			VoidCommandCheckMail.h \
+			VoidCommandCheckMail.cxx \
+			VoidCommandMail.h \
+			VoidCommandMail.cxx
 
 
 INCLUDES = -I@top_srcdir@/src \
@@ -136,7 +140,8 @@ am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandHail.lo VoidCommandMove.lo VoidCommandPort.lo \
 	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
-	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo
+	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
+	VoidCommandCheckMail.lo VoidCommandMail.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -148,9 +153,11 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/VoidCommand.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandBeam.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandCheckMail.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDisplay.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDock.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandHail.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandMail.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandMove.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandPort.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandPurchaseShipItem.Plo \
@@ -215,9 +222,11 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommand.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandBeam.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandCheckMail.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDisplay.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandHail.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandMail.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandMove.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandPort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandPurchaseShipItem.Plo@am__quote@
