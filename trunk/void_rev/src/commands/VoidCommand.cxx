@@ -132,6 +132,8 @@ bool VoidCommand::move_player_to_sector(int sector)
 	else
 	{
 	    Send(Color()->get(LIGHTRED) + "You don't have enough turns." + endr);
+	    delete pship;
+	    return false;
 	}
 	
 	//TODO: Determine if there are interesting things here and provide option to stop
