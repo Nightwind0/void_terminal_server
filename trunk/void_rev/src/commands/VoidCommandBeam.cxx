@@ -1,4 +1,5 @@
 #include "VoidCommandBeam.h"
+#include "ShipListBehavior.h"
 #include <vector>
 #include <sstream>
 #include <deque>
@@ -10,7 +11,7 @@ using std::ostringstream;
 using std::left;
 using std::right;
 
-VoidCommandBeam::VoidCommandBeam(VoidServerThread *thread):VoidCommand(thread)
+VoidCommandBeam::VoidCommandBeam(VoidServerThread *thread):VoidCommand(thread),ShipListBehavior(thread)
 {
 }
 VoidCommandBeam::~VoidCommandBeam()
@@ -45,35 +46,7 @@ bool VoidCommandBeam::HandleCommand(const string &command, const string &argumen
     return CommandBeam(arguments);
 }
 
-std::list<int> VoidCommandBeam::GetOwnedShips()
-{
-    PlayerHandle * player = get_thread()->GetPlayer();
 
-    std::string query = "select nkey from ship where kowner = '" + (std::string)player->GetName() + "';";
-
-    PGresult *dbresult = get_thread()->DBExec(query);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	
-	DBException e(std::string("Get Owned Ships: ") +  PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    int numships = PQntuples(dbresult);
-
-    std::list<int> ships;
-
-    for(int i=0;i< numships; i++)
-    {
-	ships.push_back( atoi(PQgetvalue(dbresult,i,0)));
-    }
-
-    PQclear(dbresult);
-
-    return ships;
-}
 
 
 std::list<int> VoidCommandBeam::GetValidShipList(int cur_sector, int beamrange, int cur_ship)
@@ -114,63 +87,6 @@ std::list<int> VoidCommandBeam::GetValidShipList(int cur_sector, int beamrange, 
 }
 
 
-void VoidCommandBeam::ShowValidShipList(const std::list<int> &ships)
-{
- 
-   
-    ostringstream os;
-    os << Color()->get(BROWN,BG_WHITE) << "                    Ship List                    " << Color()->blackout() << endr;
-    os << Color()->get(LIGHTGREEN);
-    os.fill(' ');
-    os.width(10);
-    os << left << "Ship#";
-    os.width(30);
-    os << left << "Ship";
-    os.width(30);
-    os << left << "Ship Type";
-    os.width(6);
-    os << left << "Sector";
-    os << endr;
-
-   
-
-    for(std::list<int>::const_iterator iter = ships.begin();
-	iter != ships.end();
-	iter++)
-    {
-
-	Integer nkey(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(*iter));
-	PrimaryKey key(&nkey);
-	ShipHandle shiph(get_thread()->GetDBConn(), key);
-
-	ShipTypeHandle shiptype = shiph.GetShipTypeHandle();
-
-	int sector = (int)shiph.GetSector();
-
-	
-	FGColor fgcolor = (FGColor)((int)shiptype.GetForeColor());
-	BGColor bgcolor = (BGColor)((int)shiptype.GetBackColor());
-	
-
-	os << Color()->get(WHITE);
-	os.width(10);
-	os << left <<  *iter;
-	os << Color()->get(LIGHTBLUE);
-	os.width(30);
-	os << left << (std::string)shiph.GetName();
-	os << Color()->get(fgcolor,bgcolor);
-	os.width(30);
-	os << left << (std::string)shiptype.GetShipTypeName(Color());
-	os << Color()->get(WHITE,BG_BLACK);
-	os.width(6);
-	os << right << sector;
-	os << endr;	
-    }
-    os << endr;
-
-    Send(os.str());
-
-}
 
 // Return false for command failure (bad arguments..)
 bool VoidCommandBeam::CommandBeam(const std::string &arguments)
@@ -195,7 +111,7 @@ bool VoidCommandBeam::CommandBeam(const std::string &arguments)
 
     if(!arguments.size())
     {
-	ShowValidShipList(valid_ships);
+	ShowShipList(valid_ships);
 
 	
 	bool done = false;

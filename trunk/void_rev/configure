@@ -1702,7 +1702,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=voidserver
- VERSION=0.0.2.7
+ VERSION=0.0.2.8
 
 
 cat >>confdefs.h <<_ACEOF
@@ -9241,7 +9241,7 @@ fi
 done
 
 
-                                                                                ac_config_files="$ac_config_files Makefile src/Makefile src/commands/Makefile src/commands/dock/Makefile src/handles/Makefile src/socket/Makefile src/commands/behaviors/Makefile src/thread/Makefile"
+                                                                                          ac_config_files="$ac_config_files Makefile src/Makefile src/commands/Makefile src/commands/dock/Makefile src/commands/computer/Makefile src/handles/Makefile src/socket/Makefile src/commands/behaviors/Makefile src/thread/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -9814,6 +9814,7 @@ do
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "src/commands/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/commands/Makefile" ;;
   "src/commands/dock/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/commands/dock/Makefile" ;;
+  "src/commands/computer/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/commands/computer/Makefile" ;;
   "src/handles/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/handles/Makefile" ;;
   "src/socket/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/socket/Makefile" ;;
   "src/commands/behaviors/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/commands/behaviors/Makefile" ;;

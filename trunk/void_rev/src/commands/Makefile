@@ -81,15 +81,15 @@ OBJDUMP = @OBJDUMP@
 PACKAGE = voidserver
 RANLIB = ranlib
 STRIP = strip
-VERSION = 0.0.2.7
+VERSION = 0.0.2.8
 am__include = include
 am__quote = 
 install_sh = /home/dpalm/src/void_rev/install-sh
 noinst_LTLIBRARIES = libcommand.la
 
-SUBDIRS = dock behaviors
+SUBDIRS = dock behaviors computer
 
-libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la
+libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la computer/libcommandcomputer.la
 
 libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
@@ -124,7 +124,9 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandAttack.h \
 			VoidCommandAttack.cxx \
 			VoidCommandClaim.cxx \
-			VoidCommandClaim.h	
+			VoidCommandClaim.h \
+			VoidCommandComputer.h \
+			VoidCommandComputer.cxx
 
 
 INCLUDES = -I../../src \
@@ -132,6 +134,7 @@ INCLUDES = -I../../src \
 		-I../../src/socket/ \
 		-I../../src/thread/ \
 		-I../../src/commands/dock \
+		-I../../src/commands/computer/ \
 		-I../../src/commands/behaviors
 
 subdir = src/commands
@@ -141,17 +144,17 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libcommand_la_LDFLAGS =
 libcommand_la_DEPENDENCIES = dock/libcommanddock.la \
-	behaviors/libcommandbehaviors.la
+	behaviors/libcommandbehaviors.la computer/libcommandcomputer.la
 am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandHail.lo VoidCommandMove.lo VoidCommandPort.lo \
 	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
 	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo \
-	VoidCommandClaim.lo
+	VoidCommandClaim.lo VoidCommandComputer.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.2.7\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DHAVE_LIBPQ=1 -DSTDC_HEADERS=1 -DHAVE_ARPA_INET_H=1 -DHAVE_NETDB_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_UNISTD_H=1 -DHAVE__BOOL=1 -DHAVE_STDBOOL_H=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_SYS_SOCKET_H=1 -DSELECT_TYPE_ARG1=int -DSELECT_TYPE_ARG234=\(fd_set\ \*\) -DSELECT_TYPE_ARG5=\(struct\ timeval\ \*\) -DRETSIGTYPE=void -DHAVE_GETHOSTBYNAME=1 -DHAVE_INET_NTOA=1 -DHAVE_MEMSET=1 -DHAVE_SELECT=1 -DHAVE_SOCKET=1 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.2.8\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DHAVE_LIBPQ=1 -DSTDC_HEADERS=1 -DHAVE_ARPA_INET_H=1 -DHAVE_NETDB_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_UNISTD_H=1 -DHAVE__BOOL=1 -DHAVE_STDBOOL_H=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_SYS_SOCKET_H=1 -DSELECT_TYPE_ARG1=int -DSELECT_TYPE_ARG234=\(fd_set\ \*\) -DSELECT_TYPE_ARG5=\(struct\ timeval\ \*\) -DRETSIGTYPE=void -DHAVE_GETHOSTBYNAME=1 -DHAVE_INET_NTOA=1 -DHAVE_MEMSET=1 -DHAVE_SELECT=1 -DHAVE_SOCKET=1 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 CPPFLAGS = 
 LDFLAGS = 
@@ -163,6 +166,7 @@ DEP_FILES = ./$(DEPDIR)/VoidCommand.Plo \
 	./$(DEPDIR)/VoidCommandBeam.Plo \
 	./$(DEPDIR)/VoidCommandCheckMail.Plo \
 	./$(DEPDIR)/VoidCommandClaim.Plo \
+	./$(DEPDIR)/VoidCommandComputer.Plo \
 	./$(DEPDIR)/VoidCommandDisplay.Plo \
 	./$(DEPDIR)/VoidCommandDock.Plo \
 	./$(DEPDIR)/VoidCommandHail.Plo \
@@ -234,6 +238,7 @@ include ./$(DEPDIR)/VoidCommandAttack.Plo
 include ./$(DEPDIR)/VoidCommandBeam.Plo
 include ./$(DEPDIR)/VoidCommandCheckMail.Plo
 include ./$(DEPDIR)/VoidCommandClaim.Plo
+include ./$(DEPDIR)/VoidCommandComputer.Plo
 include ./$(DEPDIR)/VoidCommandDisplay.Plo
 include ./$(DEPDIR)/VoidCommandDock.Plo
 include ./$(DEPDIR)/VoidCommandHail.Plo

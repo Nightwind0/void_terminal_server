@@ -87,9 +87,9 @@ am__quote = @am__quote@
 install_sh = @install_sh@
 noinst_LTLIBRARIES = libcommand.la
 
-SUBDIRS = dock behaviors
+SUBDIRS = dock behaviors computer
 
-libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la
+libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la computer/libcommandcomputer.la
 
 libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
@@ -124,7 +124,9 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandAttack.h \
 			VoidCommandAttack.cxx \
 			VoidCommandClaim.cxx \
-			VoidCommandClaim.h	
+			VoidCommandClaim.h \
+			VoidCommandComputer.h \
+			VoidCommandComputer.cxx
 
 
 INCLUDES = -I@top_srcdir@/src \
@@ -132,6 +134,7 @@ INCLUDES = -I@top_srcdir@/src \
 		-I@top_srcdir@/src/socket/ \
 		-I@top_srcdir@/src/thread/ \
 		-I@top_srcdir@/src/commands/dock \
+		-I@top_srcdir@/src/commands/computer/ \
 		-I@top_srcdir@/src/commands/behaviors
 
 subdir = src/commands
@@ -141,14 +144,14 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libcommand_la_LDFLAGS =
 libcommand_la_DEPENDENCIES = dock/libcommanddock.la \
-	behaviors/libcommandbehaviors.la
+	behaviors/libcommandbehaviors.la computer/libcommandcomputer.la
 am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandHail.lo VoidCommandMove.lo VoidCommandPort.lo \
 	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
 	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo \
-	VoidCommandClaim.lo
+	VoidCommandClaim.lo VoidCommandComputer.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -163,6 +166,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandBeam.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandCheckMail.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandClaim.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandComputer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDisplay.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDock.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandHail.Plo \
@@ -234,6 +238,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandBeam.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandCheckMail.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandClaim.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandComputer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDisplay.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandHail.Plo@am__quote@

@@ -62,8 +62,28 @@ std::string VoidCommandDisplay::DisplaySector(int sector)
     std::vector<int> sectors = Universe::GetAdjacentSectors(sector);
     std::ostringstream os;
 
+    std::string query = "select sname from territory,sectors where sectors.kterritory = territory.nkey and sectors.nsector = '" + IntToString(sector) + "';";
+
+    PGresult * dbresult = get_thread()->DBExec(query);
+
+    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    {
+
+	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
+	PQclear(dbresult);
+	throw e;
+    }
+
+
+
     ResourceMaster::GetInstance()->Log(AUDIT, "^Displaying sector^");
-    os << Color()->get(LIGHTGREEN) << endr <<  "Sector " << Color()->get(WHITE) << sector << endr;
+    os << Color()->get(LIGHTGREEN) << endr <<  "Sector " << Color()->get(WHITE) << sector;
+    if(PQntuples(dbresult) && !PQgetisnull(dbresult,0,0))
+    {
+	os << Color()->get(GRAY) << ' ' <<  PQgetvalue(dbresult,0,0);
+    }
+    PQclear(dbresult);
+    os << endr;
 
     os << DisplayStardockInSector(sector);
     os << DisplayOutpostsInSector(sector);

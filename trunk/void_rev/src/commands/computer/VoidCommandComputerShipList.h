@@ -1,6 +1,6 @@
 
-#ifndef VOID_COMMAND_BEAM
-#define VOID_COMMAND_BEAM
+#ifndef VOID_COMMAND_COMPUTER_SHIPLIST
+#define VOID_COMMAND_COMPUTER_SHIPLIST
 
 #include "VoidCommand.h"
 #include "VoidServerThread.h"
@@ -9,11 +9,11 @@
 
 using std::string;
 
-class VoidCommandBeam : public VoidCommand, public ShipListBehavior
+class VoidCommandComputerShipList : public VoidCommand, public ShipListBehavior
 {
  public:
-    VoidCommandBeam(VoidServerThread *thread);
-    virtual ~VoidCommandBeam();
+    VoidCommandComputerShipList(VoidServerThread *thread);
+    virtual ~VoidCommandComputerShipList();
 
     virtual string GetCommandString()const;
     virtual string GetDescription()const;
@@ -25,10 +25,8 @@ class VoidCommandBeam : public VoidCommand, public ShipListBehavior
  private:
 
 
-    std::list<int> GetValidShipList(int cur_sector, int beamrange, int cur_ship);
-
-    VoidCommandBeam();
-    bool CommandBeam(const std::string &arguments);
+    VoidCommandComputerShipList();
+    bool CommandComputerShipList(const std::string &arguments);
 
 };
 
