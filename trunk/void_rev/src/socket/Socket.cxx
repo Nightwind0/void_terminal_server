@@ -154,7 +154,7 @@ Socket * TCPSocket::Accept()
 
     if(new_fd == -1)
     {
-	throw SocketError(ACCEPTERROR);
+	throw SocketException(ACCEPTERROR);
     }
 
     std::string addy  = inet_ntoa(their_addr.sin_addr);
@@ -175,13 +175,13 @@ void TCPSocket::Send(const void *msg, int len, int flags=MSG_NOSIGNAL)
 	{
 
 	case EWOULDBLOCK:
-	    throw SocketError(WOULDBLOCK);
+	    throw SocketException(WOULDBLOCK);
 	    break;
 	case EPIPE:
-	    throw SocketError(PIPE);
+	    throw SocketException(PIPE);
 	    break;
 	default:
-	    throw SocketError(UNKNOWN);
+	    throw SocketException(UNKNOWN);
 	}
     }
    
@@ -199,13 +199,13 @@ int TCPSocket::Recv(void *buf, int len, unsigned int flags =MSG_NOSIGNAL)
 	switch(errno)
 	{
 	case ECONNREFUSED:
-	    throw SocketError(CONNREFUSED);
+	    throw SocketException(CONNREFUSED);
 	    break;
 	case ENOTCONN:
-	    throw SocketError(NOTCONN);
+	    throw SocketException(NOTCONN);
 	    break;
 	default:
-	    throw SocketError(UNKNOWN);
+	    throw SocketException(UNKNOWN);
 	}
     }
 
@@ -271,13 +271,13 @@ void UNIXDatagramSocket::SendTo(const void *msg, int len,std::string to,
 	{
 
 	case EWOULDBLOCK:
-	    throw SocketError(WOULDBLOCK);
+	    throw SocketException(WOULDBLOCK);
 	    break;
 	case EPIPE:
-	    throw SocketError(PIPE);
+	    throw SocketException(PIPE);
 	    break;
 	default:
-	    throw SocketError(UNKNOWN);
+	    throw SocketException(UNKNOWN);
 	}
     }
 
@@ -300,13 +300,13 @@ int UNIXDatagramSocket::RecvFrom(void *buf, int len, unsigned int flags=MSG_NOSI
 	switch(errno)
 	{
 	case ECONNREFUSED:
-	    throw SocketError(CONNREFUSED);
+	    throw SocketException(CONNREFUSED);
 	    break;
 	case ENOTCONN:
-	    throw SocketError(NOTCONN);
+	    throw SocketException(NOTCONN);
 	    break;
 	default:
-	    throw SocketError(UNKNOWN);
+	    throw SocketException(UNKNOWN);
 	}
     }
 
