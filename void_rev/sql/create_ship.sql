@@ -24,7 +24,7 @@ ktowship integer REFERENCES Ship(nkey),
 ksector integer REFERENCES Sectors(nsector)
 );
 
-
+CREATE SEQUENCE ship_nkey_seq MAXVALUE 99999 CYCLE;
 
 CREATE INDEX ship_ktow_idx on Ship (ktowship);
 

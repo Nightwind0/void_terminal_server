@@ -84,6 +84,7 @@ class VoidServerThread: public Thread
 
 
     void SetTurnsLeft();
+    bool ReadMail();
 
     ColorType * m_pColor;
 
