@@ -1064,7 +1064,9 @@ void        VoidServerThread::Service()
     os << Color()->get(LIGHTBLUE);
     os << endr << "Welcome to Void Revolution" <<  endr;
     os << Color()->get(WHITE);
-    os << "Version " << VOID_VER_MAJOR << '.' << VOID_VER_MINOR << '.' << VOID_VER_INCR << '.' << VOID_VER_INCRMINOR << endr;
+#ifdef VERSION
+    os << "Version " << VERSION;
+#endif
 
     os << DisplayNews();
     os << Color()->get(GRAY) << "Press Enter." << endr;
