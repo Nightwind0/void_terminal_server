@@ -36,7 +36,7 @@
 #include "VoidCommandDock.h"
 #include "VoidCommandBeam.h"
 #include "VoidCommandAttack.h"
-
+#include "VoidCommandClaim.h"
 
 const char * VoidServerThread::endr = "\n\r";
 
@@ -1403,6 +1403,7 @@ VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
     add_command(new VoidCommandCheckMail(this));
     add_command(new VoidCommandMail(this));
     add_command(new VoidCommandAttack(this));
+    add_command(new VoidCommandClaim(this));
 
 }
 

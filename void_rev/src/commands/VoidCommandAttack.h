@@ -4,11 +4,12 @@
 
 #include "VoidCommand.h"
 #include "VoidServerThread.h"
+#include "EscapePodBehavior.h"
 #include <string>
 
 using std::string;
 
-class VoidCommandAttack : public VoidCommand
+class VoidCommandAttack : public VoidCommand, public EscapePodBehavior
 {
  public:
     VoidCommandAttack(VoidServerThread *thread);
@@ -21,6 +22,10 @@ class VoidCommandAttack : public VoidCommand
     virtual bool ClaimCommand(const string &command);
     virtual bool HandleCommand(const string &command, const string &arguments, bool bFromPost);
     
+ protected:
+
+    //   int CreateEscapePodForPlayer(const std::string player);
+    // void MoveShipRandomly(ShipHandle *ship);
  private:
 
     std::list<std::string> get_players_in_sector(int); /// @todo make this in common with the same on in VoidCommandTransmit
@@ -32,8 +37,7 @@ class VoidCommandAttack : public VoidCommand
     double g_random(int) const;
     double g_rand() const;
     void delete_ship(int ship);
-    int CreateEscapePodForPlayer(const std::string player);
-    void MoveShipRandomly(ShipHandle *ship);
+
     void KillPlayer(const std::string &player);
     VoidCommandAttack();
     bool CommandAttack(int ship);
