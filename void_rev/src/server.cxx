@@ -56,7 +56,11 @@ int main()
 
 
     
-    cout << "Void Revolution Server: Version " << VOID_VER_MAJOR << '.' << VOID_VER_MINOR << '.' << VOID_VER_INCR << endl;
+    cout << "Void Revolution Server";
+#ifdef VERSION
+    cout << " Version: "  << VERSION;
+#endif
+    cout << endl;
 
     try{
 
