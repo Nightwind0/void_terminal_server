@@ -1,6 +1,10 @@
-noinst_LIBRARIES = libcommand.a
+noinst_LTLIBRARIES = libcommand.la
 
-libcommand_a_SOURCES =  VoidCommand.cxx \
+SUBDIRS = dock
+
+libcommand_la_LIBADD = dock/libcommanddock.la
+
+libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
 			VoidCommandHail.cxx \
 			VoidCommandMove.cxx \
@@ -10,19 +14,14 @@ libcommand_a_SOURCES =  VoidCommand.cxx \
 			VoidCommandWho.cxx \
 			VoidCommandSubCommands.cxx \
 			VoidCommandDock.cxx \
-			VoidCommandDockShipYard.cxx \
-			VoidCommandDockShipYardList.cxx \
-			VoidCommandDockShipYardBuy.cxx \
-			VoidCommandDockShipYardSpec.cxx	 \
 			VoidCommandBeam.cxx \
-			VoidCommandDockArmory.cxx \
-			VoidCommandDockArmoryMissiles.cxx \
 			VoidCommandPurchaseShipItem.cxx \
-			VoidCommandDockShipYardHolds.cxx \
-			VoidCommandTow.cxx
+			VoidCommandTow.cxx 
+
 
 
 INCLUDES = 	-I@top_srcdir@/src \
 		-I@top_srcdir@/src/handles/ \
 		-I@top_srcdir@/src/socket/ \
-		-I@top_srcdir@/src/thread/ 
+		-I@top_srcdir@/src/thread/ \
+		-I@top_srcdir@/src/commands/dock

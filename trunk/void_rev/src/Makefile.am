@@ -10,15 +10,16 @@ control_LDADD = socket/libsocket.a
 
 SUBDIRS = commands handles thread socket
 
-server_LDADD = commands/libcommand.a \
-	handles/libhandles.a \
-	socket/libsocket.a \
-	thread/libthread.a \
+server_LDADD = commands/libcommand.la \
+	handles/libhandles.la \
+	socket/libsocket.la \
+	thread/libthread.la \
 	-lpq 
 
 
-INCLUDES = -I @top_srcdir@/src/commands/ \
-	   -I @top_srcdir@/src/handles/ \
+INCLUDES = 	-I @top_srcdir@/src/commands/ \
+		-I @top_srcdir@/src/commands/dock/ \
+	 	-I @top_srcdir@/src/handles/ \
 		-I @top_srcdir@/src/socket/ \
 		-I @top_srcdir@/src/thread/ 
 

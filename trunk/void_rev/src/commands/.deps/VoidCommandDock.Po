@@ -83,7 +83,8 @@ VoidCommandDock.o VoidCommandDock.o: VoidCommandDock.cxx \
   ../../src/Message.h ../../src/socket/Socket.h \
   ../../src/handles/OutpostHandle.h ../../src/Universe.h \
   /usr/include/c++/3.2.2/deque /usr/include/c++/3.2.2/bits/stl_deque.h \
-  VoidCommandDockShipYard.h VoidCommandDockArmory.h
+  ../../src/commands/dock/VoidCommandDockShipYard.h \
+  ../../src/commands/dock/VoidCommandDockArmory.h
 
 VoidCommandDock.h:
 
@@ -353,6 +354,6 @@ VoidCommand.h:
 
 /usr/include/c++/3.2.2/bits/stl_deque.h:
 
-VoidCommandDockShipYard.h:
+../../src/commands/dock/VoidCommandDockShipYard.h:
 
-VoidCommandDockArmory.h:
+../../src/commands/dock/VoidCommandDockArmory.h:

@@ -8,6 +8,8 @@ AC_PROG_CXX
 
 AC_PROG_INSTALL
 
-AC_OUTPUT(Makefile src/Makefile src/handles/Makefile src/commands/Makefile src/thread/Makefile src/socket/Makefile)
+AC_PROG_LIBTOOL
 
-AC_PROG_RANLIB
+AC_OUTPUT(Makefile src/Makefile src/handles/Makefile src/commands/Makefile src/thread/Makefile src/socket/Makefile src/commands/dock/Makefile)
+
+

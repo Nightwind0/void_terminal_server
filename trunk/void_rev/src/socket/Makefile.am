@@ -1,6 +1,6 @@
-noinst_LIBRARIES = libsocket.a
+noinst_LTLIBRARIES = libsocket.la
 
-libsocket_a_SOURCES =  Socket.cxx 
+libsocket_la_SOURCES =  Socket.cxx 
 
 
 INCLUDES = -I@top_srcdir@/src/ \
