@@ -33,15 +33,15 @@ infodir = ${prefix}/info
 mandir = ${prefix}/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
-pkgdatadir = $(datadir)/server
-pkglibdir = $(libdir)/server
-pkgincludedir = $(includedir)/server
+pkgdatadir = $(datadir)/voidserver
+pkglibdir = $(libdir)/voidserver
+pkgincludedir = $(includedir)/voidserver
 top_builddir = ..
 
-ACLOCAL = ${SHELL} /home/dpalm/src/test/void_rev/missing --run aclocal-1.6
-AUTOCONF = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoconf
-AUTOMAKE = ${SHELL} /home/dpalm/src/test/void_rev/missing --run automake-1.6
-AUTOHEADER = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoheader
+ACLOCAL = ${SHELL} /home/dpalm/src/void_rev/missing --run aclocal-1.6
+AUTOCONF = ${SHELL} /home/dpalm/src/void_rev/missing --run autoconf
+AUTOMAKE = ${SHELL} /home/dpalm/src/void_rev/missing --run automake-1.6
+AUTOHEADER = ${SHELL} /home/dpalm/src/void_rev/missing --run autoheader
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = /usr/bin/install -c
@@ -65,7 +65,7 @@ host_triplet = i686-pc-linux-gnu
 EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
-AMTAR = ${SHELL} /home/dpalm/src/test/void_rev/missing --run tar
+AMTAR = ${SHELL} /home/dpalm/src/void_rev/missing --run tar
 AS = @AS@
 AWK = gawk
 CC = gcc
@@ -77,24 +77,24 @@ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 OBJDUMP = @OBJDUMP@
-PACKAGE = server
+PACKAGE = voidserver
 RANLIB = ranlib
 STRIP = strip
 VERSION = 0.0.1.0
 am__include = include
 am__quote = 
-install_sh = /home/dpalm/src/test/void_rev/install-sh
-bin_PROGRAMS = server control
+install_sh = /home/dpalm/src/void_rev/install-sh
+bin_PROGRAMS = voidserver voidcontrol
 
-server_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
+voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
 
-control_SOURCES = control.cxx
+voidcontrol_SOURCES = control.cxx
 
-control_LDADD = socket/libsocket.la
+voidcontrol_LDADD = socket/libsocket.la
 
 SUBDIRS = commands handles thread socket
 
-server_LDADD = commands/libcommand.la \
+voidserver_LDADD = commands/libcommand.la \
 	handles/libhandles.la \
 	socket/libsocket.la \
 	thread/libthread.la \
@@ -110,24 +110,24 @@ INCLUDES = -I ../src/commands/ \
 subdir = src
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
-bin_PROGRAMS = server$(EXEEXT) control$(EXEEXT)
+bin_PROGRAMS = voidserver$(EXEEXT) voidcontrol$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
-am_control_OBJECTS = control.$(OBJEXT)
-control_OBJECTS = $(am_control_OBJECTS)
-control_DEPENDENCIES = socket/libsocket.la
-control_LDFLAGS =
-am_server_OBJECTS = server.$(OBJEXT) VoidServerThread.$(OBJEXT) \
+am_voidcontrol_OBJECTS = control.$(OBJEXT)
+voidcontrol_OBJECTS = $(am_voidcontrol_OBJECTS)
+voidcontrol_DEPENDENCIES = socket/libsocket.la
+voidcontrol_LDFLAGS =
+am_voidserver_OBJECTS = server.$(OBJEXT) VoidServerThread.$(OBJEXT) \
 	EdgeLoadThread.$(OBJEXT) Field.$(OBJEXT) PrimaryKey.$(OBJEXT) \
 	Resource.$(OBJEXT) ResourceMaster.$(OBJEXT) Universe.$(OBJEXT) \
 	void_util.$(OBJEXT) Message.$(OBJEXT) \
 	VoidThreadSpawner.$(OBJEXT)
-server_OBJECTS = $(am_server_OBJECTS)
-server_DEPENDENCIES = commands/libcommand.la handles/libhandles.la \
+voidserver_OBJECTS = $(am_voidserver_OBJECTS)
+voidserver_DEPENDENCIES = commands/libcommand.la handles/libhandles.la \
 	socket/libsocket.la thread/libthread.la
-server_LDFLAGS =
+voidserver_LDFLAGS =
 
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"server\" -DVERSION=\"0.0.1.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.1.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 CPPFLAGS = 
 LDFLAGS = 
@@ -160,7 +160,7 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(control_SOURCES) $(server_SOURCES)
+DIST_SOURCES = $(voidcontrol_SOURCES) $(voidserver_SOURCES)
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-info-recursive all-recursive install-data-recursive \
@@ -168,7 +168,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = Makefile.am Makefile.in
 DIST_SUBDIRS = $(SUBDIRS)
-SOURCES = $(control_SOURCES) $(server_SOURCES)
+SOURCES = $(voidcontrol_SOURCES) $(voidserver_SOURCES)
 
 all: all-recursive
 
@@ -208,12 +208,12 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-control$(EXEEXT): $(control_OBJECTS) $(control_DEPENDENCIES) 
-	@rm -f control$(EXEEXT)
-	$(CXXLINK) $(control_LDFLAGS) $(control_OBJECTS) $(control_LDADD) $(LIBS)
-server$(EXEEXT): $(server_OBJECTS) $(server_DEPENDENCIES) 
-	@rm -f server$(EXEEXT)
-	$(CXXLINK) $(server_LDFLAGS) $(server_OBJECTS) $(server_LDADD) $(LIBS)
+voidcontrol$(EXEEXT): $(voidcontrol_OBJECTS) $(voidcontrol_DEPENDENCIES) 
+	@rm -f voidcontrol$(EXEEXT)
+	$(CXXLINK) $(voidcontrol_LDFLAGS) $(voidcontrol_OBJECTS) $(voidcontrol_LDADD) $(LIBS)
+voidserver$(EXEEXT): $(voidserver_OBJECTS) $(voidserver_DEPENDENCIES) 
+	@rm -f voidserver$(EXEEXT)
+	$(CXXLINK) $(voidserver_LDFLAGS) $(voidserver_OBJECTS) $(voidserver_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

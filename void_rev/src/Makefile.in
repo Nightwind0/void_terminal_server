@@ -84,17 +84,17 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
-bin_PROGRAMS = server control
+bin_PROGRAMS = voidserver voidcontrol
 
-server_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
+voidserver_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx PrimaryKey.cxx Resource.cxx ResourceMaster.cxx Universe.cxx void_util.cxx Message.cxx VoidThreadSpawner.cxx EdgeLoadThread.h  PrimaryKey.h Universe.h void_util.h Field.h Resource.h VoidServerThread.h Message.h   ResourceMaster.h  VoidThreadSpawner.h
 
-control_SOURCES = control.cxx
+voidcontrol_SOURCES = control.cxx
 
-control_LDADD = socket/libsocket.la
+voidcontrol_LDADD = socket/libsocket.la
 
 SUBDIRS = commands handles thread socket
 
-server_LDADD = commands/libcommand.la \
+voidserver_LDADD = commands/libcommand.la \
 	handles/libhandles.la \
 	socket/libsocket.la \
 	thread/libthread.la \
@@ -110,22 +110,22 @@ INCLUDES = -I @top_srcdir@/src/commands/ \
 subdir = src
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
-bin_PROGRAMS = server$(EXEEXT) control$(EXEEXT)
+bin_PROGRAMS = voidserver$(EXEEXT) voidcontrol$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
-am_control_OBJECTS = control.$(OBJEXT)
-control_OBJECTS = $(am_control_OBJECTS)
-control_DEPENDENCIES = socket/libsocket.la
-control_LDFLAGS =
-am_server_OBJECTS = server.$(OBJEXT) VoidServerThread.$(OBJEXT) \
+am_voidcontrol_OBJECTS = control.$(OBJEXT)
+voidcontrol_OBJECTS = $(am_voidcontrol_OBJECTS)
+voidcontrol_DEPENDENCIES = socket/libsocket.la
+voidcontrol_LDFLAGS =
+am_voidserver_OBJECTS = server.$(OBJEXT) VoidServerThread.$(OBJEXT) \
 	EdgeLoadThread.$(OBJEXT) Field.$(OBJEXT) PrimaryKey.$(OBJEXT) \
 	Resource.$(OBJEXT) ResourceMaster.$(OBJEXT) Universe.$(OBJEXT) \
 	void_util.$(OBJEXT) Message.$(OBJEXT) \
 	VoidThreadSpawner.$(OBJEXT)
-server_OBJECTS = $(am_server_OBJECTS)
-server_DEPENDENCIES = commands/libcommand.la handles/libhandles.la \
+voidserver_OBJECTS = $(am_voidserver_OBJECTS)
+voidserver_DEPENDENCIES = commands/libcommand.la handles/libhandles.la \
 	socket/libsocket.la thread/libthread.la
-server_LDFLAGS =
+voidserver_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
@@ -160,7 +160,7 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(control_SOURCES) $(server_SOURCES)
+DIST_SOURCES = $(voidcontrol_SOURCES) $(voidserver_SOURCES)
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-info-recursive all-recursive install-data-recursive \
@@ -168,7 +168,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = Makefile.am Makefile.in
 DIST_SUBDIRS = $(SUBDIRS)
-SOURCES = $(control_SOURCES) $(server_SOURCES)
+SOURCES = $(voidcontrol_SOURCES) $(voidserver_SOURCES)
 
 all: all-recursive
 
@@ -208,12 +208,12 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-control$(EXEEXT): $(control_OBJECTS) $(control_DEPENDENCIES) 
-	@rm -f control$(EXEEXT)
-	$(CXXLINK) $(control_LDFLAGS) $(control_OBJECTS) $(control_LDADD) $(LIBS)
-server$(EXEEXT): $(server_OBJECTS) $(server_DEPENDENCIES) 
-	@rm -f server$(EXEEXT)
-	$(CXXLINK) $(server_LDFLAGS) $(server_OBJECTS) $(server_LDADD) $(LIBS)
+voidcontrol$(EXEEXT): $(voidcontrol_OBJECTS) $(voidcontrol_DEPENDENCIES) 
+	@rm -f voidcontrol$(EXEEXT)
+	$(CXXLINK) $(voidcontrol_LDFLAGS) $(voidcontrol_OBJECTS) $(voidcontrol_LDADD) $(LIBS)
+voidserver$(EXEEXT): $(voidserver_OBJECTS) $(voidserver_DEPENDENCIES) 
+	@rm -f voidserver$(EXEEXT)
+	$(CXXLINK) $(voidserver_LDFLAGS) $(voidserver_OBJECTS) $(voidserver_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

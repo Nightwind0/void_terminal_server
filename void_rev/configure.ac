@@ -1,6 +1,6 @@
 AC_INIT(src/server.cxx)
 
-AM_INIT_AUTOMAKE(server,0.0.1.0)
+AM_INIT_AUTOMAKE(voidserver,0.0.1.0)
 
 AC_PROG_CC
 
