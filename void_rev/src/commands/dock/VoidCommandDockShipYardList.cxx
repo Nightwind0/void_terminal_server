@@ -6,8 +6,14 @@
 #include "ResourceMaster.h"
 #include "ShipTypeHandle.h"
 #include "VoidCommandDockShipYardList.h"
+#include <sstream>
+
+using std::ostringstream;
 
 using std::string;
+
+using std::right;
+using std::left;
 
 
 VoidCommandDockShipYardList::VoidCommandDockShipYardList(VoidServerThread *thread):VoidCommand(thread)
@@ -49,7 +55,7 @@ void VoidCommandDockShipYardList::DockShipYardList()
 {
     get_thread()->SendClearScreen();
     
-    std::string query = "select shiptype.nkey,shiptype.sname, shipmanufacturer.sname, nforecolor, nbackcolor from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey order by shiptype.nkey;";
+    std::string query = "select shiptype.nkey,shiptype.sname, shipmanufacturer.sname, nforecolor, nbackcolor, ncost from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey order by shiptype.nkey;";
 
     PGresult *dbresult= get_thread()->DBExec(query);
 
@@ -61,6 +67,8 @@ void VoidCommandDockShipYardList::DockShipYardList()
 	throw e;
     }
 
+
+    ostringstream os;
 
     int numships = PQntuples(dbresult);
 
@@ -74,14 +82,28 @@ void VoidCommandDockShipYardList::DockShipYardList()
 	std::string nkey = PQgetvalue(dbresult,i,0);
 	std::string name = PQgetvalue(dbresult,i,1);
 	std::string manufacturer = PQgetvalue(dbresult,i,2);
+	std::string cost = PQgetvalue(dbresult,i,5);
 
 	FGColor fgcolor = (FGColor)atoi(PQgetvalue(dbresult,i,3));
 	BGColor bgcolor = (BGColor)atoi(PQgetvalue(dbresult,i,4));
 
-	Send(Color()->get(LIGHTCYAN) + nkey + Color()->get(GRAY) + ") " + Color()->get(fgcolor,bgcolor) + manufacturer +' ' + name + endr);
+	os << Color()->get(LIGHTCYAN) ;
+	os.width(2);
+	os << left << nkey ;
+	os << Color()->get(GRAY) << ") ";
+	os << Color()->get(fgcolor,bgcolor);
+	os.width(7);
+	os << left << manufacturer << ' ';
+	os.width(15);
+	os << left << name << ' ';
+	os << Color()->get(WHITE);
+	os.width(10);
+	os << right << cost;
+	os << endr;
 
 
-	
+	Send(os.str());
+	os.str("");
     }
 
 

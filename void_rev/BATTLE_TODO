@@ -1,8 +1,13 @@
 
 
+
+
 This is the minimum for basic battle, this doesn't count things like explosive packing, and a slough of other details that will be added later
 
-- Destruction exceptions
+
+
+- Destruction exceptions (derived from ControlException)
+- Admin-only commands and badmin (badminton?) in Player
 - Better exception catching during important transactions
 - Event Log
 - Message Queue
