@@ -1,0 +1,13 @@
+
+
+This is the minimum for basic battle, this doesn't count things like explosive packing, and a slough of other details that will be added later
+
+- Destruction exceptions
+- Better exception catching during important transactions
+- Event Log
+- Message Queue
+- Shield vending
+- Like to haves:
+	- "Special outposts"
+- Lockouts for dead players until the next day when they should receive a new ship.
+- Escape pod fleeting algorithm

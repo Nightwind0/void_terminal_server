@@ -1,0 +1,7 @@
+CREATE TABLE News (
+NKEY integer PRIMARY KEY,
+DPOSTED timestamp NOT NULL,
+BINACTIVE boolean,
+BURGENT boolean,
+SMESSAGE text NOT NULL);
+GRANT ALL ON News TO void;

@@ -1,0 +1,232 @@
+Alliance owned ships:
+The criteria for claiming is either the ship has no missiles and 10% shields or less, OR it is owned by the same alliance as you and unoccupied.
+So to borrow an alliance ship, you claim it then beam to it.
+
+
+
+==== SPACE BANNERS ====
+You can buy space banners and place them in sectors
+that are not owned by an alliance (other than your own).
+They can say up to 80 characters.
+They remain for 1 earth month until they sputter out. 
+They are relatively cheap. 
+Each sector can have up to 12 banners
+
+
+==== RANK ====
+Rank points determine rank (Cadet, Captain, Admiral...)
+
+You get rank points the following ways:
+1) Discovering new sectors
+2) Discovering new planets
+3) Destroying things that don't belong to you or your alliance
+4) Claiming territory
+5) Alliance questing
+
+
+
+==== ALLIANCE QUESTING ====
+
+These should build your appreciation within an alliance,
+as well as have possible monetary rewards.
+
+Question should also raise your rank. 
+
+Ideas:
+
+Find the super secret guy and give him this and he'll give you some cool thing, bring it back here"
+and then you have to ask around about the guy
+
+Or maybe
+"Go put a tracking beacon on such and such"
+Durandal79: or theres a prison world in a one deep somewhere that you have to defeat senteries and resuce someone
+
+it may have to be that as soon as you do it, it gets back to how it was before so that someone else could do the same mission
+otherwise you have to have an infinite number of missions somehow
+Durandal79: yeah or the warp point closes to you have youve left that sector 
+Durandal79: OR make several super quests that can ONLY be done by one person so then people are competeing to complete them
+
+
+==== APPRECATION ====
+Need a table to keep alliance "Appreciation" of players.
+
+IN REGARDS TO MOB-RUN ALLIANCES:
+In this way, players can garner the favor of alliances,
+including possible use of their facilities, planets,
+etc. Once you get enough appreciation to join an alliance,
+you they will offer to let you join.
+You will have to go and see the representative for your
+alliance, which, for the mobs, may be stardock, or 
+some other hidden location.
+They may ask for specific tasks to be done, and rewards given for these
+tasks. Destroying opposing alliance facilities would 
+increase the alliance's appreciation of you.
+Also, doing bad stuff to an alliance will decrease that
+alliances appreciation of you. If you go negative, they
+will hate you. Joining an alliance that is hated 
+by another alliance will
+automatically decrease their appreciation of you significantly.
+They may attempt to board your ship and steal it, or if hateful enough attack you on sight, or just block your passage, etc.
+
+Thus we need a table for player appreciation and other alliance
+appreciation. 
+
+And an act from a member of an alliance counts negative
+towards your personal appreciation as well as the alliances
+appreciation. So if you represent Team A and you attack Team B, your appreciation from Team B's point of view goes down,
+and their appreciation of Team A goes down, and if Team A hates Team B, then their appreciation of you goes up!
+
+And if you turn against your Team, they will quickly lose appreciation for you, revoking priveleges
+and ultimately disbanding you. Then they will likely try to destroy you.
+
+*NOTE* Players could join a team, then, knowing the location of it's facilities, destroy it and gain
+a lot of appreciation from opposing teams.
+
+IN REGARDS TO PLAYER-RUN ALLIANCES:
+
+The Alliance Leader will have to manually manage its relation with players.
+Appreciation is either not calculated or not used in this instance. 
+They will have to make offers to players themselves, and allow them
+facility use manually, etc. 
+
+
+
+==== TERRITORIES ====
+
+People in alliances can claim territory for their alliance.
+If a sector is unclaimed, any alliance can claim it.
+If a sector is claimed, it can be claimed by another alliance
+by being the sole force in the sector. In other words, if you
+deploy Sentinels into the sector, and there are no other
+sentinels, or armed ships, or armed planets etc in
+the sector, then you can claim it. In this way,
+alliances can only keep space that they plan
+on defending. 
+
+It costs 1000 credits to register a sector as claimed!!
+
+The advantage of owning territory is that anyone
+in the owning alliance can safely display the sector from anywhere
+and even Warp to it with a warp drive.
+(Other sectors cannot be displayed unless
+you are in them, and warping can result in ship destruction
+or misplacement).
+You also tend to get better deals from spaceports 
+when your alliance owns the territory they are in.
+
+*MOBS that belong to alliance will claim whatever sectors
+they can afford to, unless they are owned by alliances
+that their alliance appreciates. Many mobs also
+ignore sectors for which they have neutral appreciation
+of the owners. Mobs are HIGHLY likely to claim one-deep and almost
+always claim two-deep sectors if they can.
+Unaligned mobs ignore territories. 
+
+
+==== PLAYER ALLIANCES ====
+It costs 250,000 credits to start a registered alliance.
+Alliances allow the sharing of facilities
+	-Ships
+	-Planets
+	-Credits.
+
+They also allow you to claim territory. 
+
+You can invite non-aligned mobs to join your alliance.
+
+
+==== MOBS ====
+
+==Mob Behavior==
+Mobs should have a stack of chores they want to do.
+They should do the top chore, but if something piques
+their interest it should get pushed, complete it, pop it,
+and then do the next thing in the stack (which is what
+they were doing before they got distracted). 
+For example:
+	Mob's chore is to go get colonists for his planet.
+
+	push(COLONIZE);
+
+	however when he pops colonize, he sees that he cannot
+	because he doesnt know where to find colonists. So he pushes
+	COLONIZE back onto the stack, followed by
+	push(FIND_COLONISTS);
+	
+	He then sees this command, and starts cruising around randomly
+	trying to find a planet with colonists. When he finds them,
+	he memorizes the location,
+	he pops the next command, which is COLONIZE. Now he knows
+	of a planet with colonists and can finish the COLONIZE task.
+
+
+	If, while running a chore, they encounter stimuli, they can
+	push a new chore. For example, while trying to find a planet
+	with colonists, they run into an enemy, they can push DESTROY_ENEMY
+
+
+
+==Mobs & Alliances==
+The mob alliances, being pre-made, should
+start with 10 or so members. (Maybe
+gaussian around a mean of 10 or 15)
+But the leader should, when running into
+likeable or neutral mobs that are unaligned,
+send them invites to join.
+Leaders should decide whether to invite based on these criteria:
+	- Number of members. Those with low members should recruit.
+	  If you are below the set threshold (10?) then you should
+	  almost definitely recruit. If not, you probably shouldn't
+	  unless you appreciate the person enough. 
+	- Unaligned. They can only ask unaligned people/mobs.
+	- Appreciation. This highly affects the invite. Those
+	  with high appreciation should be invited. Those with negative
+	  appreciation should not be considered. 
+
+	IN SUMMARY - ASSIGN POINTS TO CURRENT MEMBER NUMBER TO
+	COMPARE WITH APPRECIATION. 
+
+
+== Mob Leader Behavior ==
+Mob leaders priority should be to obtain a home base,
+obtain credits, obtain ships, and obtain members.
+If all those are satisfied, then 
+This way if they 
+
+
+=Mob Alliances Also  have an ambassador with invitation powers located
+at some fixed spot such as stardock or the evil stardock.
+
+Mobs can then decide whether to join or not
+based on these criteria:
+	- Impulse; a touch of random chance
+	- Attitude; mobs should have attitudes to help them make
+	  decisions. They can be nice, cruel, lone rangers, etc
+
+SHOULD A MOB OR PLAYER REJECT AN INVITATION, THE LEADER SHOULD NOT ASK AGAIN FOR ONE EARTH MONTH
+
+=Mob Behavior in an Alliance
+	Mobs in an alliance should try to improve their alliance's wealth first, and then their own. (Much like bugbots and mainbrains in fact).
+	Priorities
+	1) Cultivate and colonize alliance-owned planets.
+	2) Claim sectors
+	3) Explore
+	4) Standard Mob Priorities
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+== SCHEMA NOTES ==
+
+Player table needs to hold both players and mobs. BMOB
+Alliance needs  a Leader foreign key.
