@@ -125,6 +125,8 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandAttack.cxx \
 			EscapePodBehavior.h \
 			EscapePodBehavior.cxx \
+			SectorCommBehavior.h \
+			SectorCommBehavior.cxx \
 			VoidCommandClaim.cxx \
 			VoidCommandClaim.h	
 
@@ -148,7 +150,7 @@ am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
 	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo \
-	EscapePodBehavior.lo VoidCommandClaim.lo
+	EscapePodBehavior.lo SectorCommBehavior.lo VoidCommandClaim.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -159,6 +161,7 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/EscapePodBehavior.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SectorCommBehavior.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommand.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandAttack.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandBeam.Plo \
@@ -231,6 +234,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EscapePodBehavior.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SectorCommBehavior.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommand.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandAttack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandBeam.Plo@am__quote@
