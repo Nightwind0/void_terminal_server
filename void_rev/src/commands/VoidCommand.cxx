@@ -49,6 +49,7 @@ bool VoidCommand::move_player_to_sector(int sector)
 
     ShipHandle *pship = create_handle_to_current_ship(get_player());
 
+    PlayerHandle * player = get_thread()->GetPlayer();
 
     // TODO: Broadcast this data to players in the sector ("Player blah blah just left the sector to sector blah")
 
@@ -59,14 +60,14 @@ bool VoidCommand::move_player_to_sector(int sector)
     }
     else
     {
-	pship->Lock();
-	pship->SetSector(sector);
-	pship->Unlock();
+
+	int cur_turns = (int)player->GetTurnsLeft();
+	ShipTypeHandle shiptype= pship->GetShipTypeHandle();
+	int tps = (int)shiptype.GetTurnsPerSector();
+
 
 
 	Integer tow = pship->GetTow();
-
-	ResourceMaster::GetInstance()->Log(DEBUG2, "Get tow reports : " + IntToString((int)tow));                           
 
 	if(!tow.IsNull())
 	{
@@ -74,16 +75,41 @@ bool VoidCommand::move_player_to_sector(int sector)
 	    PrimaryKey key(&towship);
 
 	    ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
+	    ShipTypeHandle towshiptype = towshiphandle.GetShipTypeHandle();
 
-	    ResourceMaster::GetInstance()->Log(DEBUG2, "towshiphandle reports : " + IntToString((int)towship));                           
+	    tps += (int)towshiptype.GetTurnsPerSector();
 
-	    towshiphandle.Lock();
-	    towshiphandle.SetSector(sector);
-	    towshiphandle.Unlock();
-	    Send(Color()->get(LIGHTBLUE) + towshiphandle.GetName().GetAsString() + Color()->get(GREEN) + " enters the sector in tow." + endr);
-	}
+	    if(tps <= cur_turns)
+	    {
+
+		towshiphandle.Lock();
+		towshiphandle.SetSector(sector);
+		towshiphandle.Unlock();
+		Send(Color()->get(LIGHTBLUE) + towshiphandle.GetName().GetAsString() + Color()->get(GREEN) + " enters the sector in tow." + endr);
 	
-	get_thread()->PostCommand("display", "");
+	    }
+	
+	}
+
+	if(tps <= cur_turns)
+	{
+
+	    player->Lock();
+	    player->SetTurnsLeft( cur_turns - tps);
+	    player->Unlock();
+	    pship->Lock();
+	    pship->SetSector(sector);
+	    pship->Unlock();
+
+	    
+	    
+	    
+	    get_thread()->PostCommand("display", "");
+	}
+	else
+	{
+	    Send(Color()->get(LIGHTRED) + "You don't have enough turns." + endr);
+	}
 	
 	//TODO: Determine if there are interesting things here and provide option to stop
     }

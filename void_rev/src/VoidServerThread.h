@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include "Message.h"
+#include "Event.h"
 
 class VoidServerThread: public Thread
 {
@@ -49,7 +50,7 @@ class VoidServerThread: public Thread
 
     ShipHandle * CreateNewShip(int shiptype);	
 
-
+    void LogEvent(const Event &event);
 
 
  protected:
@@ -81,6 +82,8 @@ class VoidServerThread: public Thread
     void HandleSystemMessage(const Message &msg);
     void HandleLocalMessage(const Message &msg);
 
+
+    void SetTurnsLeft();
 
     ColorType * m_pColor;
 
