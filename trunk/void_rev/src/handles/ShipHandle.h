@@ -84,7 +84,7 @@ class ShipHandle : public SerialObject
   
     virtual std::string DBTable()const { return "Ship";};
 
-
+    static ShipHandle HandleFromNkey( PGconn *dbconn, const int ship);
 
 };
 

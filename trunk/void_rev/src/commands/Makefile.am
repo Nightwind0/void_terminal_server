@@ -35,8 +35,11 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandMail.h \
 			VoidCommandMail.cxx \
 			VoidCommandAttack.h \
-			VoidCommandAttack.cxx
-
+			VoidCommandAttack.cxx \
+			EscapePodBehavior.h \
+			EscapePodBehavior.cxx \
+			VoidCommandClaim.cxx \
+			VoidCommandClaim.h	
 
 
 INCLUDES = 	-I@top_srcdir@/src \

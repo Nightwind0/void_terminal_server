@@ -30,6 +30,18 @@ ShipTypeHandle  ShipHandle::GetShipTypeHandle()const
     return handle;
 }
 
+ShipHandle ShipHandle::HandleFromNkey(PGconn *dbconn, const int ship)
+{
+    Integer shipi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(ship));
+
+    PrimaryKey key(&shipi);
+
+   return ShipHandle(dbconn, key);
+}
+
+
+
+
 
 Integer ShipHandle::GetNkey()const
 {
