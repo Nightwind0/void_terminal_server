@@ -1,6 +1,9 @@
 
 #include "VoidCommandDockArmory.h"
+#include "VoidCommandDockArmoryShields.h"
 #include "VoidCommandDockArmoryMissiles.h"
+#include "VoidCommandDockArmorySentinels.h"
+
 #include "void_util.h"
 #include "OutpostHandle.h"
 #include "PlayerHandle.h"
@@ -11,6 +14,8 @@
 VoidCommandDockArmory::VoidCommandDockArmory(VoidServerThread *thread):VoidCommandSubCommands(thread)
 {
     AddSubCommand(new VoidCommandDockArmoryMissiles(thread));
+    AddSubCommand(new VoidCommandDockArmoryShields(thread));
+    AddSubCommand(new VoidCommandDockArmorySentinels(thread));
     // AddSubCommand(new VoidCommandDockArmoryBuy(thread));
     // AddSubCommand(new VoidCommandDockArmorySpec(thread));
 }

@@ -100,7 +100,11 @@ libcommanddock_la_SOURCES = VoidCommandDockShipYard.cxx \
 			VoidCommandDockShipYardList.h \
 			VoidCommandDockShipYardBuy.h  \
 			VoidCommandDockShipYardSpec.h \
-			VoidCommandDockShipYard.h
+			VoidCommandDockShipYard.h \
+			VoidCommandDockArmorySentinels.cxx \
+			VoidCommandDockArmorySentinels.h \
+			VoidCommandDockArmoryShields.cxx \
+			VoidCommandDockArmoryShields.h
 
 
 INCLUDES = -I@top_srcdir@/src \
@@ -121,7 +125,9 @@ am_libcommanddock_la_OBJECTS = VoidCommandDockShipYard.lo \
 	VoidCommandDockShipYardList.lo VoidCommandDockShipYardBuy.lo \
 	VoidCommandDockShipYardSpec.lo VoidCommandDockArmory.lo \
 	VoidCommandDockArmoryMissiles.lo \
-	VoidCommandDockShipYardHolds.lo
+	VoidCommandDockShipYardHolds.lo \
+	VoidCommandDockArmorySentinels.lo \
+	VoidCommandDockArmoryShields.lo
 libcommanddock_la_OBJECTS = $(am_libcommanddock_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -133,6 +139,8 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/VoidCommandDockArmory.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockArmoryMissiles.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockArmorySentinels.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockArmoryShields.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYard.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardBuy.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardHolds.Plo \
@@ -188,6 +196,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockArmory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockArmoryMissiles.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockArmorySentinels.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockArmoryShields.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardBuy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardHolds.Plo@am__quote@
