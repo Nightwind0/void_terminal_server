@@ -73,6 +73,10 @@ bool VoidCommandHail::HandleCommand(const string &command, const string &argumen
 	{
 	    get_thread()->Send(Color()->get(RED) + "Your message did not go through." + endr);
 	}
+	else
+	{
+	    Send(Color()->get(GREEN) + "Sent." + endr);
+	}
     }
 
     return true;
