@@ -1224,7 +1224,11 @@ void        VoidServerThread::Service()
 		    }
 		    else if(command == "bye"  || command == "quit" || command == "exit")
 		    {
+
+
+			
 			os <<  "\e8Goodbye!!" << endr;
+
 			done = true;
 		    }
 		}
