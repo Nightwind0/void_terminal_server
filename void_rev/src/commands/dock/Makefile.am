@@ -14,6 +14,8 @@ libcommanddock_la_SOURCES = 	VoidCommandDockShipYard.cxx \
 			VoidCommandDockShipYardBuy.h  \
 			VoidCommandDockShipYardSpec.h \
 			VoidCommandDockShipYard.h \
+			VoidCommandDockShipYardSell.h \
+			VoidCommandDockShipYardSell.cxx \
 			VoidCommandDockArmorySentinels.cxx \
 			VoidCommandDockArmorySentinels.h \
 			VoidCommandDockArmoryShields.cxx \
@@ -26,4 +28,5 @@ INCLUDES = 	-I@top_srcdir@/src \
 		-I@top_srcdir@/src/socket/ \
 		-I@top_srcdir@/src/thread/ \
 		-I@top_srcdir@/src/commands/ \
-		-I@top_srcdir@/src/commands/dock/ 
+		-I@top_srcdir@/src/commands/dock/ \
+		-I@top_srcdir@/src/commands/behaviors/ 

@@ -6,7 +6,7 @@ AC_INIT(src/server.cxx)
 #AC_CONFIG_SRCDIR([src/EdgeLoadThread.cxx])
 #AC_CONFIG_HEADER([config.h])
 
-AM_INIT_AUTOMAKE(voidserver,0.0.2.5)
+AM_INIT_AUTOMAKE(voidserver,0.0.2.7)
 
 # Checks for programs.
 AC_PROG_CXX
@@ -40,5 +40,6 @@ AC_CONFIG_FILES([Makefile
                  src/commands/dock/Makefile
                  src/handles/Makefile
                  src/socket/Makefile
+		 src/commands/behaviors/Makefile
                  src/thread/Makefile])
 AC_OUTPUT

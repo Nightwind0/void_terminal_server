@@ -12,7 +12,7 @@
 using std::min;
 
 
-VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread),SectorCommBehavior(thread)
+VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread),SectorCommBehavior(thread), DeleteShipBehavior(thread)
 {
 }
 VoidCommandAttack::~VoidCommandAttack()
@@ -112,26 +112,6 @@ void VoidCommandAttack::remove_sentinels(int num, const std::string &player)
 }
 
 
-void VoidCommandAttack::delete_ship(int ship)
-{
-    /// @todo set values using handles, for locking purposes
-    std::string deletestmt = (std::string)"update ship set ktowship = null where ktowship = '" + IntToString(ship) + "';" + "update player set kcurrentship = null where sname = (select sname from player where kcurrentship = '" + IntToString(ship) + "');";
-
-    deletestmt += "delete from ship where nkey = '" + IntToString(ship) + "';";
-    
-    PGresult *delresult = get_thread()->DBExec(deletestmt);
-    
-    
-    if(PQresultStatus(delresult) != PGRES_COMMAND_OK)
-    {
-	
-	DBException e("Delete ship error: " + std::string(PQresultErrorMessage(delresult)));
-	PQclear(delresult);
-	throw e;
-    }
-    
-    PQclear(delresult);
-}
 
 
 void VoidCommandAttack::KillPlayer(const std::string &player)

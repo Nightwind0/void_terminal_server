@@ -10,7 +10,7 @@
 using std::string;
 
 
-VoidCommandDockShipYardBuy::VoidCommandDockShipYardBuy(VoidServerThread *thread):VoidCommand(thread)
+VoidCommandDockShipYardBuy::VoidCommandDockShipYardBuy(VoidServerThread *thread):VoidCommand(thread), EvaluateShipBehavior(thread)
 {
 }
 VoidCommandDockShipYardBuy::~VoidCommandDockShipYardBuy()
@@ -79,7 +79,7 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
     FGColor fgcolor = (FGColor)atoi(PQgetvalue(dbresult,0,3));
     BGColor bgcolor = (BGColor)atoi(PQgetvalue(dbresult,0,4));
     
-    int cost = atoi(PQgetvalue(dbresult,0,5));
+    int cost = atoi(PQgetvalue(dbresult,0,05));
 
     PQclear(dbresult);
 
@@ -99,7 +99,7 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 	PrimaryKey key(&shiptypei);
 	ShipTypeHandle shiptypeh(get_thread()->GetDBConn(), key);
 
-	int refund =((int)shiptypeh.GetCost() / 2);
+	int refund = EvaluateShip(oldship->GetNkey());
 
 	Send(Color()->get(GREEN));
 	get_thread()->SendWordWrapped(std::string("Can we take that old ") + shiptypeh.GetShipTypeName(Color()) + Color()->get(GREEN) +

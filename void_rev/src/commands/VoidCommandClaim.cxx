@@ -58,6 +58,7 @@ std::list<int> VoidCommandClaim::GetValidShipList(int cur_sector,  const std::st
     /// @todo replace t.nkey != 10 with value from config table for the escape pod type
     /// @todo consider replacing the hardcoded 10% shields with a config lookup
     query << "select s.nkey from ship s, shiptype t, player p, sectors sec where sec.nsector = '" << cur_sector << "' and (sec.kterritory != 0 or kterritory is null) and ";
+    query << "s.kowner != '" << player << "' and ";
     query << "s.ktype = t.nkey and t.nkey != '10' and p.sname = '" << player;
     query << "' and s.ksector = '" << cur_sector << "' and s.nkey not in (select ktowship from ship where ktowship = s.nkey) ";
     query << "and ((s.nshields < (t.nmaxshields / 10) or s.nshields is null) ";
@@ -172,10 +173,6 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
     }
 
 
-    player->Lock();
-    /// @todo get point value from config table
-    player->SetPoints(player->GetPoints() + 500);
-    player->Unlock();
 
 
     ShipHandle oshiph = ShipHandle::HandleFromNkey(get_thread()->GetDBConn(),shipdestnum);
@@ -201,6 +198,11 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 
     if(occupied)
     {
+	player->Lock();
+	/// @todo get point value from config table
+	player->SetPoints(player->GetPoints() + 500);
+	player->Unlock();
+
 	ResourceMaster::GetInstance()->SendSystemMail(oplayer, playername + " forced you off " + shipname + " into an escape pod!" + endr);
 	SendMsgToSector(playername + " forces " + oplayer + " off his ship!", sector,playername);
 	Send(Color()->get(PURPLE) + "You force " + Color()->get(LIGHTCYAN) + oplayer + Color()->get(PURPLE) + " into an escape pod." + endr + "The escape pod jettisons off into space." + endr);    

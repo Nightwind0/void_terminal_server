@@ -6,11 +6,12 @@
 #include "VoidServerThread.h"
 #include "EscapePodBehavior.h"
 #include "SectorCommBehavior.h"
+#include "DeleteShipBehavior.h"
 #include <string>
 
 using std::string;
 
-class VoidCommandAttack : public VoidCommand, public EscapePodBehavior, public SectorCommBehavior
+class VoidCommandAttack : public VoidCommand, public EscapePodBehavior, public SectorCommBehavior, public DeleteShipBehavior
 {
  public:
     VoidCommandAttack(VoidServerThread *thread);
@@ -34,7 +35,7 @@ class VoidCommandAttack : public VoidCommand, public EscapePodBehavior, public S
     void remove_sentinels(int num, const std::string &player);
     double g_random(int) const;
     double g_rand() const;
-    void delete_ship(int ship);
+
 
     void KillPlayer(const std::string &player);
     VoidCommandAttack();

@@ -11,7 +11,7 @@ class Event
 {
  public:
 
-    enum EventType{SHIPDESTROYED, NEWPLAYER };
+    enum EventType{SHIPDESTROYED, NEWPLAYER, SHIPCLAIMED };
 
     Event(EventType type);
     virtual ~Event();

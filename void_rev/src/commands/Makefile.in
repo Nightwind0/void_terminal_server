@@ -87,9 +87,9 @@ am__quote = @am__quote@
 install_sh = @install_sh@
 noinst_LTLIBRARIES = libcommand.la
 
-SUBDIRS = dock
+SUBDIRS = dock behaviors
 
-libcommand_la_LIBADD = dock/libcommanddock.la
+libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la
 
 libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
@@ -123,10 +123,6 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandMail.cxx \
 			VoidCommandAttack.h \
 			VoidCommandAttack.cxx \
-			EscapePodBehavior.h \
-			EscapePodBehavior.cxx \
-			SectorCommBehavior.h \
-			SectorCommBehavior.cxx \
 			VoidCommandClaim.cxx \
 			VoidCommandClaim.h	
 
@@ -135,7 +131,8 @@ INCLUDES = -I@top_srcdir@/src \
 		-I@top_srcdir@/src/handles/ \
 		-I@top_srcdir@/src/socket/ \
 		-I@top_srcdir@/src/thread/ \
-		-I@top_srcdir@/src/commands/dock
+		-I@top_srcdir@/src/commands/dock \
+		-I@top_srcdir@/src/commands/behaviors
 
 subdir = src/commands
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -143,14 +140,15 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libcommand_la_LDFLAGS =
-libcommand_la_DEPENDENCIES = dock/libcommanddock.la
+libcommand_la_DEPENDENCIES = dock/libcommanddock.la \
+	behaviors/libcommandbehaviors.la
 am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandHail.lo VoidCommandMove.lo VoidCommandPort.lo \
 	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
 	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo \
-	EscapePodBehavior.lo SectorCommBehavior.lo VoidCommandClaim.lo
+	VoidCommandClaim.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -160,9 +158,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/EscapePodBehavior.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SectorCommBehavior.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/VoidCommand.Plo \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/VoidCommand.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandAttack.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandBeam.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandCheckMail.Plo \
@@ -233,8 +229,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EscapePodBehavior.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SectorCommBehavior.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommand.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandAttack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandBeam.Plo@am__quote@

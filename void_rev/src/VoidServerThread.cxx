@@ -76,7 +76,7 @@ void VoidServerThread::LogEvent(const Event &event)
 {
     std::ostringstream stmt;
     stmt <<  "insert into eventlog values(now(), '" << event.GetActor() << "','" << event.GetSubject() << "','"
-	 << (int)event.GetType() << "','" << PrepareForSQL(event.GetMessage()) << "','" 
+	 << (int)event.GetType() << "','" << PrepareForSQL(event.GetMessage()) << "','"
 	 << event.GetShipType() <<"','" << PrepareForSQL(event.GetShipName()) << "');";
 
     PGresult * dbresult = DBExec(stmt.str());
