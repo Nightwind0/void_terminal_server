@@ -227,6 +227,7 @@ bool VoidServerThread::thread_init()
 }
 void VoidServerThread::thread_destroy()
 {
+    ResourceMaster::GetInstance()->Log(DEBUG,"<Thread Destroy>");
     m_socket->Close();
     CloseDataBaseConnection();
     CloseLocalSocket();
@@ -1165,16 +1166,11 @@ void        VoidServerThread::Service()
 		}
 		catch(SocketException e)
 		{
-		    if (e.GetType() == NOTCONN)
-		    {
-			ResourceMaster::GetInstance()->Log(ERROR,"<Connection timeout>");
-		    return ;
-		    }
-		    if(e.GetType() == WOULDBLOCK)
-		    {
-			std::cerr << "WOULD BLOCK" << std::endl;
-		    }
-		    
+		    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(e.GetType())) + ">");
+		    done = true;
+		    gotinput = true;
+		    break;
+
 		}
 	    }
 	    
@@ -1241,15 +1237,19 @@ void        VoidServerThread::Service()
         }
         catch (SocketException &excep)
         {
-		
+
+
+	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(excep.GetType())) + ">");
+	    m_socket->Close();
             if (excep.GetType() != NOTCONN)
             {
                 //syslog(LOG_ERR, "Socket Exception : %s", (const char *) excep);
-		ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(excep.GetType())) + ">");
+
 //		std::cerr << "Socket Exception: " << (const char*)excep << std::endl;
-                throw excep;
+		
             }
-            return;
+	    done = true;
+	    break;
         }
 	catch(ShutdownException ex)
 	{
@@ -1260,10 +1260,13 @@ void        VoidServerThread::Service()
 	{
 	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + PrepareForSQL(e.GetMessage()) + ">");
 	    std::cerr << "DB Exception: " << e.GetMessage() << std::endl;
-	    return;
+	    done = true;
+	    break;
 	}
 	catch(exception ex)
 	{
+	    done = true;
+	    break;
 	}
     }
 

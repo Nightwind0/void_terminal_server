@@ -3,6 +3,7 @@
 #include "VoidCommandDisplay.h"
 #include "Universe.h"
 #include "ResourceMaster.h"
+#include <math.h>
 #include <sstream>
 
 VoidCommandDisplay::VoidCommandDisplay(VoidServerThread *thread):VoidCommand(thread)
@@ -122,7 +123,7 @@ std::string VoidCommandDisplay::DisplayStardockInSector(int sector)
 std::string VoidCommandDisplay::DisplayShipsInSector(int sector)
 {
     std::ostringstream os;
-    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, p.kalliance from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector ='"+IntToString(sector) + "' and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (s.bcloaked = false or s.bcloaked is null) and (p.sname = s.kowner) order by s.nkey;";
+    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, p.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector ='"+IntToString(sector) + "' and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (s.bcloaked = false or s.bcloaked is null) and (p.sname = s.kowner) order by s.nkey;";
     PGresult *dbresult;
 
     dbresult = get_thread()->DBExec(shipquery);
@@ -148,10 +149,20 @@ std::string VoidCommandDisplay::DisplayShipsInSector(int sector)
     {
 	
 	int ship = atoi(PQgetvalue(dbresult,i,0));
+
+	int shields = atoi(PQgetvalue(dbresult,i,11));
+	int maxshields = atoi(PQgetvalue(dbresult,i,12));
+	double percent =(double) shields / (double)maxshields;
+ 
+	int pc = truncf(percent * 10) * 10;
+
+	
+
 	os << '\t' << Color()->get(GREEN) << '[' << Color()->get(WHITE) << ship << Color()->get(GREEN) << ']';
 	os << ' ' << Color()->get(LIGHTBLUE) << PQgetvalue(dbresult,i,1) << ' ';
 	os << Color()->get((FGColor)atoi(PQgetvalue(dbresult,i,5)),(BGColor)atoi(PQgetvalue(dbresult,i,6))) << PQgetvalue(dbresult,i,2) <<' ' <<  PQgetvalue(dbresult,i,3) << Color()->get(GREEN);
-	os << " w/" << Color()->get(WHITE) << atoi(PQgetvalue(dbresult,i,4)) << Color()->get(GREEN) << " missiles" << endr;
+	os << " w/" << Color()->get(WHITE) << atoi(PQgetvalue(dbresult,i,4)) << Color()->get(GREEN) << " missiles ";
+	os << Color()->get(LIGHTPURPLE) << '(' << Color()->get(GRAY) << pc << '%' << Color()->get(LIGHTPURPLE) << ')' << Color()->get(GREEN) + " shields " <<  endr;
 
 	PlayerHandle * player = create_handle_to_player_in_ship(ship);
 // Need to check for null here, there may not be a player in the ship.

@@ -82,6 +82,19 @@ class ShutdownException
     bool m_normal;
 };
 
+class ControlException
+{
+ public:
+    ControlException();
+    virtual ~ControlException();
+};
+
+class ShipDestroyedException : public ControlException
+{
+ public:
+    ShipDestroyedException();
+    virtual ~ShipDestroyedException();
+};
 
                                                                                 
 bool CompStrings(std::string s1, std::string s2);
