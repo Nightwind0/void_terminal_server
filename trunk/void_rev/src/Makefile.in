@@ -90,7 +90,7 @@ server_SOURCES = server.cxx VoidServerThread.cxx EdgeLoadThread.cxx Field.cxx Pr
 
 control_SOURCES = control.cxx
 
-control_LDADD = socket/libsocket.a
+control_LDADD = socket/libsocket.la
 
 SUBDIRS = commands handles thread socket
 
@@ -115,7 +115,7 @@ PROGRAMS = $(bin_PROGRAMS)
 
 am_control_OBJECTS = control.$(OBJEXT)
 control_OBJECTS = $(am_control_OBJECTS)
-control_DEPENDENCIES = socket/libsocket.a
+control_DEPENDENCIES = socket/libsocket.la
 control_LDFLAGS =
 am_server_OBJECTS = server.$(OBJEXT) VoidServerThread.$(OBJEXT) \
 	EdgeLoadThread.$(OBJEXT) Field.$(OBJEXT) PrimaryKey.$(OBJEXT) \

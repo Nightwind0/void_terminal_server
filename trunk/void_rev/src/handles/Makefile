@@ -38,10 +38,10 @@ pkglibdir = $(libdir)/server
 pkgincludedir = $(includedir)/server
 top_builddir = ../..
 
-ACLOCAL = ${SHELL} /home/dpalm/src/void_rev/missing --run aclocal-1.6
-AUTOCONF = ${SHELL} /home/dpalm/src/void_rev/missing --run autoconf
-AUTOMAKE = ${SHELL} /home/dpalm/src/void_rev/missing --run automake-1.6
-AUTOHEADER = ${SHELL} /home/dpalm/src/void_rev/missing --run autoheader
+ACLOCAL = ${SHELL} /home/dpalm/src/test/void_rev/missing --run aclocal-1.6
+AUTOCONF = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoconf
+AUTOMAKE = ${SHELL} /home/dpalm/src/test/void_rev/missing --run automake-1.6
+AUTOHEADER = ${SHELL} /home/dpalm/src/test/void_rev/missing --run autoheader
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = /usr/bin/install -c
@@ -65,7 +65,7 @@ host_triplet = i686-pc-linux-gnu
 EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
-AMTAR = ${SHELL} /home/dpalm/src/void_rev/missing --run tar
+AMTAR = ${SHELL} /home/dpalm/src/test/void_rev/missing --run tar
 AS = @AS@
 AWK = gawk
 CC = gcc
@@ -83,7 +83,7 @@ STRIP = strip
 VERSION = 0.0.1.0
 am__include = include
 am__quote = 
-install_sh = /home/dpalm/src/void_rev/install-sh
+install_sh = /home/dpalm/src/test/void_rev/install-sh
 noinst_LTLIBRARIES = libhandles.la
 
 libhandles_la_SOURCES = SerialObject.cxx \
