@@ -33,6 +33,7 @@ bool VoidThreadSpawner::thread_init()
     catch(SocketException &ex)
     {
 	cerr << "VoidThreadSpawner Socket Bind Error: " << ex.GetErrno() << endl;
+	m_socket->Close();
 	throw ex;
     }
 

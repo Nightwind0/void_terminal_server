@@ -22,6 +22,8 @@
 #include <list>
 #include <unistd.h>
 #include "Universe.h"
+#include "VoidCommandMail.h"
+#include "VoidCommandCheckMail.h"
 #include "VoidCommand.h"
 #include "VoidCommandDisplay.h"
 #include "VoidCommandTow.h"
@@ -707,7 +709,7 @@ ShipHandle* VoidServerThread::CreateNewShip(int shiptype)
 
     PGresult *dbresult;
 
-    std::string query = "SELECT MAX(NKEY)+1 FROM Ship;";
+    std::string query = "SELECT nextval('ship_nkey_seq');";
 
     dbresult = PQexec(m_dbconn, query.c_str());
     
@@ -905,9 +907,6 @@ void VoidServerThread::ChoosePlayer()
 
 	ResourceMaster::GetInstance()->Log(DEBUG, "Player: " + PrepareForSQL(m_player->GetName()) + " joins realm.");
 
-	m_player->Lock();
-	m_player->SetLastPlay(Universe::GetToday(m_dbconn));
-	m_player->Unlock();
 
 	ShipHandle *ship;
 
@@ -996,6 +995,8 @@ std::string VoidServerThread::CommandPrompt()
     return ReceiveLine();
 }
 
+
+
 void VoidServerThread::SetTurnsLeft()
 {
     std::string sql = "select extract( doy from dlastplay), extract (year from dlastplay), extract(doy from now()), extract(year from now()) from player where sname = '" + GetPlayer()->GetName().GetAsString() 
@@ -1019,11 +1020,14 @@ void VoidServerThread::SetTurnsLeft()
     int cur_doy = atoi(PQgetvalue(dbresult,0,2));
     int cur_year = atoi(PQgetvalue(dbresult,0,3));
 
+//    ResourceMaster::GetInstance()->Log(DEBUG, "PlayDOY: " + IntToString(play_doy) + " CurDOY: " + IntToString(cur_doy));
+
     if(cur_year > play_year || cur_doy > play_doy)
 	fill_turns = true;
 
     if(fill_turns)
     {
+	Send(Color()->get(GREEN) + "Your turns are refreshed." + endr);
 	GetPlayer()->Lock();
 	GetPlayer()->SetTurnsLeft(600); // TODO: GET FROM CONFIG TABLE!!!! DUH!!!
 	GetPlayer()->Unlock();
@@ -1121,8 +1125,22 @@ void        VoidServerThread::Service()
 
     ResourceMaster::GetInstance()->SetThreadForPlayer(this,(std::string) GetPlayer()->GetName());
       
-
     SetTurnsLeft();
+
+    m_player->Lock();
+    m_player->SetLastPlay(Universe::GetToday(m_dbconn));
+    m_player->Unlock();
+    
+
+    
+    Send(Color()->get(YELLOW) + "Check your mail? (Y/n) :");
+    std::string checkmail = ReceiveLine();
+    LOWERCASE(checkmail);
+
+    if(CompStrings(checkmail,"yes"))
+    {
+	PostCommand("checkmail","");
+    }
 
     bool done = false;
 
@@ -1283,7 +1301,8 @@ VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
     add_command(new VoidCommandDock(this));
     add_command(new VoidCommandBeam(this));
     add_command(new VoidCommandTow(this));
-
+    add_command(new VoidCommandCheckMail(this));
+    add_command(new VoidCommandMail(this));
 
 
 }
