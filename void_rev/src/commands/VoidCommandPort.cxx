@@ -424,9 +424,9 @@ int VoidCommandPort::SellGoods(const std::string &goods, int price_each, int spa
     bool done = false;
     bool dealt = false;
     
-    int num_units;
+    int num_units=0;
     
-    while(!done || !dealt)
+    while(!done && !dealt)
     {
 
 	//Todo, calculate max based on credits if they aren't enough to buy the maximum based on space
@@ -443,21 +443,30 @@ int VoidCommandPort::SellGoods(const std::string &goods, int price_each, int spa
 	if(units == "" || units.size() == 0)
 	    num_units = space_available;
 	else num_units = atoi(units.c_str());
-		
+	
+	if(num_units < 0)
+	{
+	    Send(Color()->get(LIGHTRED) + "Sorry, we don't buy those. We're too busy selling." + endr);
+	    dealt = false;
+	    continue;
+	}
+	
 	if(num_units > space_available)
 	{
 	    get_thread()->Send(Color()->get(LIGHTRED) + "Sorry, you can't hold that many." + endr);
+	    dealt= false;
 	}
-	else done = true;
-		
-	if(num_units !=0 )
+	else if(num_units !=0 )
 	{
 
 	    int total = price_each * num_units;
 		    
 	    get_thread()->Send(Color()->get(GREEN) + "That will be " + Color()->get(BLACK,BG_WHITE) + IntToString(total) + Color()->get(GREEN) + " Y/n");
-		    
+
+    
 	    string answer = get_thread()->ReceiveLine();
+
+	    LOWERCASE(answer);
 		    
 	    if(CompStrings(answer,"yes"))
 	    {

@@ -738,6 +738,7 @@ ShipHandle* VoidServerThread::CreateNewShip(int shiptype)
     ship->SetOwner(m_player->GetName());
     ship->SetIsAllianceOwned(false);
     ship->SetHolds(shiptypeh.GetInitHolds());
+    ship->SetShields((int)((double)shiptypeh.GetMaxShields() / 5.0));
     ship->Insert();
     ship->Unlock();
 
