@@ -102,7 +102,20 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandDock.cxx \
 			VoidCommandBeam.cxx \
 			VoidCommandPurchaseShipItem.cxx \
-			VoidCommandTow.cxx 
+			VoidCommandTow.cxx \
+			VoidCommandBeam.h \
+			VoidCommandMove.h \
+		        VoidCommandTow.h \
+			VoidCommandDisplay.h \
+			VoidCommandPort.h \
+	                VoidCommandTransmit.h \
+			VoidCommandDock.h \
+			VoidCommandPurchaseShipItem.h \
+			VoidCommandWho.h \
+			VoidCommand.h \
+		        VoidCommandStatus.h \
+			VoidCommandHail.h \
+			VoidCommandSubCommands.h
 
 
 INCLUDES = -I../../src \
@@ -154,6 +167,14 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = -g -O2
+CFLAGS = -g -O2
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libcommand_la_SOURCES)
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \

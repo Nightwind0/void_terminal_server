@@ -89,7 +89,12 @@ noinst_LTLIBRARIES = libthread.la
 libthread_la_SOURCES = Thread.cxx \
 			Mutex.cxx \
 			Semaphore.cxx \
-			Condition.cxx 
+			Condition.cxx \
+			Condition.h \
+			Semaphore.h \
+			Mutex.h \
+			PThreadException.h \
+			thread.h
 
 subdir = src/thread
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -119,6 +124,14 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = @CXXFLAGS@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libthread_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
 SOURCES = $(libthread_la_SOURCES)

@@ -92,7 +92,14 @@ libcommanddock_la_SOURCES = VoidCommandDockShipYard.cxx \
 			VoidCommandDockShipYardSpec.cxx	 \
 			VoidCommandDockArmory.cxx \
 			VoidCommandDockArmoryMissiles.cxx \
-			VoidCommandDockShipYardHolds.cxx 
+			VoidCommandDockShipYardHolds.cxx \
+			VoidCommandDockArmory.h \
+		        VoidCommandDockShipYardHolds.h \
+			VoidCommandDockArmoryMissiles.h \
+			VoidCommandDockShipYardList.h \
+			VoidCommandDockShipYardBuy.h  \
+			VoidCommandDockShipYardSpec.h \
+			VoidCommandDockShipYard.h
 
 
 INCLUDES = -I@top_srcdir@/src \
@@ -139,6 +146,14 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = @CXXFLAGS@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libcommanddock_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
 SOURCES = $(libcommanddock_la_SOURCES)
