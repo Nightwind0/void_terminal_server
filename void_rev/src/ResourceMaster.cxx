@@ -32,6 +32,24 @@ ResourceMaster *ResourceMaster::GetInstance()
 }
 
 
+void ResourceMaster::SendSystemMail(const std::string &player, const std::string &msg)
+{
+    static NormalMutex mutex;
+
+    mutex.Lock();
+    m_dbmutex.Lock();
+    std::string sql = "insert into mail values(nextval('mail_id_seq'), now(),'" + player + "',NULL, TRUE,'" + PrepareForSQL(msg) + "');";
+
+    PGresult *dbresult = PQexec(m_dbconn, sql.c_str());
+
+    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
+    {
+    }
+
+    m_dbmutex.Unlock();
+    mutex.Unlock();
+}
+
 void ResourceMaster::SendMessageAll(DatagramSocket *socket, Message *msg)
 {
 
@@ -260,8 +278,9 @@ void ResourceMaster::Log(LOG_SEVERITY severity, std::string message)
 	std::string err = PQresultErrorMessage(dbresult);
 	std::cerr << err << " from " << os.str() << std:: endl;
 	PQclear(dbresult);
-	mutex.Unlock();
+
 	m_dbmutex.Unlock();
+	mutex.Unlock();
 	throw DBException(err);
     }
 

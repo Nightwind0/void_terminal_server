@@ -20,7 +20,7 @@ class PlayerHandle : public SerialObject
 
     RESOURCE_TYPE GetType()const{return PLAYERTYPE;};
 
-    enum FIELDS{NAME, LOGIN, ISMOB, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY};
+    enum FIELDS{NAME, LOGIN, ISMOB, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY, ISDEAD};
 
     virtual std::string GetFieldName(int fieldnum)const;
     static std::string FieldName(int fieldnum){return FIELD_NAMES[fieldnum];}
@@ -36,6 +36,7 @@ class PlayerHandle : public SerialObject
     Integer GetPoints()const;
     Text GetMob()const;
     Text GetAlliance()const;
+    Boolean GetIsDead()const;
 
 
     void SetName(const std::string &);
@@ -49,7 +50,7 @@ class PlayerHandle : public SerialObject
     void SetTurnsLeft(const int &);
     void SetAlliance(const std::string &);
     void SetCurrentShip(const int &);
-
+    void SetIsDead(const bool &);
   
     virtual std::string DBTable()const { return "Player";};
 

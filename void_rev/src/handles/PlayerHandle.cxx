@@ -6,7 +6,7 @@
 #define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
 //    enum FIELDS{NAME, LOGIN, ISMOB, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY}
 
-const char * PlayerHandle::FIELD_NAMES[] = {"sname","klogin","bmob","kmob","ncredits","nturnsleft","npoints","kalliance","kcurrentship", "dfirstplay", "dlastplay"};
+const char * PlayerHandle::FIELD_NAMES[] = {"sname","klogin","bmob","kmob","ncredits","nturnsleft","npoints","kalliance","kcurrentship", "dfirstplay", "dlastplay", "bdead"};
 
  std::string PlayerHandle::GetFieldName(int fieldnum)const
 {
@@ -63,6 +63,10 @@ Boolean PlayerHandle::GetIsMob()const
 {
     return GetBoolean(ISMOB);
 }
+Boolean PlayerHandle::GetIsDead()const
+{
+    return GetBoolean(ISDEAD);
+}
 
 Integer PlayerHandle::GetCredits()const
 {
@@ -117,6 +121,11 @@ void PlayerHandle::SetMob(const std::string &mob)
 void PlayerHandle::SetIsMob(const bool &ismob)
 {
     SetField(ISMOB, new Boolean(GetFieldName(ISMOB),BooleanToString(ismob)));
+}
+
+void PlayerHandle::SetIsDead(const bool &isdead)
+{
+    SetField(ISDEAD, new Boolean(GetFieldName(ISDEAD),BooleanToString(isdead)));
 }
 
 

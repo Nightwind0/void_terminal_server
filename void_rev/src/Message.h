@@ -9,7 +9,7 @@ class Message
 {
  public:
 
-    enum Type{SYSTEM,ADMIN,COMM,TRANSMIT,BROADCAST,LINK};
+    enum Type{SYSTEM,ADMIN,COMM,TRANSMIT,BROADCAST,LINK, BATTLE};
 
     Message(Type type, std::string str);
     Message();

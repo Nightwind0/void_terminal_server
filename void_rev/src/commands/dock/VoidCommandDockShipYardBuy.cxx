@@ -124,7 +124,7 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 	int credits = (int)player->GetCredits();
 
 
-	if (credits + refund < cost)
+	if ((credits + refund) < cost)
 	{
 	    std::string sorry = Color()->get(RED) + "Sorry, ";
 	    if(sellit)
