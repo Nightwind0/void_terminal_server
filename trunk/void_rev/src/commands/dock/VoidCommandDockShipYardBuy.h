@@ -7,10 +7,11 @@
 #include "VoidCommand.h"
 #include "void_util.h"
 #include "VoidServerThread.h"
+#include "EvaluateShipBehavior.h"
 
 using std::string;
 
-class VoidCommandDockShipYardBuy : public VoidCommand
+class VoidCommandDockShipYardBuy : public VoidCommand, public EvaluateShipBehavior
 {
  public:
     VoidCommandDockShipYardBuy(VoidServerThread *thread);

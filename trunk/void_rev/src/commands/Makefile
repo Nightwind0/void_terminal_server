@@ -87,9 +87,9 @@ am__quote =
 install_sh = /home/dpalm/src/void_rev/install-sh
 noinst_LTLIBRARIES = libcommand.la
 
-SUBDIRS = dock
+SUBDIRS = dock behaviors
 
-libcommand_la_LIBADD = dock/libcommanddock.la
+libcommand_la_LIBADD = dock/libcommanddock.la behaviors/libcommandbehaviors.la
 
 libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandDisplay.cxx \
@@ -123,10 +123,6 @@ libcommand_la_SOURCES = VoidCommand.cxx \
 			VoidCommandMail.cxx \
 			VoidCommandAttack.h \
 			VoidCommandAttack.cxx \
-			EscapePodBehavior.h \
-			EscapePodBehavior.cxx \
-			SectorCommBehavior.h \
-			SectorCommBehavior.cxx \
 			VoidCommandClaim.cxx \
 			VoidCommandClaim.h	
 
@@ -135,7 +131,8 @@ INCLUDES = -I../../src \
 		-I../../src/handles/ \
 		-I../../src/socket/ \
 		-I../../src/thread/ \
-		-I../../src/commands/dock
+		-I../../src/commands/dock \
+		-I../../src/commands/behaviors
 
 subdir = src/commands
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -143,14 +140,15 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libcommand_la_LDFLAGS =
-libcommand_la_DEPENDENCIES = dock/libcommanddock.la
+libcommand_la_DEPENDENCIES = dock/libcommanddock.la \
+	behaviors/libcommandbehaviors.la
 am_libcommand_la_OBJECTS = VoidCommand.lo VoidCommandDisplay.lo \
 	VoidCommandHail.lo VoidCommandMove.lo VoidCommandPort.lo \
 	VoidCommandStatus.lo VoidCommandTransmit.lo VoidCommandWho.lo \
 	VoidCommandSubCommands.lo VoidCommandDock.lo VoidCommandBeam.lo \
 	VoidCommandPurchaseShipItem.lo VoidCommandTow.lo \
 	VoidCommandCheckMail.lo VoidCommandMail.lo VoidCommandAttack.lo \
-	EscapePodBehavior.lo SectorCommBehavior.lo VoidCommandClaim.lo
+	VoidCommandClaim.lo
 libcommand_la_OBJECTS = $(am_libcommand_la_OBJECTS)
 
 DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"voidserver\" -DVERSION=\"0.0.2.7\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DHAVE_LIBPQ=1 -DSTDC_HEADERS=1 -DHAVE_ARPA_INET_H=1 -DHAVE_NETDB_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_UNISTD_H=1 -DHAVE__BOOL=1 -DHAVE_STDBOOL_H=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_SYS_SOCKET_H=1 -DSELECT_TYPE_ARG1=int -DSELECT_TYPE_ARG234=\(fd_set\ \*\) -DSELECT_TYPE_ARG5=\(struct\ timeval\ \*\) -DRETSIGTYPE=void -DHAVE_GETHOSTBYNAME=1 -DHAVE_INET_NTOA=1 -DHAVE_MEMSET=1 -DHAVE_SELECT=1 -DHAVE_SOCKET=1 
@@ -160,9 +158,7 @@ LDFLAGS =
 LIBS = -lpq 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-DEP_FILES = ./$(DEPDIR)/EscapePodBehavior.Plo \
-	./$(DEPDIR)/SectorCommBehavior.Plo \
-	./$(DEPDIR)/VoidCommand.Plo \
+DEP_FILES = ./$(DEPDIR)/VoidCommand.Plo \
 	./$(DEPDIR)/VoidCommandAttack.Plo \
 	./$(DEPDIR)/VoidCommandBeam.Plo \
 	./$(DEPDIR)/VoidCommandCheckMail.Plo \
@@ -233,8 +229,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/EscapePodBehavior.Plo
-include ./$(DEPDIR)/SectorCommBehavior.Plo
 include ./$(DEPDIR)/VoidCommand.Plo
 include ./$(DEPDIR)/VoidCommandAttack.Plo
 include ./$(DEPDIR)/VoidCommandBeam.Plo

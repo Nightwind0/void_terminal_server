@@ -6,6 +6,8 @@ using std::string;
 
 Event::Event(EventType type): m_type(type)
 {
+    m_shiptype = 0;
+    m_shipname = "";
 }
 
 Event::~Event()

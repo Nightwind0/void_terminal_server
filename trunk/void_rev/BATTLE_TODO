@@ -1,4 +1,5 @@
-
+/ = done
+- = not done
 
 
 
@@ -6,13 +7,13 @@ This is the minimum for basic battle, this doesn't count things like explosive p
 
 
 
-- Destruction exceptions (derived from ControlException)
+/ Destruction exceptions (derived from ControlException)
 - Admin-only commands and badmin (badminton?) in Player
 - Better exception catching during important transactions
-- Event Log
-- Message Queue
-- Shield vending
+/ Event Log
+/ Message Queue
+/ Shield vending
 - Like to haves:
 	- "Special outposts"
-- Lockouts for dead players until the next day when they should receive a new ship.
-- Escape pod fleeting algorithm
+/ Lockouts for dead players until the next day when they should receive a new ship.
+/ Escape pod fleeting algorithm

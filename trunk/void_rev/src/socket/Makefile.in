@@ -340,6 +340,7 @@ uninstall-am: uninstall-info-am
 	mostlyclean-libtool tags uninstall uninstall-am \
 	uninstall-info-am
 
+		-I@top_srcdir@/src/commands/behavior/
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

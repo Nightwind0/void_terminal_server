@@ -2,6 +2,7 @@
 #include "VoidCommandDockShipYard.h"
 #include "VoidCommandDockShipYardList.h"
 #include "VoidCommandDockShipYardBuy.h"
+#include "VoidCommandDockShipYardSell.h"
 #include "VoidCommandDockShipYardSpec.h"
 #include "VoidCommandDockShipYardHolds.h"
 #include "void_util.h"
@@ -15,8 +16,10 @@ VoidCommandDockShipYard::VoidCommandDockShipYard(VoidServerThread *thread):VoidC
 {
     AddSubCommand(new VoidCommandDockShipYardList(thread));
     AddSubCommand(new VoidCommandDockShipYardBuy(thread));
+    AddSubCommand(new VoidCommandDockShipYardSell(thread));
     AddSubCommand(new VoidCommandDockShipYardSpec(thread));
     AddSubCommand(new VoidCommandDockShipYardHolds(thread));
+
 }
 VoidCommandDockShipYard::~VoidCommandDockShipYard()
 {

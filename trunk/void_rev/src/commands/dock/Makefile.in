@@ -101,6 +101,8 @@ libcommanddock_la_SOURCES = VoidCommandDockShipYard.cxx \
 			VoidCommandDockShipYardBuy.h  \
 			VoidCommandDockShipYardSpec.h \
 			VoidCommandDockShipYard.h \
+			VoidCommandDockShipYardSell.h \
+			VoidCommandDockShipYardSell.cxx \
 			VoidCommandDockArmorySentinels.cxx \
 			VoidCommandDockArmorySentinels.h \
 			VoidCommandDockArmoryShields.cxx \
@@ -112,7 +114,8 @@ INCLUDES = -I@top_srcdir@/src \
 		-I@top_srcdir@/src/socket/ \
 		-I@top_srcdir@/src/thread/ \
 		-I@top_srcdir@/src/commands/ \
-		-I@top_srcdir@/src/commands/dock/ 
+		-I@top_srcdir@/src/commands/dock/ \
+		-I@top_srcdir@/src/commands/behaviors/ 
 
 subdir = src/commands/dock
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -125,7 +128,7 @@ am_libcommanddock_la_OBJECTS = VoidCommandDockShipYard.lo \
 	VoidCommandDockShipYardList.lo VoidCommandDockShipYardBuy.lo \
 	VoidCommandDockShipYardSpec.lo VoidCommandDockArmory.lo \
 	VoidCommandDockArmoryMissiles.lo \
-	VoidCommandDockShipYardHolds.lo \
+	VoidCommandDockShipYardHolds.lo VoidCommandDockShipYardSell.lo \
 	VoidCommandDockArmorySentinels.lo \
 	VoidCommandDockArmoryShields.lo
 libcommanddock_la_OBJECTS = $(am_libcommanddock_la_OBJECTS)
@@ -145,6 +148,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardBuy.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardHolds.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardList.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardSell.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/VoidCommandDockShipYardSpec.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -202,6 +206,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardBuy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardHolds.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardList.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardSell.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VoidCommandDockShipYardSpec.Plo@am__quote@
 
 distclean-depend:
