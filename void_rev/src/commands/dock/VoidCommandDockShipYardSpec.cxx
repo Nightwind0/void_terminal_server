@@ -73,7 +73,7 @@ bool VoidCommandDockShipYardSpec::DockShipYardSpec(const string &arguments)
 
     if(PQntuples(dbresult) != 1 || (shiptype == 0 && arguments != "0"))
     {
-	Send(Color()->get(RED) + "Sorry, that is not a vaild ship number.");
+	Send(Color()->get(RED) + "Sorry, that is not a vaild ship number." + endr);
 	return false;
     }
         
