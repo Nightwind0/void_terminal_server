@@ -65,7 +65,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 {
     PlayerHandle * player = get_player();
     ShipHandle * ship = create_handle_to_current_ship(player);
-    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor from outpost where ksector = ";
+    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor, extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())) from outpost where ksector = ";
 
     query += ship->GetSector().GetAsString();
 
@@ -113,24 +113,45 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     }
     
     std::string outpostname = PQgetvalue(dbresult,0,whichoutpost);
-
-    PQclear(dbresult);
+    
+//    PQclear(dbresult);
 
     Text outpostt(OutpostHandle::FieldName(OutpostHandle::NAME), outpostname);
     PrimaryKey key(&outpostt);
     
     
     OutpostHandle *outpost = new OutpostHandle(get_thread()->GetDBConn(),key,false);
-
-
-    get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + endr);
-
-    Text lastvisitor = outpost->GetLastVisitor();
-    Timestamp lastvisit = outpost->GetLastVisit();
-
-    if(!lastvisitor.IsNull())
+    
+    
+    get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + Color()->blackout() + endr);
+    
+    //  Text lastvisitor = outpost->GetLastVisitor();
+    //Timestamp lastvisit = outpost->GetLastVisit();
+    
+    if(!PQgetisnull(dbresult,0,8))
     {
-	get_thread()->Send(Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + lastvisitor.GetAsString() + Color()->get(BROWN) + " on " + Color()->get(WHITE) + lastvisit.GetAsString() + endr);
+//	get_thread()->Send(Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + lastvisitor.GetAsString() + Color()->get(BROWN) + " on " + Color()->get(WHITE) + lastvisit.GetAsString() + endr);
+    
+	std::string visited;
+	
+	int days = -atoi(PQgetvalue(dbresult,0,9));
+	int hours = -atoi(PQgetvalue(dbresult,0,10));
+	int minutes = -atoi(PQgetvalue(dbresult,0,11));
+	
+	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,0,8) ;
+	visited += Color()->get(WHITE) + ' ';
+	
+	if(days >0) visited += IntToString(days) + " days ";
+	else if(hours >0) visited += IntToString(hours) + " hours ";
+	else if(minutes >0) visited += IntToString(minutes) + " minutes ";
+	else visited += " moments ";
+	
+	
+	visited += Color()->get(BROWN) + "ago." + endr;
+	
+	
+	Send(visited);
+	
     }
     else
     {
@@ -159,10 +180,10 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     int cur_holds = ship_plasma + ship_metals + ship_carbon;
     int empty_holds = max_holds - cur_holds;
-
-    bool buyplasma = outpost->BuysPlasma();
-    bool buymetals = outpost->BuysMetals();
-    bool buycarbon = outpost->BuysCarbon();
+    
+    bool buyplasma = (PQgetvalue(dbresult,0,2) == "t") ;
+    bool buymetals = (PQgetvalue(dbresult,0,3) == "t");
+    bool buycarbon = (PQgetvalue(dbresult,0,4) == "t");
 
     int plasma_price = 50; // TODO: From settings table
     int carbon_price = 20; // TODO: From settings table
@@ -170,8 +191,8 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     int credits = player->GetCredits();
 
-    double buyrate = outpost->GetBuyRate();
-    double sellrate = outpost->GetSellRate();
+    double buyrate = atof(PQgetvalue(dbresult,0,5));
+    double sellrate = atof(PQgetvalue(dbresult,0,6));
 
     
     get_thread()->Send(Color()->get(WHITE) + IntToString(credits) + Color()->get(CYAN) + " credits" + endr);
