@@ -93,14 +93,17 @@ bool VoidCommandCheckMail::ReadMail()
 	std::string markread = (std::string)"delete from mail where nmailid ='" + PQgetvalue(dbresult,i,8) + "';";
 	get_thread()->DBExec(markread); // TODO Check for error
 	
-	Send(Color()->get(GREEN) + "Read Next Mail? (Y/n):");
-	std::string next = ReceiveLine();
-
-	LOWERCASE(next);
-	
-	if(!CompStrings(next,"yes"))
+	if(i + 1 !=  num_mail)
 	{
-	    break;
+	    Send(Color()->get(GREEN) + "Read Next Mail? (Y/n):");
+	    std::string next = ReceiveLine();
+	    
+	    LOWERCASE(next);
+	    
+	    if(!CompStrings(next,"yes"))
+	    {
+		break;
+	    }
 	}
 	
     }
