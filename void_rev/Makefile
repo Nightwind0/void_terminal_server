@@ -85,6 +85,14 @@ am__include = include
 am__quote = 
 install_sh = /home/dpalm/src/test/void_rev/install-sh
 SUBDIRS = src
+
+sql_scripts = sql
+create_scripts = create
+
+EXTRA_DIST = $(sql_scripts) \
+		$(create_scripts) \
+		LICENSE
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs

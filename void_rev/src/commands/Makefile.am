@@ -16,7 +16,20 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandDock.cxx \
 			VoidCommandBeam.cxx \
 			VoidCommandPurchaseShipItem.cxx \
-			VoidCommandTow.cxx 
+			VoidCommandTow.cxx \
+			VoidCommandBeam.h \
+			VoidCommandMove.h \
+		        VoidCommandTow.h \
+			VoidCommandDisplay.h \
+			VoidCommandPort.h \
+	                VoidCommandTransmit.h \
+			VoidCommandDock.h \
+			VoidCommandPurchaseShipItem.h \
+			VoidCommandWho.h \
+			VoidCommand.h \
+		        VoidCommandStatus.h \
+			VoidCommandHail.h \
+			VoidCommandSubCommands.h
 
 
 

@@ -86,7 +86,10 @@ am__quote =
 install_sh = /home/dpalm/src/test/void_rev/install-sh
 noinst_LTLIBRARIES = libsocket.la
 
-libsocket_la_SOURCES = Socket.cxx 
+libsocket_la_SOURCES = Socket.cxx \
+			SocketException.h \
+			Socket.h
+
 
 INCLUDES = -I../../src/ \
 		-I../../src/handles/ \
@@ -121,6 +124,14 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = -g -O2
+CFLAGS = -g -O2
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libsocket_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
 SOURCES = $(libsocket_la_SOURCES)

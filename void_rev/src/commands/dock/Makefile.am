@@ -6,7 +6,15 @@ libcommanddock_la_SOURCES = 	VoidCommandDockShipYard.cxx \
 			VoidCommandDockShipYardSpec.cxx	 \
 			VoidCommandDockArmory.cxx \
 			VoidCommandDockArmoryMissiles.cxx \
-			VoidCommandDockShipYardHolds.cxx 
+			VoidCommandDockShipYardHolds.cxx \
+			VoidCommandDockArmory.h \
+		        VoidCommandDockShipYardHolds.h \
+			VoidCommandDockArmoryMissiles.h \
+			VoidCommandDockShipYardList.h \
+			VoidCommandDockShipYardBuy.h  \
+			VoidCommandDockShipYardSpec.h \
+			VoidCommandDockShipYard.h
+
 
 
 INCLUDES = 	-I@top_srcdir@/src \

@@ -91,7 +91,13 @@ libhandles_la_SOURCES = SerialObject.cxx \
 			OutpostHandle.cxx \
 			PlayerHandle.cxx \
 			ShipHandle.cxx \
-			ShipTypeHandle.cxx
+			ShipTypeHandle.cxx \
+			LoginHandle.h \
+		        PlayerHandle.h \
+			ShipHandle.h \
+			OutpostHandle.h \
+			SerialObject.h \
+			ShipTypeHandle.h
 
 
 INCLUDES = -I../../src/ \
@@ -135,6 +141,14 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = -g -O2
+CFLAGS = -g -O2
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libhandles_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
 SOURCES = $(libhandles_la_SOURCES)
