@@ -1,0 +1,1 @@
+select player.sname, player.npoints, shipmanufacturer.sname, shiptype.sname, shiptype.nforecolor,shiptype.nbackcolor from player left outer join ship on (ship.nkey = player.kcurrentship)  left outer join shiptype on (ship.ktype = shiptype.nkey) left outer join shipmanufacturer on (shiptype.kmanufacturer = shipmanufacturer.nkey) order by player.npoints desc;

@@ -1,0 +1,45 @@
+#!/bin/sh
+# chkconfig: 345 08 91
+# description: Void
+# definitions
+#    enabled 
+#
+#
+
+
+case "$1" in 
+    start)
+	/home/dpalm/src/void_rev/src/voidserver &
+	;;
+    stop)
+    /home/dpalm/src/void_rev/src/voidcontrol quit
+	;;
+    restart)
+	/home/dpalm/src/void_rev/src/voidcontrol quit
+	sleep 3
+	/home/dpalm/src/void_rev/src/voidserver &
+
+	;;
+    status)
+	/home/dpalm/src/void_rev/src/voidcontrol list
+	;;
+    *)
+	echo "Usage: void {start|stop|status}"
+	exit 1
+	;;
+esac
+exit 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
