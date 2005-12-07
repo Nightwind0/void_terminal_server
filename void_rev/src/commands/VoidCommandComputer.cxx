@@ -1,6 +1,7 @@
 
 #include "VoidCommandComputer.h"
 #include "VoidCommandComputerShipList.h"
+#include "VoidCommandComputerPlayers.h"
 #include "void_util.h"
 #include "OutpostHandle.h"
 #include "PlayerHandle.h"
@@ -11,6 +12,7 @@
 VoidCommandComputer::VoidCommandComputer(VoidServerThread *thread):VoidCommandSubCommands(thread)
 {
     AddSubCommand(new VoidCommandComputerShipList(thread));
+    AddSubCommand(new VoidCommandComputerPlayers(thread));
 }
 VoidCommandComputer::~VoidCommandComputer()
 {
@@ -56,8 +58,8 @@ void VoidCommandComputer::DisplayOptionsFull()
 
     DisplayOptions();
     
-    Send(Color()->get(WHITE) + "quit: " + Color()->get(GRAY) + "return to main command prompt." + endr);
-    Send(Color()->get(WHITE) + "help: " + Color()->get(GRAY) + "view this list." + endr + endr);
+    Send(Color()->get(WHITE) + "quit: " + Color()->get(BROWN) + "return to main command prompt." + endr);
+    Send(Color()->get(WHITE) + "help: " + Color()->get(BROWN) + "view this list." + endr + endr);
 
 }
 

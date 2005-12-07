@@ -53,7 +53,7 @@ std::list<int> VoidCommandTow::GetValidShipList(int cur_sector, int cur_ship)
     std::list<int> valid_ships;
 
     std::string query = "select nkey from ship where ksector = '" + IntToString(cur_sector)
-	+ "' and kowner = '" + player->GetName().GetAsString() + "' and nkey != '" + IntToString(cur_ship) + "';";
+	+ "' and kowner = '" + player->GetName().GetAsString() + "' and nkey != '" + IntToString(cur_ship) + "' and (bcloaked != 'T' or bcloaked is null);";
 
     PGresult * dbresult = get_thread()->DBExec(query);
 

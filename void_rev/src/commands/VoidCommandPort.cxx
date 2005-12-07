@@ -66,7 +66,25 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 {
     PlayerHandle * player = get_player();
     ShipHandle * ship = create_handle_to_current_ship(player);
-    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor, extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())) from outpost where ksector = ";
+
+    if(ship->GetIsCloaked())
+    {
+	Send(Color()->get(RED) + "You cannot port with a cloaked ship." + endr );
+	delete ship;
+
+	return true;
+    }
+
+
+    int cur_turns = (int)player->GetTurnsLeft();
+
+    if(cur_turns <= 0)
+    {
+	get_thread()->Send(Color()->get(RED)+ "Sorry, you have no turns left." + endr);
+	return true;
+    }
+
+    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor, extract (year from age(dlastvisit,now())), extract (month from age(dlastvisit,now())), extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())) from outpost where ksector = ";
 
     query += ship->GetSector().GetAsString();
 
@@ -125,7 +143,12 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     
     
     get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + Color()->blackout() + endr);
-    
+
+    player->Lock();
+    player->SetTurnsLeft( cur_turns - 1);
+    player->Unlock();
+
+
     //  Text lastvisitor = outpost->GetLastVisitor();
     //Timestamp lastvisit = outpost->GetLastVisit();
     
@@ -135,14 +158,18 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     
 	std::string visited;
 	
-	int days = -atoi(PQgetvalue(dbresult,whichoutpost,9));
-	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,10));
-	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,11));
+	int years = -atoi(PQgetvalue(dbresult,whichoutpost,9));
+	int months = -atoi(PQgetvalue(dbresult,whichoutpost,10));
+	int days = -atoi(PQgetvalue(dbresult,whichoutpost,11));
+	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,12));
+	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,13));
 	
 	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,0,8) ;
 	visited += Color()->get(WHITE) + ' ';
 	
-	if(days >0) visited += IntToString(days) + " days ";
+	if(years >0) visited += IntToString(years) + " years ";
+	else if(months >0) visited += IntToString(months) + " months ";
+	else if(days >0) visited += IntToString(days) + " days ";
 	else if(hours >0) visited += IntToString(hours) + " hours ";
 	else if(minutes >0) visited += IntToString(minutes) + " minutes ";
 	else visited += " moments ";

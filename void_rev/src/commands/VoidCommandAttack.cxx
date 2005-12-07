@@ -26,7 +26,7 @@ string VoidCommandAttack::GetCommandString()const
 
 string VoidCommandAttack::GetDescription()const
 {
-    return "Engage another ship in warefare.";
+    return "Engage another ship in warfare.";
 }
 
 string VoidCommandAttack::GetSyntax()const
@@ -173,6 +173,13 @@ bool VoidCommandAttack::CommandAttack(int othership)
     if(ship->GetNkey() == othership)
     {
 	Send(Color()->get(RED) + "You can't attack yourself." + endr);
+	delete ship;
+	return true;
+    }
+    
+    if( ship->GetIsCloaked())
+    {
+	Send(Color()->get(RED) + "You cannot attack from a cloaked ship." + endr);
 	delete ship;
 	return true;
     }

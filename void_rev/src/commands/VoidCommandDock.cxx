@@ -48,7 +48,17 @@ bool VoidCommandDock::HandleCommand(const string &command, const string &argumen
     PlayerHandle * player = get_player();
     ShipHandle * ship = create_handle_to_current_ship(player);
 
+
+    if(ship->GetIsCloaked())
+    {
+	Send(Color()->get(RED) + "You cannot dock while your ship is cloaked." + endr );
+	delete ship;
+	return true;
+    }
+
     int sector = ship->GetSector();
+
+
 
     std::string query = "select bstardock from sectors where nsector = '" + IntToString(sector) + "';";
 

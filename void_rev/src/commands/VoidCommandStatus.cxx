@@ -139,8 +139,8 @@ void VoidCommandStatus::ShowStatus()
     os << std::left <<"Ship Name:" ;
     os << Color()->get(LIGHTBLUE);
     os << "    ";
-    os.width(30);
-    os << std::right <<  PQgetvalue(dbresult,0,6) << endr;
+    os.width(20);
+    os << std::left <<  PQgetvalue(dbresult,0,6) << endr;
     os << SendValue("Ship Number:", PQgetvalue(dbresult,0,5)) << endr;
     os << SendValue("Ship Type:", PQgetvalue(dbresult,0,23)) << endr;
     os << SendRow("Sentinels:",PQgetvalue(dbresult,0,9), PQgetvalue(dbresult,0,28)) << endr;

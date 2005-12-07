@@ -1,30 +1,14 @@
-
-People should kill their existing login when they try to log in twice, so that they
-can log in at home, forget, go to work, try to log in, and bump off the one logged
-in at home
-
-
-
-
 * Informational messages
 	* People entering/leaving sector
 * Attack
 
 
-
-*Mail
 *Sector aliases
 *Avoids
 *Who list - shows players, points, credits, etc
-*Player list - all players, online or not
 *Alliance list
 *Show territory in display sector
 **Configuration table!!!! 
-
-
-
-
-
 
 5) System Message queue (date, binactive, toplayer). In this way, messages will be queued up and delivered to the player
 	when they are online. In the server thread, before blocking on receive, they should check for and display active messages
