@@ -15,6 +15,7 @@
 #include "EdgeLoadThread.h"
 #include "VoidThreadSpawner.h"
 #include <unistd.h>
+#include "SocketException.h"
 
 const int VOID_PORT = 5005;
 
@@ -86,10 +87,15 @@ int main()
     while(!done)
     {
 
+	int n;
+	try{
+	    n = unixsocket->RecvFrom(str, 65536,0);
+	}
+	catch(SocketException e)
+	{
+	    cerr << "Caught socket exception doing RecvFrom in server: " << e.GetType() << ", " << e.GetErrno() << endl;
+	}
 	
-
-            int  n = unixsocket->RecvFrom(str, 65536, 0);
-
 	    str[n] = 0;
 	    string command = str; 
 
@@ -106,8 +112,14 @@ int main()
 	{
 	    cout << "Immediate Shutdown! Dropping connections..." << endl;
 	    done = true;
-	   
+
+	    try{
 	    unixsocket->SendTo((void*)shutdownstr,strlen(shutdownstr),"/tmp/void-threadspawner",0);
+	    }
+	    catch(SocketException e)
+	    {
+		cerr << "Caught socket exception doing SendTo threadspawner: " << e.GetType() << ", " << e.GetErrno() << endl;
+	    }
 
 	    threadspawner->Wait(); 
 	    delete threadspawner;
@@ -159,8 +171,13 @@ int main()
 
     delete edge_thread;
    
-
+    try{
     unixsocket->Close();
+    }
+    catch(SocketException e)
+    {
+	cerr << "Caught socket exception closing unixsocket." << endl;
+    }
 
     delete unixsocket;
 
