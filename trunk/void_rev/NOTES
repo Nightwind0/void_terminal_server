@@ -1,3 +1,19 @@
+
+=== Outpost Supply And Demand ===
+
+Stage 1: 
+Have  fcurrentbuyrate decrease a little for each purchase, meaning that if someone sells to you over and over, they make diminishing returns.
+Have fcurrentsellrate increase a little for each sale, meaning that if someone buys from you over and over, they make diminishing returns.
+
+Have these values pro-rated over a week, so that if one week or more passes, they return to fbuyrate and fsellrate. 
+
+Do the pro-rate calculation when someone ports. Just take number of hours since last port divided by number of hours in a week, and multiply that by 
+the difference between fucrrentbuyrate and fbuyrate. Same type of thing for fcurrentsellrate.
+
+
+
+
+
 Alliance owned ships:
 The criteria for claiming is either the ship has no missiles and 10% shields or less, OR it is owned by the same alliance as you and unoccupied.
 So to borrow an alliance ship, you claim it then beam to it.

@@ -786,7 +786,7 @@ void VoidServerThread::StartNewPlayer()
 {
     Send(Color()->get(BLUE,BG_WHITE) + "   *** Create New Player ***   " + endr + endr);
 
-    Send(Color()->get(GREEN) + "This will be what you are called in the game. It must be at least 3 characters, and no more than 25" + endr);
+    Send(Color()->get(GREEN) + "This will be what you are called in the game. It must be at least 3 characters, and no more than 15" + endr);
     
     bool done = false;
     std::string name;
@@ -799,9 +799,9 @@ void VoidServerThread::StartNewPlayer()
 	name = ReceiveLine();
 
 
-	if(name.size() <3 || name.size() > 25)
+	if(name.size() <3 || name.size() > 15)
 	{
-	    Send(Color()->get(LIGHTRED) + "Name bust be between 3 and 25 characters." + endr);
+	    Send(Color()->get(LIGHTRED) + "Name bust be between 3 and 15 characters." + endr);
 	    done = false;
 	    continue;
 	}

@@ -37,7 +37,7 @@ class ANSIColor : public ColorType
     }    
 
 
-    virtual std::string blackout()const{ return get(BLACK,BG_BLACK) + "        "; }
+    virtual std::string blackout()const{ return get(BLACK,BG_BLACK) + "    "; }
  private:
 };
 

@@ -56,6 +56,15 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	return true;
     }
 
+    if( ship->GetIsCloaked())
+    {
+	Send(Color()->get(RED) + "You cannot move while your ship is cloaked." + endr);
+	delete ship;
+
+	return true;
+    }
+
+
     if(sec <0 || sec >= Universe::GetNumSectors(get_thread()->GetDBConn()))
     {
 	os << Color()->get(LIGHTRED) << "Sector " << Color()->get(RED) << sec << Color()->get(LIGHTRED) << " does not exist." << endr;

@@ -1,7 +1,12 @@
 noinst_LTLIBRARIES = libcommandcomputer.la
 
 libcommandcomputer_la_SOURCES = VoidCommandComputerShipList.h \
-				VoidCommandComputerShipList.cxx
+				VoidCommandComputerShipList.cxx \
+				VoidCommandComputerPlayers.h \
+				VoidCommandComputerPlayers.cxx \
+				VoidCommandComputerCloak.h \
+				VoidCommandComputerCloak.cxx
+
 
 
 
