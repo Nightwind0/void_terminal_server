@@ -155,7 +155,7 @@ void VoidServerThread::HandleLocalMessage(const Message &msg)
 void VoidServerThread::OpenLocalSocket()
 {
 
-    std::string sockname = "/tmp/void-" + IntToString((int)this);
+    std::string sockname = "/tmp/void-" + IntToString((long)this);
     unlink(sockname.c_str());
 
     m_unixsocket = new UNIXDatagramSocket(sockname);
@@ -168,7 +168,7 @@ void VoidServerThread::OpenLocalSocket()
 void VoidServerThread::CloseLocalSocket()
 {
     m_unixsocket->Close();
-    std::string sockname = "/tmp/void-" + IntToString((int)this);
+    std::string sockname = "/tmp/void-" + IntToString((long)this);
     unlink(sockname.c_str());
 }
 

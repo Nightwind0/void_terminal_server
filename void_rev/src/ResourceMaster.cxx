@@ -81,7 +81,7 @@ bool ResourceMaster::SendMessage(DatagramSocket *socket, const std::string &play
     if(m_playermap.count(player))
     {
 	const VoidServerThread *t = m_playermap.find(player)->second;
-	std::string socketname = "/tmp/void-" + IntToString((int)t);
+	std::string socketname = "/tmp/void-" + IntToString((long)t);
 	Log(DEBUG,">Sending message: " + msg->GetString() + " to: " + player + "@" + socketname);
 	
 	msg->WriteToSocket(socket, socketname);
