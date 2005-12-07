@@ -246,12 +246,24 @@ bool VoidServerThread::thread_init()
 }
 void VoidServerThread::thread_destroy()
 {
+    try {
     ResourceMaster::GetInstance()->Log(DEBUG,"<Thread Destroy>");
     m_socket->Close();
     CloseDataBaseConnection();
     CloseLocalSocket();
     ResourceMaster::GetInstance()->RemoveSocket(m_socket);
     ResourceMaster::GetInstance()->RemoveServerThread(this);
+    }
+    catch ( SocketException e)
+    {
+	std::cout << "Caught socket exception." << std::endl;
+	ResourceMaster::GetInstance()->Log(ERROR,"<thread_destroy SocketException>");
+    }
+    catch(DBException db)
+    {
+	std::cout << "Caught DB exception" << std::endl;
+	ResourceMaster::GetInstance()->Log(ERROR,"<thread_destroy DBException>");
+    }
 }
 
 bool     VoidServerThread::run()
@@ -1347,7 +1359,8 @@ void        VoidServerThread::Service()
         }
 	catch(ShutdownException ex)
 	{
-	    
+	    ResourceMaster::GetInstance()->Log(DEBUG,"<Shutdown Exception Caught>");
+	    m_socket->Close();
 	    done = true;
 	}
 	catch(DBException e)

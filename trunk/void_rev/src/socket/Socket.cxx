@@ -7,8 +7,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <algorithm>
-
-
+#include <iostream>
+#include <string.h>
 #include "Socket.h"
 #include "SocketException.h"
 
@@ -288,7 +288,7 @@ int UNIXDatagramSocket::RecvFrom(void *buf, int len, unsigned int flags=MSG_NOSI
 {
  
     sockaddr_un sockadd;
-    socklen_t sockadd_size;
+    socklen_t sockadd_size = sizeof(sockadd);
     std::string from;
 
     int chunk = recvfrom(getSocketid(),buf,len,flags, (sockaddr*)&sockadd,&sockadd_size);
@@ -306,6 +306,7 @@ int UNIXDatagramSocket::RecvFrom(void *buf, int len, unsigned int flags=MSG_NOSI
 	    throw SocketException(NOTCONN);
 	    break;
 	default:
+	    std::cerr << "Exception errno: " << errno << ":" << strerror(errno) << std::endl;
 	    throw SocketException(UNKNOWN);
 	}
     }
