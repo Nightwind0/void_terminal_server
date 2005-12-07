@@ -1,0 +1,9 @@
+1. Add a database "void"
+	1a) Become the user "postgres"
+	1b) createdb void
+2. Create user "void" (as postgres)
+	2a) createuser void
+	2b) psql void
+	2c) alter user void with password 'tiTVPok?';
+	2d) grant all on database void to void;
+3. Run the creation sqls using (psql void) as postgres user
