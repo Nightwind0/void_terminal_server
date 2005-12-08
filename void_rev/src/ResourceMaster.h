@@ -58,6 +58,8 @@ class ResourceMaster
 
     bool isPlaying(LoginHandle *login) const;
 
+    std::string GetConfig(const std::string &key);
+
 
     std::vector<int>::iterator GetEdgesBegin(int sector);
     std::vector<int>::iterator GetEdgesEnd(int sector);

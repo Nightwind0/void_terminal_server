@@ -1027,6 +1027,10 @@ void VoidServerThread::SetTurnsLeft()
     std::string sql = "select extract( doy from dlastplay), extract (year from dlastplay), extract(doy from now()), extract(year from now()) from player where sname = '" + GetPlayer()->GetName().GetAsString() 
 	+ "';";
 
+    ResourceMaster * RM = ResourceMaster::GetInstance();
+
+    int turns_per_day = atoi(RM->GetConfig("turns_per_day").c_str());
+
     bool fill_turns = false;
 
     PGresult *dbresult = DBExec(sql);
@@ -1054,7 +1058,7 @@ void VoidServerThread::SetTurnsLeft()
     {
 	Send(Color()->get(GREEN) + "Your turns are refreshed." + endr);
 	GetPlayer()->Lock();
-	GetPlayer()->SetTurnsLeft(600); // TODO: GET FROM CONFIG TABLE!!!! DUH!!!
+	GetPlayer()->SetTurnsLeft(turns_per_day); 
 	GetPlayer()->Unlock();
     }
 		   
@@ -1306,6 +1310,16 @@ void        VoidServerThread::Service()
 
 		
 		std::transform (command.begin(), command.end(), command.begin(), ToLower());
+
+
+		if(command[0] >= '0' || command[0] <= '9')
+		{
+		    // Number? Probably a sector number.
+		    // So change command to move, and arguments to this number..
+		    arguments = command;
+		    command = "move";
+		}
+
 
 
 

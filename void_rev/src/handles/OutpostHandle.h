@@ -34,6 +34,13 @@ class OutpostHandle : public SerialObject
     Boolean BuysMetals()const;
     Boolean BuysCarbon()const;
     Float GetBuyRate()const;
+
+    float GetBuyRateAfterTime(unsigned int minutes);
+    float GetSellRateAfterTime(unsigned int minutes);
+
+    float GetBuyRateAfterPurchase( unsigned int units_purchased );
+    float GetSellRateAfterSale( unsigned int units_sold );
+
     Float GetSellRate()const;
     Text GetDiscoverer()const;
     Text GetLastVisitor()const;
@@ -46,6 +53,8 @@ class OutpostHandle : public SerialObject
     void SetLastVisitor(const std::string &visitor);
     void SetDaysToCompletion(const int days);
     void SetLastVisit(const std::string &ts);
+    void SetSellRate(float rate);
+    void SetBuyRate(float rate);
   
     virtual std::string DBTable()const { return "Outpost";};
 

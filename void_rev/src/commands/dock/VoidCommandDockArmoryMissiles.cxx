@@ -44,5 +44,5 @@ void VoidCommandDockArmoryMissiles::SetItemNumber(ShipHandle *ship,int num)
 }
 int VoidCommandDockArmoryMissiles::GetPriceOfItem()const
 {
-    return 100; // TODO: Get value from table
+    return atoi(get_config("missile_price").c_str());
 }

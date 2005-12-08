@@ -44,5 +44,5 @@ void VoidCommandDockArmoryShields::SetItemNumber(ShipHandle *ship,int num)
 }
 int VoidCommandDockArmoryShields::GetPriceOfItem()const
 {
-    return 100; // TODO: Get value from table
+    return atoi(get_config("shield_price").c_str());
 }
