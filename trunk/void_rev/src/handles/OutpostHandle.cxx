@@ -7,7 +7,7 @@
 #define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
 
 
-const char * OutpostHandle::FIELD_NAMES[] = {"sname","ksector","bspecial","bbuyplasma","bbuymetals","bbuycarbon","kdiscoverer","klastvisitor","ndaystocompletion","dlastvisit", "nplasmaprice","nmetalsprice","ncarbonprice"};
+const char * OutpostHandle::FIELD_NAMES[] = {"sname","ksector","bspecial","bbuyplasma","bbuymetals","bbuycarbon","kdiscoverer","klastvisitor","ndaystocompletion","dlastvisit", "fplasmaprice","fmetalsprice","fcarbonprice"};
 
 
 //  enum FIELDS{NAME,SECTOR,SPECIAL,BUYPLASMA,BUYMETALS,BUYCARBON,BUYRATE,SELLRATE,DISCOVERER,LASTVISITOR,DAYSTOCOMPLETION, LASTVISIT
@@ -63,19 +63,19 @@ Integer OutpostHandle::GetDaysToCompletion()const
     return GetInteger(DAYSTOCOMPLETION);
 }
 
-Integer OutpostHandle::GetPlasmaPrice() const
+Float OutpostHandle::GetPlasmaPrice() const
 {
-    return GetInteger(PLASMAPRICE);
+    return GetFloat(PLASMAPRICE);
 }
 
-Integer OutpostHandle::GetMetalsPrice() const
+Float OutpostHandle::GetMetalsPrice() const
 {
-    return GetInteger(METALSPRICE);
+    return GetFloat(METALSPRICE);
 }
 
-Integer OutpostHandle::GetCarbonPrice() const
+Float OutpostHandle::GetCarbonPrice() const
 {
-    return GetInteger(CARBONPRICE);
+    return GetFloat(CARBONPRICE);
 }
 
 void OutpostHandle::SetMetalsPrice(double price)
@@ -117,55 +117,73 @@ void OutpostHandle::SetLastVisit(const std::string &ts  )
     SetField(LASTVISIT, new Timestamp(GetFieldName(LASTVISIT),ts));
 }
 
-int OutpostHandle::GetBuyRateAfterTime(unsigned int minutes, int current_price)
+double OutpostHandle::GetBuyRateAfterTime(unsigned int minutes, double current_price)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
-    float rate_cap = atof(RM->GetConfig("buyrate_cap").c_str());
-    float gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
-    float stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
+
+    int delay = atoi(RM->GetConfig("price_change_delay").c_str());
+
+    if( minutes < delay ) return current_price;
+    else minutes -= delay;
+
+    double rate_cap = atof(RM->GetConfig("buyrate_cap").c_str());
+    double gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
+    double stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
  
-    RM->Log(DEBUG,"Price: " + IntToString(current_price) + " Rate cap: " + DoubleToString(rate_cap) + " gap_ratio: " + DoubleToString(gap_ratio) + " Minutes: " + IntToString(minutes) );
+    double result =   rate_cap - ((rate_cap - current_price) * pow(gap_ratio, (double)minutes / stock_recovery_minutes)) ;
 
-    int result =   (int)floor( rate_cap - ((rate_cap - current_price) * pow(gap_ratio, minutes / stock_recovery_minutes)) );
-
-    RM->Log(DEBUG,"Result equals: " + IntToString(result));
+    RM->Log(AUDIT,"#BUY P=" + DoubleToString(current_price) + "  I=" + IntToString(minutes) + " P'=" + DoubleToString(result)) ;
 
     return result;
 }
 
 
-int OutpostHandle::GetSellRateAfterTime(unsigned int minutes, int current_price)
+double OutpostHandle::GetSellRateAfterTime(unsigned int minutes, double current_price)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
-    float gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
-    float stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
-    float rate_floor = atof(RM->GetConfig("sellrate_floor").c_str());
+
+    int delay = atoi(RM->GetConfig("price_change_delay").c_str());
+
+    if( minutes < delay ) return current_price;
+    else minutes -= delay;
+
+    double gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
+    double stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
+    double rate_floor = atof(RM->GetConfig("sellrate_floor").c_str());
     
-    return (int)ceil((current_price - rate_floor) * pow(gap_ratio, minutes / stock_recovery_minutes) + rate_floor);
+
+    double result = (current_price - rate_floor) * pow(gap_ratio, (double)minutes / stock_recovery_minutes) + rate_floor;
+
+    RM->Log(AUDIT,"#SELL P=" + DoubleToString(current_price) + "  I=" + IntToString(minutes) + " P'=" + DoubleToString(result)) ;
+
+    return result;
 }
 
-int OutpostHandle::GetBuyRateAfterPurchase(unsigned int stock, int current_price)
+double OutpostHandle::GetBuyRateAfterPurchase(unsigned int stock, double current_price)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
-    float r = atof(RM->GetConfig("buy_price_delta_per_unit").c_str());
-    float i = atof(RM->GetConfig("stock_unit").c_str());
-    float f = atof(RM->GetConfig("sellrate_floor").c_str());
+    double r = atof(RM->GetConfig("buy_price_delta_per_unit").c_str());
+    double i = atof(RM->GetConfig("stock_unit").c_str());
+    double f = atof(RM->GetConfig("sellrate_floor").c_str());
     
-    int result = (int)floor((current_price - f) * pow(r,stock/i) + f);
+    double result = (current_price - f) * pow(r,(double)stock/i) + f;
+
+    RM->Log(AUDIT,"#PCH P=" + DoubleToString(current_price) + "  S=" + IntToString(stock) + " P'=" + DoubleToString(result)) ;
     
 
     return result;
 }
 
-int OutpostHandle::GetSellRateAfterSale(unsigned int stock, int current_price)
+double OutpostHandle::GetSellRateAfterSale(unsigned int stock, double current_price)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
-    float r = atof(RM->GetConfig("sell_price_delta_per_unit").c_str());
-    float i = atof(RM->GetConfig("stock_unit").c_str());
-    float f = atof(RM->GetConfig("sellrate_floor").c_str());
+    double r = atof(RM->GetConfig("sell_price_delta_per_unit").c_str());
+    double i = atof(RM->GetConfig("stock_unit").c_str());
+    double f = atof(RM->GetConfig("sellrate_floor").c_str());
     
-    int result = (int)ceil((current_price - f) * pow(r,stock/i) + f);
+    double result = (current_price - f) * pow(r,(double)stock/i) + f;
     
+    RM->Log(AUDIT,"#SLE P=" + DoubleToString(current_price) + "  S=" + DoubleToString(stock) + " P'=" + DoubleToString(result)) ;
 
     return result;
 }
@@ -174,24 +192,24 @@ int OutpostHandle::GetSellRateAfterSale(unsigned int stock, int current_price)
 
 #if 0
 
-void OutpostHandle::SetSellRate(float  rate)
+void OutpostHandle::SetSellRate(double  rate)
 {
-    SetField(SELLRATE, new Float(GetFieldName(SELLRATE),DoubleToString(rate)));
+    SetField(SELLRATE, new Double(GetFieldName(SELLRATE),DoubleToString(rate)));
 }
 
-void OutpostHandle::SetBuyRate(float rate)
+void OutpostHandle::SetBuyRate(double rate)
 {
-    SetField(SELLRATE, new Float(GetFieldName(BUYRATE),DoubleToString(rate)));
+    SetField(SELLRATE, new Double(GetFieldName(BUYRATE),DoubleToString(rate)));
 }
 
 
-float OutpostHandle::GetBuyRateAfterPurchase( unsigned int units_purchased )
+double OutpostHandle::GetBuyRateAfterPurchase( unsigned int units_purchased )
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
     
 }
 
-float OutpostHandle::GetSellRateAfterSale( unsigned int units_sold )
+double OutpostHandle::GetSellRateAfterSale( unsigned int units_sold )
 {
     
 }

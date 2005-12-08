@@ -3,6 +3,7 @@
 #include "VoidCommandDisplay.h"
 #include "Universe.h"
 #include "ResourceMaster.h"
+#include "OutpostHandle.h"
 #include <math.h>
 #include <sstream>
 
@@ -256,7 +257,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 {
 
     std::ostringstream os;
-    std::string outpostquery = "select sname, bbuyplasma, bbuymetals, bbuycarbon from Outpost where ksector = " + IntToString(sector) + ";";
+    std::string outpostquery = "select sname, bbuyplasma, bbuymetals, bbuycarbon, fplasmaprice, fmetalsprice,fcarbonprice, floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60) from Outpost where ksector = " + IntToString(sector) + ";";
     PGresult *dbresult;
 
     dbresult = get_thread()->DBExec(outpostquery);
@@ -283,22 +284,53 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
 	os << Color()->get(WHITE) << " (";
 
+	int minutes = atoi(PQgetvalue(dbresult,i,7));
+
 	Boolean buyplasma("bbuyplasma", PQgetvalue(dbresult,i,1), PQgetisnull(dbresult,i,1));
 	Boolean buymetals("bbuymetals", PQgetvalue(dbresult,i,2), PQgetisnull(dbresult,i,2));
 	Boolean buycarbon("bbuycarbon", PQgetvalue(dbresult,i,3), PQgetisnull(dbresult,i,3));
 
+	double plasmaprice = atof(PQgetvalue(dbresult,i,4));
+	double metalsprice = atof(PQgetvalue(dbresult,i,5));
+	double carbonprice = atof(PQgetvalue(dbresult,i,6));
+
 
 	if(buyplasma.GetValue())
+	{
 	    os << Color()->get(LIGHTBLUE) << 'B' ;
-	else os << Color()->get(LIGHTCYAN) << 'S' ;
+	    os << (int) round( OutpostHandle::GetBuyRateAfterTime(minutes,plasmaprice));
+	    os << ',';
+	}
+	else 
+	{
+	    os << Color()->get(LIGHTCYAN) << 'S' ;
+	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,plasmaprice));
+	    os << ',';
+	}
 
 	if(buymetals.GetValue())
+	{
 	    os << Color()->get(LIGHTBLUE) << 'B';
-	else os << Color()->get(LIGHTCYAN) << 'S' ;
+	    os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,metalsprice));
+	    os << ',';
+	}
+	else
+	{
+	    os << Color()->get(LIGHTCYAN) << 'S' ;
+	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,metalsprice));
+	    os << ',';
+	}
 
 	if(buycarbon.GetValue())
+	{
 	    os << Color()->get(LIGHTBLUE) << 'B';
-	else os << Color()->get(LIGHTCYAN) << 'S';
+	    os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,carbonprice));
+	}
+	else 
+	{
+	    os << Color()->get(LIGHTCYAN) << 'S';
+	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,carbonprice));
+	}
 	
 	os << Color()->get(WHITE) << ')' << endr;
 

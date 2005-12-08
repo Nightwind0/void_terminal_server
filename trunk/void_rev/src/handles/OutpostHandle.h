@@ -33,9 +33,9 @@ class OutpostHandle : public SerialObject
     Boolean BuysPlasma()const;
     Boolean BuysMetals()const;
     Boolean BuysCarbon()const;
-    Integer GetMetalsPrice() const;
-    Integer GetCarbonPrice() const;
-    Integer GetPlasmaPrice() const;
+    Float GetMetalsPrice() const;
+    Float GetCarbonPrice() const;
+    Float GetPlasmaPrice() const;
     Text GetDiscoverer()const;
     Text GetLastVisitor()const;
     Timestamp GetLastVisit()const;
@@ -51,10 +51,10 @@ class OutpostHandle : public SerialObject
     void SetPlasmaPrice(double price);
     void SetCarbonPrice(double price);
 
-    static int GetBuyRateAfterTime(unsigned int minutes, int current_price);
-    static int GetSellRateAfterTime(unsigned int minutes, int current_price);
-    static int GetBuyRateAfterPurchase(unsigned int stock, int current_price);
-    static int GetSellRateAfterSale(unsigned int stock, int current_price);
+    static double GetBuyRateAfterTime(unsigned int minutes, double current_price);
+    static double GetSellRateAfterTime(unsigned int minutes, double current_price);
+    static double GetBuyRateAfterPurchase(unsigned int stock, double current_price);
+    static double GetSellRateAfterSale(unsigned int stock, double current_price);
     virtual std::string DBTable()const { return "Outpost";};
 
 
