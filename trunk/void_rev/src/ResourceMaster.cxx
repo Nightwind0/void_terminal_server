@@ -32,6 +32,27 @@ ResourceMaster *ResourceMaster::GetInstance()
 }
 
 
+std::string ResourceMaster::GetConfig(const std::string &key)
+{
+    static NormalMutex mutex;
+    mutex.Lock();
+    m_dbmutex.Lock();
+
+    std::string sql = "select svalue from config where sname = '" + PrepareForSQL(key) + "';";
+
+    PGresult *dbresult = PQexec(m_dbconn, sql.c_str());
+
+    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK )    
+    {
+	Log(ERROR,">Config for key: " + key + " not found<");
+
+	PQclear(dbresult);
+	return "";
+    }
+    
+    return PQgetvalue(dbresult,0,0);
+}
+
 void ResourceMaster::SendSystemMail(const std::string &player, const std::string &msg)
 {
     static NormalMutex mutex;

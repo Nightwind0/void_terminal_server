@@ -200,5 +200,11 @@ ShipHandle *VoidCommand::create_handle_to_current_ship(PlayerHandle *player) con
 
     return ship;
 }
+std::string VoidCommand::get_config(const std::string &key) const
+{
+    ResourceMaster * RM = ResourceMaster::GetInstance();
+
+    return RM->GetConfig(key);
+}
 
 

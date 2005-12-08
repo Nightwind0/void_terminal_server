@@ -170,7 +170,7 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 	}
     }
 
-    int totalprice = 100 * nummissiles;
+    int totalprice = GetPriceOfItem() * nummissiles;
 
     Send(Color()->get(GREEN) + endr + "Total comes to "  + Color()->get(WHITE) +  IntToString(totalprice) +
 	 Color()->get(GREEN) + " credits. Still interested? (Y/n) : ");

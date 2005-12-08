@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iostream>
 
+
 using std::string;
 
 using std::ostringstream;
@@ -44,5 +45,5 @@ void VoidCommandDockArmorySentinels::SetItemNumber(ShipHandle *ship,int num)
 }
 int VoidCommandDockArmorySentinels::GetPriceOfItem()const
 {
-    return 150; // TODO: Get value from table
+    return atoi(get_config("sentinel_price").c_str());
 }

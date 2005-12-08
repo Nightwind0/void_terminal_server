@@ -47,6 +47,8 @@ class VoidCommand
     // static const char * blackout;
     VoidServerThread *get_thread() const;
 
+    std::string get_config(const std::string &key) const;
+
     std::string get_today() const;
 
 };

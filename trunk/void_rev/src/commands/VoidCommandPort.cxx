@@ -5,7 +5,8 @@
 #include "PlayerHandle.h"
 #include "ShipHandle.h"
 #include "Universe.h"
-
+#include "ResourceMaster.h"
+#include <string.h>
 
 VoidCommandPort::VoidCommandPort(VoidServerThread *thread):VoidCommand(thread)
 {
@@ -64,6 +65,8 @@ int VoidCommandPort::BuyGoods(const std::string &goods, int price_each,  int uni
 
 bool VoidCommandPort::CommandPort(const std::string &arguments)
 {
+    ResourceMaster * RM = ResourceMaster::GetInstance();
+
     PlayerHandle * player = get_player();
     ShipHandle * ship = create_handle_to_current_ship(player);
 
@@ -84,7 +87,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	return true;
     }
 
-    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor, extract (year from age(dlastvisit,now())), extract (month from age(dlastvisit,now())), extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())) from outpost where ksector = ";
+    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor, extract (year from age(dlastvisit,now())), extract (month from age(dlastvisit,now())), extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())), floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60)  from outpost where ksector = ";
 
     query += ship->GetSector().GetAsString();
 
@@ -132,6 +135,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     }
     
     std::string outpostname = PQgetvalue(dbresult,whichoutpost,0);
+
     
 //    PQclear(dbresult);
 
@@ -141,6 +145,10 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     
     OutpostHandle *outpost = new OutpostHandle(get_thread()->GetDBConn(),key,false);
     
+
+    float fbuyrate = outpost->GetBuyRate();
+    float fsellrate = outpost->GetSellRate();
+
     
     get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + Color()->blackout() + endr);
 
@@ -163,6 +171,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	int days = -atoi(PQgetvalue(dbresult,whichoutpost,11));
 	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,12));
 	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,13));
+	int minutes_delta = atoi(PQgetvalue(dbresult,whichoutpost,14));
 	
 	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,0,8) ;
 	visited += Color()->get(WHITE) + ' ';
@@ -179,6 +188,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	
 	
 	Send(visited);
+	
+	fbuyrate = outpost->GetBuyRateAfterTime( minutes_delta );
+	fsellrate = outpost->GetSellRateAfterTime ( minutes_delta );
+
+	outpost->Lock();
+	outpost->SetBuyRate  ( fbuyrate );
+	outpost->SetSellRate ( fsellrate );
+	outpost->Unlock();
 	
     }
     else
@@ -209,18 +226,18 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     int cur_holds = ship_plasma + ship_metals + ship_carbon;
     int empty_holds = max_holds - cur_holds;
     
-    bool buyplasma = ((std::string)PQgetvalue(dbresult,whichoutpost,2) == "t") ;
-    bool buymetals = ((std::string)PQgetvalue(dbresult,whichoutpost,3) == "t");
-    bool buycarbon = ((std::string)PQgetvalue(dbresult,whichoutpost,4) == "t");
+    bool buyplasma = (strcmp(PQgetvalue(dbresult,whichoutpost,2),"t") == 0); 
+    bool buymetals = (strcmp(PQgetvalue(dbresult,whichoutpost,3),"t") == 0); 
+    bool buycarbon = (strcmp(PQgetvalue(dbresult,whichoutpost,4),"t") == 0); 
 
-    int plasma_price = 50; // TODO: From settings table
-    int carbon_price = 20; // TODO: From settings table
-    int metals_price = 30; // TODO: From settings table
+    int plasma_price = atoi( RM->GetConfig("base_plasma_price").c_str());
+    int carbon_price = atoi( RM->GetConfig("base_carbon_price").c_str());
+    int metals_price = atoi( RM->GetConfig("base_metals_price").c_str());
 
     int credits = player->GetCredits();
 
-    double buyrate = atof(PQgetvalue(dbresult,0,5));
-    double sellrate = atof(PQgetvalue(dbresult,0,6));
+    double buyrate = fbuyrate;
+    double sellrate = fsellrate;
 
     PQclear(dbresult);
 

@@ -44,5 +44,5 @@ void VoidCommandDockShipYardHolds::SetItemNumber(ShipHandle *ship,int num)
 }
 int VoidCommandDockShipYardHolds::GetPriceOfItem()const
 {
-    return 100; // TODO: Get value from table
+    return atoi(get_config("hold_price").c_str());
 }
