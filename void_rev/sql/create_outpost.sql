@@ -16,3 +16,11 @@ GRANT ALL ON Outpost to void;
 ALTER TABLE Outpost ADD COLUMN nplasmaprice integer;
 ALTER TABLE Outpost ADD COLUMN nmetalsprice integer;
 ALTER TABLE Outpost ADD COLUMN ncarbonprice integer;
+
+ALTER TABLE Outpost ADD COLUMN fplasmaprice real;
+ALTER TABLE Outpost ADD COLUMN fmetalsprice real;
+ALTER TABLE Outpost ADD COLUMN fcarbonprice real;
+
+update Outpost set fplasmaprice = nplasmaprice;
+update Outpost set fmetalsprice = nmetalsprice;
+update Outpost set fcarbonprice = ncarbonprice;

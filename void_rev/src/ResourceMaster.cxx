@@ -288,6 +288,14 @@ void ResourceMaster::Log(LOG_SEVERITY severity, std::string message)
     mutex.Lock();
 
 
+    LOG_SEVERITY debug_level = (LOG_SEVERITY)atoi(GetConfig("log_level").c_str());
+
+    if ( debug_level < severity)
+    {
+	mutex.Unlock();
+	return;
+    }
+
     PGresult *dbresult;
 
     std::ostringstream os;
