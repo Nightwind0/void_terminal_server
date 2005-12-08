@@ -7,12 +7,14 @@ void *ThreadStartRoutine(Thread *pthread)
 
     pthread->setRunning(true);
 
-    pthread->thread_init();
+    if(pthread->thread_init())
+    {
 
-    pthread->run();
+	pthread->run();
 
-    pthread->thread_destroy();
-    pthread->end();
+	pthread->thread_destroy();
+	pthread->end();
+    }
 
 
     return NULL;
