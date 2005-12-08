@@ -87,7 +87,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	return true;
     }
 
-    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon,fbuyrate,fsellrate, kdiscoverer, klastvisitor, extract (year from age(dlastvisit,now())), extract (month from age(dlastvisit,now())), extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())), floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60)  from outpost where ksector = ";
+    std::string query = "select sname, bspecial, bbuyplasma, bbuymetals, bbuycarbon, kdiscoverer, klastvisitor, extract (year from age(dlastvisit,now())), extract (month from age(dlastvisit,now())), extract (day from age(dlastvisit,now())), extract (hour from age(dlastvisit,now())), extract(minute from age(dlastvisit,now())), floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60), nplasmaprice, nmetalsprice, ncarbonprice from outpost where ksector = ";
 
     query += ship->GetSector().GetAsString();
 
@@ -146,34 +146,34 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     OutpostHandle *outpost = new OutpostHandle(get_thread()->GetDBConn(),key,false);
     
 
-    float fbuyrate = outpost->GetBuyRate();
-    float fsellrate = outpost->GetSellRate();
-
-    
     get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + Color()->blackout() + endr);
 
     player->Lock();
     player->SetTurnsLeft( cur_turns - 1);
     player->Unlock();
 
+    bool buyplasma = (strcmp(PQgetvalue(dbresult,whichoutpost,2),"t") == 0); 
+    bool buymetals = (strcmp(PQgetvalue(dbresult,whichoutpost,3),"t") == 0); 
+    bool buycarbon = (strcmp(PQgetvalue(dbresult,whichoutpost,4),"t") == 0); 
 
-    //  Text lastvisitor = outpost->GetLastVisitor();
-    //Timestamp lastvisit = outpost->GetLastVisit();
-    
-    if(!PQgetisnull(dbresult,0,8))
+    int plasma_price = atoi(PQgetvalue(dbresult,whichoutpost,13));
+    int carbon_price = atoi(PQgetvalue(dbresult,whichoutpost,14));
+    int metals_price = atoi(PQgetvalue(dbresult,whichoutpost,15));
+
+
+    if(!PQgetisnull(dbresult,0,6))
     {
-//	get_thread()->Send(Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + lastvisitor.GetAsString() + Color()->get(BROWN) + " on " + Color()->get(WHITE) + lastvisit.GetAsString() + endr);
     
 	std::string visited;
 	
-	int years = -atoi(PQgetvalue(dbresult,whichoutpost,9));
-	int months = -atoi(PQgetvalue(dbresult,whichoutpost,10));
-	int days = -atoi(PQgetvalue(dbresult,whichoutpost,11));
-	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,12));
-	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,13));
-	int minutes_delta = atoi(PQgetvalue(dbresult,whichoutpost,14));
+	int years = -atoi(PQgetvalue(dbresult,whichoutpost,7));
+	int months = -atoi(PQgetvalue(dbresult,whichoutpost,8));
+	int days = -atoi(PQgetvalue(dbresult,whichoutpost,9));
+	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,10));
+	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,11));
+	int minutes_delta = atoi(PQgetvalue(dbresult,whichoutpost,12));
 	
-	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,0,8) ;
+	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,whichoutpost,6) ;
 	visited += Color()->get(WHITE) + ' ';
 	
 	if(years >0) visited += IntToString(years) + " years ";
@@ -185,17 +185,28 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	
 	
 	visited += Color()->get(BROWN) + "ago." + endr;
+
 	
-	
-	Send(visited);
-	
-	fbuyrate = outpost->GetBuyRateAfterTime( minutes_delta );
-	fsellrate = outpost->GetSellRateAfterTime ( minutes_delta );
+	// TODO: Adjust for minutes_delta gone by for each of plasma, metals and carbon
+	if(buyplasma)
+	    plasma_price = OutpostHandle::GetBuyRateAfterTime(minutes_delta, plasma_price);
+	else plasma_price = OutpostHandle::GetSellRateAfterTime(minutes_delta,plasma_price);
+
+	if(buymetals)
+	    metals_price = OutpostHandle::GetBuyRateAfterTime(minutes_delta, metals_price );
+	else metals_price = OutpostHandle::GetSellRateAfterTime(minutes_delta, metals_price );
+
+	if(buycarbon)
+	    carbon_price = OutpostHandle::GetBuyRateAfterTime(minutes_delta, carbon_price );
+	else carbon_price = OutpostHandle::GetSellRateAfterTime(minutes_delta, carbon_price );
 
 	outpost->Lock();
-	outpost->SetBuyRate  ( fbuyrate );
-	outpost->SetSellRate ( fsellrate );
+	outpost->SetPlasmaPrice(plasma_price);
+	outpost->SetMetalsPrice(metals_price);
+	outpost->SetCarbonPrice(carbon_price);
 	outpost->Unlock();
+
+	Send(visited);
 	
     }
     else
@@ -226,35 +237,19 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     int cur_holds = ship_plasma + ship_metals + ship_carbon;
     int empty_holds = max_holds - cur_holds;
     
-    bool buyplasma = (strcmp(PQgetvalue(dbresult,whichoutpost,2),"t") == 0); 
-    bool buymetals = (strcmp(PQgetvalue(dbresult,whichoutpost,3),"t") == 0); 
-    bool buycarbon = (strcmp(PQgetvalue(dbresult,whichoutpost,4),"t") == 0); 
-
-    int plasma_price = atoi( RM->GetConfig("base_plasma_price").c_str());
-    int carbon_price = atoi( RM->GetConfig("base_carbon_price").c_str());
-    int metals_price = atoi( RM->GetConfig("base_metals_price").c_str());
-
     int credits = player->GetCredits();
-
-    double buyrate = fbuyrate;
-    double sellrate = fsellrate;
 
     PQclear(dbresult);
 
     
     get_thread()->Send(Color()->get(WHITE) + IntToString(credits) + Color()->get(CYAN) + " credits" + endr);
 
-    // Plasma trading
-
-//    if(!outpost->Exists())
-	
-
     if(buyplasma)
     {
 	if(ship_plasma >0)
 	{
 	    
-	    int sold = BuyGoods(Color()->get(LIGHTPURPLE) + "Plasma", plasma_price * buyrate, ship_plasma);
+	    int sold = BuyGoods(Color()->get(LIGHTPURPLE) + "Plasma", plasma_price , ship_plasma);
 
 	    empty_holds += sold;
 
@@ -266,8 +261,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		ship->Unlock();
 
 		player->Lock();
-		player->SetCredits(player->GetCredits() + (sold * (plasma_price * buyrate)));
+		player->SetCredits(player->GetCredits() + (sold * plasma_price ));
 		player->Unlock();
+
+		plasma_price = OutpostHandle::GetBuyRateAfterPurchase( sold, plasma_price );
+		outpost->Lock();
+		outpost->SetPlasmaPrice( plasma_price );
+		outpost->Unlock();
+
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
 	    }
 	    else
@@ -287,7 +288,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	if(ship_metals >0)
 	{
 	    
-	    int sold = BuyGoods(Color()->get(BROWN) + "Metals", metals_price * buyrate, ship_metals);
+	    int sold = BuyGoods(Color()->get(BROWN) + "Metals", metals_price , ship_metals);
 
 
 	    empty_holds += sold;
@@ -299,8 +300,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		ship->Unlock();
 
 		player->Lock();
-		player->SetCredits(player->GetCredits() + (sold * (metals_price * buyrate)));
+		player->SetCredits(player->GetCredits() + (sold * (metals_price )));
 		player->Unlock();
+
+		metals_price = OutpostHandle::GetBuyRateAfterPurchase( sold, metals_price );
+		outpost->Lock();
+		outpost->SetMetalsPrice( metals_price );
+		outpost->Unlock();
+
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
 	    }
 	    else
@@ -319,7 +326,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	if(ship_carbon >0)
 	{
 	    
-	    int sold = BuyGoods(Color()->get(CYAN) + "Carbon", carbon_price * buyrate, ship_carbon);
+	    int sold = BuyGoods(Color()->get(CYAN) + "Carbon", carbon_price , ship_carbon);
 
 	    empty_holds += sold;
 
@@ -331,8 +338,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		ship->Unlock();
 
 		player->Lock();
-		player->SetCredits(player->GetCredits() + (sold * (carbon_price * buyrate)));
+		player->SetCredits(player->GetCredits() + (sold * (carbon_price )));
 		player->Unlock();
+
+		carbon_price = OutpostHandle::GetBuyRateAfterPurchase( sold, carbon_price );
+		outpost->Lock();
+		outpost->SetCarbonPrice( carbon_price );
+		outpost->Unlock();
+
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
 	    }
 	    else
@@ -352,10 +365,8 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	if(empty_holds > 0)
 	{
 	    deal = true;
-	    int price = (int)((double)plasma_price * sellrate);
-
-
-	    int bought = SellGoods(Color()->get(LIGHTPURPLE) + "Plasma", plasma_price * sellrate, empty_holds, player->GetCredits());
+	    
+	    int bought = SellGoods(Color()->get(LIGHTPURPLE) + "Plasma", plasma_price , empty_holds, player->GetCredits());
 
 	    
 	    empty_holds -= bought;
@@ -368,8 +379,16 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		ship->Unlock();
 
 		player->Lock();
-		player->SetCredits(player->GetCredits() - (bought * (plasma_price * sellrate)));
+		player->SetCredits(player->GetCredits() - (bought * (plasma_price )));
 		player->Unlock();
+
+
+		plasma_price = OutpostHandle::GetSellRateAfterSale ( bought, plasma_price );
+		outpost->Lock();
+		outpost->SetPlasmaPrice( plasma_price );
+		outpost->Unlock();
+
+		
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
 		
 	    }
@@ -387,10 +406,8 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	if(empty_holds > 0)
 	{
 	    deal = true;
-	    int price = (int)((double)metals_price * sellrate);
-
-
-	    int bought = SellGoods(Color()->get(BROWN) + "Metals", metals_price * sellrate, empty_holds, player->GetCredits());
+	    
+	    int bought = SellGoods(Color()->get(BROWN) + "Metals", metals_price , empty_holds, player->GetCredits());
 
 	    empty_holds -= bought;
 	    if(bought)
@@ -401,8 +418,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		ship->Unlock();
 
 		player->Lock();
-		player->SetCredits(player->GetCredits() - (bought * (metals_price * sellrate)));
+		player->SetCredits(player->GetCredits() - (bought * (metals_price )));
 		player->Unlock();
+
+		metals_price = OutpostHandle::GetSellRateAfterSale ( bought, metals_price );
+		outpost->Lock();
+		outpost->SetMetalsPrice( metals_price );
+		outpost->Unlock();
+
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
 		
 	    }
@@ -419,10 +442,8 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	if(empty_holds > 0)
 	{
 	    deal = true;
-	    int price = (int)((double)carbon_price * sellrate);
 
-
-	    int bought = SellGoods(Color()->get(CYAN) + "Carbon", carbon_price * sellrate, empty_holds, player->GetCredits());
+	    int bought = SellGoods(Color()->get(CYAN) + "Carbon", carbon_price , empty_holds, player->GetCredits());
 	    empty_holds -= bought;
 	    
 	    if(bought)
@@ -433,8 +454,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		ship->Unlock();
 
 		player->Lock();
-		player->SetCredits(player->GetCredits() - (bought * (carbon_price * sellrate)));
+		player->SetCredits(player->GetCredits() - (bought * (carbon_price )));
 		player->Unlock();
+
+		carbon_price = OutpostHandle::GetSellRateAfterSale ( bought, carbon_price );
+		outpost->Lock();
+		outpost->SetCarbonPrice( carbon_price );
+		outpost->Unlock();
+
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
 		
 	    }

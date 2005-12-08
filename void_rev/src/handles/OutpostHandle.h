@@ -21,7 +21,7 @@ class OutpostHandle : public SerialObject
 
     RESOURCE_TYPE GetType()const{return OUTPOSTTYPE;};
 
-    enum FIELDS{NAME,SECTOR,SPECIAL,BUYPLASMA,BUYMETALS,BUYCARBON,BUYRATE,SELLRATE,DISCOVERER,LASTVISITOR,DAYSTOCOMPLETION, LASTVISIT};
+    enum FIELDS{NAME,SECTOR,SPECIAL,BUYPLASMA,BUYMETALS,BUYCARBON,DISCOVERER,LASTVISITOR,DAYSTOCOMPLETION, LASTVISIT, PLASMAPRICE, METALSPRICE,CARBONPRICE};
 
     virtual std::string GetFieldName(int fieldnum)const;
     static std::string FieldName(int fieldnum){return FIELD_NAMES[fieldnum];}
@@ -33,15 +33,9 @@ class OutpostHandle : public SerialObject
     Boolean BuysPlasma()const;
     Boolean BuysMetals()const;
     Boolean BuysCarbon()const;
-    Float GetBuyRate()const;
-
-    float GetBuyRateAfterTime(unsigned int minutes);
-    float GetSellRateAfterTime(unsigned int minutes);
-
-    float GetBuyRateAfterPurchase( unsigned int units_purchased );
-    float GetSellRateAfterSale( unsigned int units_sold );
-
-    Float GetSellRate()const;
+    Integer GetMetalsPrice() const;
+    Integer GetCarbonPrice() const;
+    Integer GetPlasmaPrice() const;
     Text GetDiscoverer()const;
     Text GetLastVisitor()const;
     Timestamp GetLastVisit()const;
@@ -53,9 +47,14 @@ class OutpostHandle : public SerialObject
     void SetLastVisitor(const std::string &visitor);
     void SetDaysToCompletion(const int days);
     void SetLastVisit(const std::string &ts);
-    void SetSellRate(float rate);
-    void SetBuyRate(float rate);
-  
+    void SetMetalsPrice(double price);
+    void SetPlasmaPrice(double price);
+    void SetCarbonPrice(double price);
+
+    static int GetBuyRateAfterTime(unsigned int minutes, int current_price);
+    static int GetSellRateAfterTime(unsigned int minutes, int current_price);
+    static int GetBuyRateAfterPurchase(unsigned int stock, int current_price);
+    static int GetSellRateAfterSale(unsigned int stock, int current_price);
     virtual std::string DBTable()const { return "Outpost";};
 
 

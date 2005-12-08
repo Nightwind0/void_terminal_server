@@ -1312,7 +1312,7 @@ void        VoidServerThread::Service()
 		std::transform (command.begin(), command.end(), command.begin(), ToLower());
 
 
-		if(command[0] >= '0' || command[0] <= '9')
+		if(command[0] >= '0' && command[0] <= '9')
 		{
 		    // Number? Probably a sector number.
 		    // So change command to move, and arguments to this number..
