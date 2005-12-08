@@ -56,14 +56,16 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
     os << m_thread->Color()->get(BROWN,BG_WHITE) << "                    Ship List                    " << m_thread->Color()->blackout() << endr;
     os << m_thread->Color()->get(LIGHTGREEN);
     os.fill(' ');
-    os.width(10);
+    os.width(7);
     os << left << "Ship#";
-    os.width(30);
+    os.width(25);
     os << left << "Ship";
-    os.width(30);
+    os.width(25);
     os << left << "Ship Type";
     os.width(6);
-    os << left << "Sector";
+    os << left << "Sec.";
+    os.width(5);
+    os << right << "Cloak";
     os << endr;
 
    
@@ -80,24 +82,27 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
 	ShipTypeHandle shiptype = shiph.GetShipTypeHandle();
 
 	int sector = (int)shiph.GetSector();
-
+	
+	char cloaked = shiph.GetIsCloaked()?'T':'F';
 	
 	FGColor fgcolor = (FGColor)((int)shiptype.GetForeColor());
 	BGColor bgcolor = (BGColor)((int)shiptype.GetBackColor());
 	
 
 	os << m_thread->Color()->get(WHITE);
-	os.width(10);
+	os.width(7);
 	os << left <<  *iter;
 	os << m_thread->Color()->get(LIGHTBLUE);
-	os.width(30);
+	os.width(25);
 	os << left << (std::string)shiph.GetName();
 	os << m_thread->Color()->get(fgcolor,bgcolor);
-	os.width(30);
+	os.width(25 + m_thread->Color()->get(fgcolor,bgcolor).size());
 	os << left << (std::string)shiptype.GetShipTypeName(m_thread->Color());
 	os << m_thread->Color()->get(WHITE,BG_BLACK);
 	os.width(6);
 	os << right << sector;
+	os.width(5);
+	os << right << cloaked;
 	os << endr;	
     }
     os << endr;

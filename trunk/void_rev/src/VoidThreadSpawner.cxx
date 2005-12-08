@@ -25,16 +25,16 @@ bool VoidThreadSpawner::thread_init()
 {
 
     try{
-    m_socket = new TCPSocket("playvoid.servegame.com",m_port);
+    m_socket = new TCPSocket("mrdanny.kicks-ass.net",m_port);
     m_socket->Create();
-    m_socket->Bind(m_port, "playvoid.servegame.com");
+    m_socket->Bind(m_port, "mrdanny.kicks-ass.net");
     m_socket->Listen();
     }
     catch(SocketException &ex)
     {
 	cerr << "VoidThreadSpawner Socket Bind Error: " << ex.GetErrno() << endl;
 	m_socket->Close();
-	throw ex;
+	return false;
     }
 
     try{
@@ -46,7 +46,7 @@ bool VoidThreadSpawner::thread_init()
     catch(SocketException &exs)
     {
 	cerr << "VoidThreadSpanwer Unix Socket Error:" << exs.GetErrno() << endl;
-	throw exs;
+	return false;
     }
 	
 

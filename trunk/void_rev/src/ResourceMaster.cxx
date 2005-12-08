@@ -49,6 +49,9 @@ std::string ResourceMaster::GetConfig(const std::string &key)
 	PQclear(dbresult);
 	return "";
     }
+    m_dbmutex.Unlock();
+    mutex.Unlock();
+
     
     return PQgetvalue(dbresult,0,0);
 }

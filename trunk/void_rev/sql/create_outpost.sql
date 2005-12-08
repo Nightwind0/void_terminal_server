@@ -5,11 +5,14 @@ bspecial BOOLEAN,
 bbuyplasma BOOLEAN NOT NULL,
 bbuymetals BOOLEAN NOT NULL,
 bbuycarbon BOOLEAN NOT NULL,
-fbuyrate FLOAT NOT NULL,
-fsellrate FLOAT NOT NULL, 
 kdiscoverer varchar(30) REFERENCES Player(sname),
 klastvisitor varchar(30) REFERENCES Player(sname),
 dlastvisit timestamp,
 ndaystocompletion integer
 );
 GRANT ALL ON Outpost to void;
+
+
+ALTER TABLE Outpost ADD COLUMN nplasmaprice integer;
+ALTER TABLE Outpost ADD COLUMN nmetalsprice integer;
+ALTER TABLE Outpost ADD COLUMN ncarbonprice integer;
