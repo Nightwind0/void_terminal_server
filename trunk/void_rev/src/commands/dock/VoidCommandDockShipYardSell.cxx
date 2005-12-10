@@ -10,7 +10,7 @@
 using std::string;
 
 
-VoidCommandDockShipYardSell::VoidCommandDockShipYardSell(VoidServerThread *thread):VoidCommand(thread),EvaluateShipBehavior(thread),DeleteShipBehavior(thread)
+VoidCommandDockShipYardSell::VoidCommandDockShipYardSell(VoidServerThread *thread):VoidCommand(thread),EvaluateShipBehavior(thread),m_ship_tools(thread->GetDBConn())
 {
 }
 VoidCommandDockShipYardSell::~VoidCommandDockShipYardSell()
@@ -122,7 +122,7 @@ bool VoidCommandDockShipYardSell::DockShipYardSell(const string &arguments)
 
     if(sellit)
     {
-	delete_ship(shipnum);
+	m_ship_tools.DeleteShip(shipnum);
 	player->Lock();
 	player->SetCredits ( player->GetCredits() + value);
 	player->Unlock();

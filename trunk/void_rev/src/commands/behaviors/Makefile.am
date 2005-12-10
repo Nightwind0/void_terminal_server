@@ -1,15 +1,9 @@
 noinst_LTLIBRARIES = libcommandbehaviors.la
 
-libcommandbehaviors_la_SOURCES =  DeleteShipBehavior.cxx \
-			EvaluateShipBehavior.cxx \
+libcommandbehaviors_la_SOURCES =  EvaluateShipBehavior.cxx \
 			ShipListBehavior.cxx \
-			EscapePodBehavior.cxx \
-			SectorCommBehavior.cxx \
-			DeleteShipBehavior.h \
 			EvaluateShipBehavior.h \
-			ShipListBehavior.h \
-			EscapePodBehavior.h \
-			SectorCommBehavior.h
+			ShipListBehavior.h 
 
 INCLUDES = 	-I@top_srcdir@/src \
 		-I@top_srcdir@/src/handles/ \

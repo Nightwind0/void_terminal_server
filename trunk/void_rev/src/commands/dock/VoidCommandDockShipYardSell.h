@@ -8,11 +8,13 @@
 #include "void_util.h"
 #include "VoidServerThread.h"
 #include "EvaluateShipBehavior.h"
-#include "DeleteShipBehavior.h"
+#include "ShipTools.h"
 
 using std::string;
 
-class VoidCommandDockShipYardSell : public VoidCommand, public EvaluateShipBehavior, public DeleteShipBehavior
+
+
+class VoidCommandDockShipYardSell : public VoidCommand, private EvaluateShipBehavior
 {
  public:
     VoidCommandDockShipYardSell(VoidServerThread *thread);
@@ -31,6 +33,8 @@ class VoidCommandDockShipYardSell : public VoidCommand, public EvaluateShipBehav
     bool DockShipYardSell(const std::string &arguments);
 
     VoidCommandDockShipYardSell();
+
+    ShipTools m_ship_tools;
 
 };
     

@@ -9,7 +9,7 @@
 
 using std::string;
 
-class VoidCommandBeam : public VoidCommand, public ShipListBehavior
+class VoidCommandBeam : public VoidCommand, private ShipListBehavior
 {
  public:
     VoidCommandBeam(VoidServerThread *thread);

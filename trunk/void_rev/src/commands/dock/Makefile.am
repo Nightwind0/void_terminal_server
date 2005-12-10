@@ -26,6 +26,7 @@ libcommanddock_la_SOURCES = 	VoidCommandDockShipYard.cxx \
 INCLUDES = 	-I@top_srcdir@/src \
 		-I@top_srcdir@/src/handles/ \
 		-I@top_srcdir@/src/socket/ \
+		-I@top_srcdir@/src/tools/ \
 		-I@top_srcdir@/src/thread/ \
 		-I@top_srcdir@/src/commands/ \
 		-I@top_srcdir@/src/commands/dock/ \

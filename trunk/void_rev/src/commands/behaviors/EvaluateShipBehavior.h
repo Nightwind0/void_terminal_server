@@ -3,17 +3,18 @@
 
 #include "ShipHandle.h"
 #include "VoidServerThread.h"
+#include "Behavior.h"
 
-class EvaluateShipBehavior
+class EvaluateShipBehavior : public Behavior
 {
  public:
     EvaluateShipBehavior(VoidServerThread *t);
-    ~EvaluateShipBehavior();
- protected:
+    virtual ~EvaluateShipBehavior();
+
     int EvaluateShip(int shipnum);
 
  private:
-    VoidServerThread *m_thread;
+
 };
 
 #endif 

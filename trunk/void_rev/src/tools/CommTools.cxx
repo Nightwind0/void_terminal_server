@@ -1,33 +1,23 @@
-#include "SectorCommBehavior.h"
-#include <vector>
-#include <sstream>
-#include <deque>
-#include "Universe.h"
-#include "void_util.h"
-#include <math.h>
+#include "CommTools.h"
+#include "Message.h"
 #include "ResourceMaster.h"
-#include "SocketException.h"
-#include <algorithm>
-#include "VoidServerThread.h"
-#include <list>
-#include <string>
 
-SectorCommBehavior::SectorCommBehavior(VoidServerThread *thread)
-{
-    m_thread = thread;
-}
 
-SectorCommBehavior::~SectorCommBehavior()
+CommTools::CommTools(PGconn * dbconn, DatagramSocket * pSocket):ToolSet(dbconn),m_pLocalSocket(pSocket)
 {
 }
 
-std::list<std::string> SectorCommBehavior::get_players_in_sector(int sector)
+CommTools::~CommTools()
+{
+}
+
+std::list<std::string> CommTools::get_players_in_sector(int sector)
 {
     std::list<std::string> playerlist;
     std::string query = "select player.sname from player,ship where ship.ksector = '" + IntToString(sector)
 	+  "' and player.kcurrentship = ship.nkey;";
 
-    PGresult *dbresult = m_thread->DBExec(query);
+    PGresult *dbresult = DBExec(query);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
@@ -49,7 +39,7 @@ std::list<std::string> SectorCommBehavior::get_players_in_sector(int sector)
     return playerlist;
 }
 
-void SectorCommBehavior::SendMsgToSector(const std::string &str, int sec, const std::string &exceptplayer)
+void CommTools::SendMsgToSector(const std::string &str, int sec, const std::string &exceptplayer)
 {
     Message msg;
     msg.SetType(Message::BATTLE);
@@ -64,9 +54,15 @@ void SectorCommBehavior::SendMsgToSector(const std::string &str, int sec, const 
 	iter != players.end(); iter++)
     {
 	if(*iter != exceptplayer)
-	    ResourceMaster::GetInstance()->SendMessage(m_thread->GetLocalSocket(), *iter, &msg);
+	    ResourceMaster::GetInstance()->SendMessage(m_pLocalSocket, *iter, &msg);
     }
     
     
 }
 
+void CommTools::SendMessage( const std::string &to, Message * pMessage )
+{
+    ResourceMaster * RM = ResourceMaster::GetInstance();
+
+    RM->SendMessage( m_pLocalSocket, to, pMessage );
+}

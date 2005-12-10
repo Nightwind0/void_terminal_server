@@ -4,17 +4,18 @@
 #include "ShipHandle.h"
 #include "VoidServerThread.h"
 #include <list>
+#include "Behavior.h"
 
-class ShipListBehavior
+class ShipListBehavior : public Behavior
 {
  public:
     ShipListBehavior(VoidServerThread *t);
-    ~ShipListBehavior();
- protected:
+    virtual ~ShipListBehavior();
+
     std::list<int> GetOwnedShips();
     void ShowShipList(const std::list<int> &ships);
  private:
-    VoidServerThread *m_thread;
+
 };
 
 #endif //VOID_ESCAPEPOD_BEHAVIOR_H

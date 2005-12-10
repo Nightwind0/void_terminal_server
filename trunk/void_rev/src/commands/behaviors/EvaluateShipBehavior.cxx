@@ -10,9 +10,9 @@
 #include <algorithm>
 #include "VoidServerThread.h"
 
-EvaluateShipBehavior::EvaluateShipBehavior(VoidServerThread *thread)
+EvaluateShipBehavior::EvaluateShipBehavior(VoidServerThread *thread):Behavior(thread)
 {
-    m_thread = thread;
+   
 }
 
 EvaluateShipBehavior::~EvaluateShipBehavior()
@@ -27,7 +27,7 @@ int EvaluateShipBehavior::EvaluateShip(int shipnum)
 
     std::string sql = "select nmissiles, nshields, nholds - ninitholds, nsentinels, nmines, ncost from ship,shiptype where ship.ktype = shiptype.nkey and ship.nkey = '" + IntToString(shipnum) + "';";
 
-    PGresult *dbresult = m_thread->DBExec(sql);
+    PGresult *dbresult = get_behavior_thread()->DBExec(sql);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {

@@ -11,7 +11,7 @@
 
 using std::string;
 
-class VoidCommandDockShipYardBuy : public VoidCommand, public EvaluateShipBehavior
+class VoidCommandDockShipYardBuy : public VoidCommand, private EvaluateShipBehavior
 {
  public:
     VoidCommandDockShipYardBuy(VoidServerThread *thread);

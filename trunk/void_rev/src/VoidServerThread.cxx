@@ -39,7 +39,7 @@
 #include "VoidCommandClaim.h"
 #include "VoidCommandComputer.h"
 
-const char * VoidServerThread::endr = "\n\r";
+
 
 
 using namespace std;
@@ -73,27 +73,7 @@ LoginHandle * VoidServerThread::GetLogin() const
     return m_login;
 }
 
-void VoidServerThread::LogEvent(const Event &event)
-{
-    std::ostringstream stmt;
-    stmt <<  "insert into eventlog values(now(), '" << event.GetActor() << "','" << event.GetSubject() << "','"
-	 << (int)event.GetType() << "','" << PrepareForSQL(event.GetMessage()) << "','"
-	 << event.GetShipType() <<"','" << PrepareForSQL(event.GetShipName()) << "');";
 
-    PGresult * dbresult = DBExec(stmt.str());
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-    {
-
-	PQclear(dbresult);
-	throw DBException(PQerrorMessage(m_dbconn));
-    }
-
-
-    
-
-    
-}
 
 void VoidServerThread::HandleSystemMessage(const Message &msg)
 {
@@ -1068,7 +1048,7 @@ void VoidServerThread::SetTurnsLeft()
 void        VoidServerThread::Service()
 {
 
-
+    RegisterCommands();
 
     m_pColor = new ANSIColor;
 
@@ -1269,6 +1249,7 @@ void        VoidServerThread::Service()
 		}
 		catch(DeathException de)
 		{
+		    ResourceMaster::GetInstance()->Log(DEBUG,"<Death Exception Caught>");
 		    Send(Color()->get(GREEN) + "You will now be disconnected." + endr);
 		    done = true;
 		    gotinput = true;
@@ -1411,14 +1392,23 @@ void        VoidServerThread::Service()
     m_login  = NULL;
     m_player = NULL;
 
+    DestroyCommands();
+
 }
 
-VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
+void VoidServerThread::DestroyCommands()
 {
-    m_socket = socket;
-    
-    m_player = NULL;
-    m_login = NULL;
+    for(std::list<VoidCommand*>::iterator iter = m_commandlist.begin();
+	iter != m_commandlist.end();
+	iter++)
+    {
+	delete *iter;
+    }
+   
+}
+
+void VoidServerThread::RegisterCommands()
+{
     add_command(new VoidCommandDisplay(this));
     add_command(new VoidCommandMove(this));
     add_command(new VoidCommandPort(this));
@@ -1437,6 +1427,15 @@ VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
 
 }
 
+VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
+{
+    m_socket = socket;
+    
+    m_player = NULL;
+    m_login = NULL;
+ 
+}
+
 VoidServerThread::~VoidServerThread()
 {
     delete m_player;
@@ -1444,11 +1443,4 @@ VoidServerThread::~VoidServerThread()
     delete m_pColor;
     delete m_socket;
 
-    for(std::list<VoidCommand*>::iterator iter = m_commandlist.begin();
-	iter != m_commandlist.end();
-	iter++)
-    {
-	delete *iter;
-    }
-   
 }
