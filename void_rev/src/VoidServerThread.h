@@ -50,8 +50,6 @@ class VoidServerThread: public Thread
 
     ShipHandle * CreateNewShip(int shiptype);	
 
-    void LogEvent(const Event &event);
-
 
  protected:
 
@@ -103,9 +101,9 @@ class VoidServerThread: public Thread
 
     std::string DisplayCommands();
     std::string DisplayNews();
-
-
-    static const char * endr;
+    
+    void RegisterCommands();
+    void DestroyCommands();
 
 };
 

@@ -40,6 +40,7 @@ AC_CONFIG_FILES([Makefile
                  src/commands/dock/Makefile
 		 src/commands/computer/Makefile
                  src/handles/Makefile
+                 src/tools/Makefile
                  src/socket/Makefile
 		 src/commands/behaviors/Makefile
                  src/thread/Makefile])

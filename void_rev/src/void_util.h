@@ -15,6 +15,14 @@ const int VOID_VER_INCRMINOR = 1;
 enum FGColor{BLACK=0,RED,GREEN,BROWN,BLUE,PURPLE,CYAN,GRAY,DARKGRAY,LIGHTRED,LIGHTGREEN,YELLOW,LIGHTBLUE,LIGHTPURPLE,LIGHTCYAN,WHITE};
 enum BGColor{BG_BLACK=0,BG_RED,BG_GREEN,BG_YELLOW,BG_BLUE,BG_MAGENTA,BG_CYAN,BG_WHITE};
 
+#define CONFIG_INT(rm,key) atoi(rm->GetConfig(key).c_str())
+#define CONFIG_STRING(rm,key) rm->GetConfig(key).c_str()
+#define CONFIG_FLOAT(rm,key) atof(rm->GetConfig(key).c_str())
+
+extern const char * endr ; //=  "\n\r";
+
+
+
 class ColorType
 {
 

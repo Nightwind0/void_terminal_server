@@ -9,7 +9,7 @@
 
 using std::string;
 
-class VoidCommandComputerShipList : public VoidCommand, public ShipListBehavior
+class VoidCommandComputerShipList : public VoidCommand, private ShipListBehavior
 {
  public:
     VoidCommandComputerShipList(VoidServerThread *thread);

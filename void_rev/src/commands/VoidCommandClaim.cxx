@@ -11,7 +11,7 @@ using std::ostringstream;
 using std::left;
 using std::right;
 
-VoidCommandClaim::VoidCommandClaim(VoidServerThread *thread):VoidCommand(thread),EscapePodBehavior(thread), SectorCommBehavior(thread)
+VoidCommandClaim::VoidCommandClaim(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDBConn(),thread->GetLocalSocket()),m_ship_tools(thread->GetDBConn()),m_comm_tools(thread->GetDBConn(),thread->GetLocalSocket())
 {
 }
 VoidCommandClaim::~VoidCommandClaim()
@@ -164,11 +164,9 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 
     if(occupied)
     {
-	int podnum = CreateEscapePodForPlayer(oplayer);
+	ShipHandle shiph = m_combat_tools.CreateEscapePodForPlayer(oplayer,sector);
 
-	ShipHandle shiph = ShipHandle::HandleFromNkey(get_thread()->GetDBConn(),podnum);
-
-	MoveShipRandomly(&shiph);
+	m_combat_tools.MoveShipRandomly(&shiph);
 
     }
 
@@ -191,10 +189,10 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
     if(occupied) claimevent.SetSubject(oplayer); // We display who was forced out if anyone was
     claimevent.SetShipName(shipname);
     
-    get_thread()->LogEvent(claimevent);
+    m_comm_tools.LogEvent(claimevent);
 
     ResourceMaster::GetInstance()->SendSystemMail(oplayer, playername + " boarded and claimed " + shipname + "!" + endr);
-    SendMsgToSector(playername + " boards " + shipname + endr, sector, playername);
+    m_comm_tools.SendMsgToSector(playername + " boards " + shipname + endr, sector, playername);
 
     if(occupied)
     {
@@ -204,11 +202,11 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 	player->Unlock();
 
 	ResourceMaster::GetInstance()->SendSystemMail(oplayer, playername + " forced you off " + shipname + " into an escape pod!" + endr);
-	SendMsgToSector(playername + " forces " + oplayer + " off his ship!", sector,playername);
+	m_comm_tools.SendMsgToSector(playername + " forces " + oplayer + " off his ship!", sector,playername);
 	Send(Color()->get(PURPLE) + "You force " + Color()->get(LIGHTCYAN) + oplayer + Color()->get(PURPLE) + " into an escape pod." + endr + "The escape pod jettisons off into space." + endr);    
     }
 
-    SendMsgToSector(playername + " claims " + shipname + endr, sector,playername);
+    m_comm_tools.SendMsgToSector(playername + " claims " + shipname + endr, sector,playername);
 
     Send(Color()->get(GREEN) + "You have taken ownership of this craft." + endr);
     Send(Color()->get(WHITE) + "500 " + Color()->get(GREEN) + " points." + endr);

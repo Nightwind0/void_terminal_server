@@ -9,12 +9,13 @@ voidcontrol_SOURCES = control.cxx
 
 voidcontrol_LDADD = socket/libsocket.la
 
-SUBDIRS = commands handles thread socket
+SUBDIRS = commands handles thread socket tools
 
 voidserver_LDADD = commands/libcommand.la \
 	handles/libhandles.la \
 	socket/libsocket.la \
 	thread/libthread.la \
+	tools/libtools.la \
 	-lpq 
 
 
@@ -23,6 +24,7 @@ INCLUDES = 	-I @top_srcdir@/src/commands/ \
 		-I @top_srcdir@/src/commands/behaviors/ \
 	 	-I @top_srcdir@/src/handles/ \
 		-I @top_srcdir@/src/socket/ \
+		-I @top_srcdir@/src/tools/ \
 		-I @top_srcdir@/src/thread/ 
 
 

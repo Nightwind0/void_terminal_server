@@ -7,10 +7,8 @@ using std::ostringstream;
 using std::left;
 using std::right;
 
-const char * endr = "\n\r";
 
-
-ShipListBehavior::ShipListBehavior(VoidServerThread *thread):m_thread(thread)
+ShipListBehavior::ShipListBehavior(VoidServerThread *thread):Behavior(thread)
 {
 }
 
@@ -20,11 +18,11 @@ ShipListBehavior::~ShipListBehavior()
 
 std::list<int> ShipListBehavior::GetOwnedShips()
 {
-    PlayerHandle * player = m_thread->GetPlayer();
+    PlayerHandle * player = get_behavior_thread()->GetPlayer();
 
     std::string query = "select nkey from ship where kowner = '" + (std::string)player->GetName() + "';";
 
-    PGresult *dbresult = m_thread->DBExec(query);
+    PGresult *dbresult = get_behavior_thread()->DBExec(query);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
@@ -53,8 +51,9 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
  
    
     ostringstream os;
-    os << m_thread->Color()->get(BROWN,BG_WHITE) << "                    Ship List                    " << m_thread->Color()->blackout() << endr;
-    os << m_thread->Color()->get(LIGHTGREEN);
+    os << get_behavior_thread()->Color()->get(BROWN,BG_WHITE)
+       << "                    Ship List                    " << get_behavior_thread()->Color()->blackout() << endr;
+    os << get_behavior_thread()->Color()->get(LIGHTGREEN);
     os.fill(' ');
     os.width(7);
     os << left << "Ship#";
@@ -77,7 +76,7 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
 
 	Integer nkey(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(*iter));
 	PrimaryKey key(&nkey);
-	ShipHandle shiph(m_thread->GetDBConn(), key);
+	ShipHandle shiph(get_behavior_thread()->GetDBConn(), key);
 
 	ShipTypeHandle shiptype = shiph.GetShipTypeHandle();
 
@@ -89,16 +88,16 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
 	BGColor bgcolor = (BGColor)((int)shiptype.GetBackColor());
 	
 
-	os << m_thread->Color()->get(WHITE);
+	os << get_behavior_thread()->Color()->get(WHITE);
 	os.width(7);
 	os << left <<  *iter;
-	os << m_thread->Color()->get(LIGHTBLUE);
+	os << get_behavior_thread()->Color()->get(LIGHTBLUE);
 	os.width(25);
 	os << left << (std::string)shiph.GetName();
-	os << m_thread->Color()->get(fgcolor,bgcolor);
-	os.width(25 + m_thread->Color()->get(fgcolor,bgcolor).size());
-	os << left << (std::string)shiptype.GetShipTypeName(m_thread->Color());
-	os << m_thread->Color()->get(WHITE,BG_BLACK);
+	os << get_behavior_thread()->Color()->get(fgcolor,bgcolor);
+	os.width(25 + get_behavior_thread()->Color()->get(fgcolor,bgcolor).size());
+	os << left << (std::string)shiptype.GetShipTypeName(get_behavior_thread()->Color());
+	os << get_behavior_thread()->Color()->get(WHITE,BG_BLACK);
 	os.width(6);
 	os << right << sector;
 	os.width(5);
@@ -107,6 +106,6 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
     }
     os << endr;
 
-    m_thread->Send(os.str());
+    get_behavior_thread()->Send(os.str());
 
 }

@@ -4,13 +4,14 @@
 
 #include "VoidCommand.h"
 #include "VoidServerThread.h"
-#include "EscapePodBehavior.h"
-#include "SectorCommBehavior.h"
 #include <string>
+#include "CombatTools.h"
+#include "CommTools.h"
+#include "ShipTools.h"
 
 using std::string;
 
-class VoidCommandClaim : public VoidCommand, public EscapePodBehavior, public SectorCommBehavior
+class VoidCommandClaim : public VoidCommand
 {
  public:
     VoidCommandClaim(VoidServerThread *thread);
@@ -35,6 +36,9 @@ class VoidCommandClaim : public VoidCommand, public EscapePodBehavior, public Se
     VoidCommandClaim();
     bool CommandClaim(const std::string &arguments);
 
+    CombatTools m_combat_tools;
+    ShipTools m_ship_tools;
+    CommTools m_comm_tools;
 };
 
 #endif

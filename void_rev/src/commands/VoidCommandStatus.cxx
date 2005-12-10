@@ -114,7 +114,7 @@ void VoidCommandStatus::ShowStatus()
     os << Color()->get(CYAN,BG_WHITE) << "        Status        " +  Color()->blackout() +endr;
     os << SendValue("Player Name:",PQgetvalue(dbresult,0,0)) << endr;
     os << SendValue("Credits:",PQgetvalue(dbresult,0,1)) << endr;
-    os << SendRow("Turns:",PQgetvalue(dbresult,0,2), "600") << endr; // TODO: Get actual turns per day value
+    os << SendRow("Turns:",PQgetvalue(dbresult,0,2), CONFIG_STRING(ResourceMaster::GetInstance(),"turns_per_day")) << endr; // TODO: Get actual turns per day value
 
 
     int tps = atoi(PQgetvalue(dbresult,0,33));

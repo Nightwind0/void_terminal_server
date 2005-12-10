@@ -1,4 +1,16 @@
 
+
+Programming Clean Up:
+1) It would be nice to be able to have ints/doubles magically convert to strings in  Send method like cout object does....
+2) No more "delete ship". Either make it a regular object (not NEW, maybe write a deep copy method), or use auto_ptr. Prefer object...
+3) Always use handles. Quit using ints and strings and just pass handles around.
+4) It would be nice to be able to cache values in handles, so you could do a single select and get a bunch of values and fill them in to the object...
+
+
+
+
+
+
 === Outpost Supply And Demand ===
 
 Stage 1: 

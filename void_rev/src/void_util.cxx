@@ -290,3 +290,4 @@ ShipDestroyedException::~ShipDestroyedException()
 {
 }
 
+const char * endr =  "\n\r";
