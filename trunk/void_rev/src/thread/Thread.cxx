@@ -9,7 +9,7 @@ void *ThreadStartRoutine(Thread *pthread)
 
     if(pthread->thread_init())
     {
-
+	pthread->start();
 	pthread->run();
 
 	pthread->thread_destroy();
@@ -20,6 +20,10 @@ void *ThreadStartRoutine(Thread *pthread)
     return NULL;
 }
 
+
+bool Thread::thread_init(){}
+void Thread::thread_destroy(){}
+bool Thread::run(){}
 
 PThreadException::PThreadException()
 {
@@ -38,14 +42,18 @@ ThreadException::~ThreadException()
 {
 }
 
-Thread::Thread():m_condition(&m_mutex)
+void Thread::start()
+{
+    m_mutex.Lock();
+}
+Thread::Thread()
 {
     m_mutex.CreateMutex();
     m_bRunning = false;
 }
 Thread::~Thread()
 {
-     Wait();
+    
 }
 
 void Thread::setRunning(bool running)
@@ -62,24 +70,14 @@ void Thread::Start()
 }
 void Thread::Wait()
 {
-    m_condition.GetMutex()->Lock();
-    while(m_bRunning)
-    {
-	m_condition.Wait();
-    }
-
-    m_condition.GetMutex()->Unlock();
+    m_mutex.Lock();
+    m_mutex.Unlock();
 }
 
 
 
 void Thread::end()
 {
-    m_condition.GetMutex()->Lock();
-
-    setRunning(false);
-    m_condition.Signal();
-
-    m_condition.GetMutex()->Unlock();
+    m_mutex.Unlock();
 }
 

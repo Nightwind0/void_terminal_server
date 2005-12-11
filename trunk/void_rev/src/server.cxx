@@ -36,7 +36,6 @@ int main()
 
     VoidThreadSpawner *threadspawner = new VoidThreadSpawner(VOID_PORT);
 
-
     EdgeLoadThread   *edge_thread = new EdgeLoadThread();
 
 
@@ -121,7 +120,10 @@ int main()
 		cerr << "Caught socket exception doing SendTo threadspawner: " << e.GetType() << ", " << e.GetErrno() << endl;
 	    }
 
-	    threadspawner->Wait(); 
+	    cout << "Waiting on threadspawner.." << endl;
+	    threadspawner->Wait();
+	    cout << "Threadspawner done." << endl;
+
 	    delete threadspawner;
 
 	    done = true;
@@ -166,9 +168,7 @@ int main()
 
     }
 
-
     edge_thread->Wait();
-
     delete edge_thread;
    
     try{

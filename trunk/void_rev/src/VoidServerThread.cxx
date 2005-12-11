@@ -81,6 +81,7 @@ void VoidServerThread::HandleSystemMessage(const Message &msg)
     if(msg.GetString() == "SHUTDOWN")
     {
 	Send(Color()->get(LIGHTRED) + endr + "**** " + Color()->get(BLACK, BG_RED) + "IMMEDIATE SYSTEM SHUTDOWN" + Color()->get(LIGHTRED) + " ****" + endr);
+	ResourceMaster::GetInstance()->Log(DEBUG2, "<Shutdown in VST>");
 	throw ShutdownException(false);
     }
     if(msg.GetString() == "KILL")

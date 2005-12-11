@@ -63,9 +63,11 @@ void VoidThreadSpawner::thread_destroy()
 	iter != threadlist.end();
 	iter++)
     {
+	ResourceMaster::GetInstance()->Log(DEBUG2, "** Waiting on Threads in ThreadSpawner **");
 	(*iter)->Wait();
 	delete *iter;
     }
+    ResourceMaster::GetInstance()->Log(DEBUG2, "** Threadspawner finished waiting on threads **");
 
     delete m_socket;
 
@@ -86,7 +88,7 @@ bool VoidThreadSpawner::run()
 	if(m_socket->Select(*m_unixsocket))
 	{
 
-	       ResourceMaster::GetInstance()->Log(DEBUG2, "** Select Comes to TCP Socket **");
+	    ResourceMaster::GetInstance()->Log(DEBUG2, "** Select Comes to TCP Socket **");
 	    Socket * newsocket;
 	     
 	    newsocket = m_socket->Accept();
