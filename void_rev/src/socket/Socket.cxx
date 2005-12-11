@@ -98,6 +98,9 @@ void TCPSocket::Create()
 {
     int s = socket(AF_INET,SOCK_STREAM,0);
 
+    unsigned int opt = 1;
+    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     if(s == -1)
     {
 	throw SocketException(CREATEERROR);

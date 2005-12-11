@@ -17,7 +17,6 @@ class ThreadException : public PThreadException
     
     ThreadException(ErrorType type = UNKNOWN);
     
-    // Copy Constructor
     ~ThreadException();
     
     ErrorType GetType() const { return m_error; }
@@ -45,22 +44,26 @@ class Thread
     virtual ~Thread();
     
     void Start();
-    void  Wait();
 
     bool isRunning() const { return m_bRunning; }
-	
+
+    void  Wait();	
     protected:
     void setRunning(bool running);
     virtual bool thread_init()=0;
     virtual void thread_destroy()=0;
     virtual bool run()=0;
-    
+    void start();  
+
+
+
     private:
     pthread_t m_thread;
-    Condition m_condition;
+//    Condition m_condition;
     ErrChkMutex m_mutex;
     void end();
     bool m_bRunning;
+
 
 
     friend void * ThreadStartRoutine(Thread * pThread);
