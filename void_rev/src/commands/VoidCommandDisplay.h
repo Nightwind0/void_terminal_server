@@ -28,6 +28,8 @@ class VoidCommandDisplay : public VoidCommand
     std::string DisplayShipsInSector(int sector);
     std::string DisplayOutpostsInSector(int sector);
     std::string DisplaySector(int sector);
+    std::string DisplaySentinelsInSector(int sector);
+
     VoidCommandDisplay();
 
 };

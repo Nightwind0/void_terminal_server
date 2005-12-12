@@ -38,6 +38,8 @@
 #include "VoidCommandAttack.h"
 #include "VoidCommandClaim.h"
 #include "VoidCommandComputer.h"
+#include "VoidCommandDeploy.h"
+
 
 
 
@@ -1425,6 +1427,7 @@ void VoidServerThread::RegisterCommands()
     add_command(new VoidCommandAttack(this));
     add_command(new VoidCommandClaim(this));
     add_command(new VoidCommandComputer(this));
+    add_command(new VoidCommandDeploy(this));
 
 }
 

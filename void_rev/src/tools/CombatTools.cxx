@@ -22,77 +22,6 @@ void CombatTools::SendShipDestroyed(const std::string &target)
 
 }
 
-int CombatTools::GetApplicableSentinelCount(const std::string target,int maxattack, int cursector)
-{
-    std::string sentquery = "select sum(ncount) from sentinels,player where ksector = '" + IntToString(cursector) + "' and (kplayer = '" + target 
-	+ "' or player.kalliance = (select kalliance from player where sname = '" + target + "'));";
-    
-    PGresult * dbresult = DBExec(sentquery);
-        
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	    
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-    
-    int numsentinels = 0;
-    
-    if(PQntuples(dbresult) >0)
-    {
-	numsentinels = atoi(PQgetvalue(dbresult,0,0));
-    }
-    
-    PQclear(dbresult);
-
-    return std::min(numsentinels,maxattack);
-}
-void CombatTools::LogSentinelDamage(const std::string &shipname, const std::string &attacker, int cursector)
-{
-    m_comm_tools.SendMsgToSector("Sentinels engage to protect " + shipname, cursector, attacker);
-}  
-
-
-int CombatTools::InflictSentinelDamage(int numsentinels, ShipHandle * pTarget, const std::string &sentinel_owner, int shields)
-{
-    int damage  = std::max((int)g_random(numsentinels),0);
-    pTarget->Lock();
-    pTarget->SetShields ( shields - damage );
-    pTarget->Unlock();
-
-    RemoveSentinels ( numsentinels, sentinel_owner );
-
-    return damage;
-}
-
-void CombatTools::RemoveSentinels(int num, const std::string &player)
-{
-
-/*
-    std::string personalsentquery = "select sum(ncount) from sentinels where ksector = '" + IntToString(cursector) + "' and kplayer = '" + player 
-	+ "';";
-    
-    dbresult = get_thread()->DBExec(sentquery);
-    
-    
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	delete ship;
-	throw e;
-    }
-
-    int personalsentinels = atoi(PQgetvalue(dbresult,0,0));
-
-    PQclear(dbresult);
-
-    std::string alliancesentquery = "select sum(ncount";
-*/
-    
-}
 
 void CombatTools::LogDamage(const std::string &attacker, const std::string &target_ship, int damage, int cursector)
 {
@@ -213,45 +142,6 @@ void CombatTools::KillPlayer(PlayerHandle * pPlayer, PlayerHandle * pTarget)
 }
 
 
-
-double CombatTools::g_random(int missiles) const
-{
-    double stddev = 1.75; /// @todo get from config table
-
-    // the multiplier is actually the mean damage for each missile
-    double multiplier = 2; /// @todo get from config table
-    
-
-    double total = 0;
-    for(int i=0;i<missiles;i++)
-    {
-        total += g_rand() *stddev  + multiplier;
-    }
-                                                                                
-    return total;
-}
-
-
-
-
-double CombatTools::g_rand() const
-{    
-    double x1, x2, w, y1, y2;
-    
-    do {
-	x1 = 2.0 * ((double)random() / (double)RAND_MAX) - 1.0;
-	x2 = 2.0 * ((double)random() / (double)RAND_MAX) - 1.0;
-	w = x1 * x1 + x2 * x2;
-
-    } while ( w >= 1.0 );
-    
-    w = sqrt( (-2.0 * log( w ) ) / w );
-    y1 = x1 * w;
-    y2 = x2 * w;
-    
-    
-    return y1;
-}
 
 ShipHandle CombatTools::CreateEscapePodForPlayer(const std::string &player, int cursector)
 {

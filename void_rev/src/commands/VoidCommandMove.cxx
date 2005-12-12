@@ -47,19 +47,17 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
     std::ostringstream os;
     int sec = atoi(arguments.c_str());
 
-    ShipHandle * ship = create_handle_to_current_ship(get_player());
+    std::auto_ptr<ShipHandle>  ship ( create_handle_to_current_ship(get_player()));
 
     if(ship->GetSector() == sec)
     {
 	//Already there
-	delete ship;
 	return true;
     }
 
     if( ship->GetIsCloaked())
     {
 	Send(Color()->get(RED) + "You cannot move while your ship is cloaked." + endr);
-	delete ship;
 
 	return true;
     }
@@ -70,7 +68,6 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	os << Color()->get(LIGHTRED) << "Sector " << Color()->get(RED) << sec << Color()->get(LIGHTRED) << " does not exist." << endr;
 	get_thread()->Send(os.str());
 
-	delete ship;
 	return true;
     }
 
@@ -131,8 +128,6 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	    }
 	}
 
-	delete ship;
-
 	return true;
 	
     }
@@ -141,7 +136,7 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	move_player_to_sector(sec);
     }
     
-    delete ship;
+
     return true;
     
 }

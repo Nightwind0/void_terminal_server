@@ -17,6 +17,10 @@ public:
 protected:
     PGresult * DBExec(const std::string &stmt);
     PGconn * GetDBConn() const { return m_dbconn; }
+
+    double g_random(int) const;
+    double g_rand() const;
+
 private:
     PGconn * m_dbconn;
 };

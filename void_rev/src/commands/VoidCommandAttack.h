@@ -7,7 +7,7 @@
 #include <string>
 #include "CombatTools.h"
 #include "ShipTools.h"
-
+#include "SentinelTools.h"
 
 using std::string;
 
@@ -37,6 +37,7 @@ class VoidCommandAttack : public VoidCommand
 
     CombatTools m_combat_tools;
     ShipTools m_ship_tools;
+    SentinelTools m_sentinel_tools;
 
 };
 
