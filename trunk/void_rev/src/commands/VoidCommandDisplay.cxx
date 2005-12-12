@@ -88,7 +88,8 @@ std::string VoidCommandDisplay::DisplaySector(int sector)
 
     os << DisplayStardockInSector(sector);
     os << DisplayOutpostsInSector(sector);
-    os << DisplayShipsInSector(sector); 
+    os << DisplayShipsInSector(sector);
+    os << DisplaySentinelsInSector(sector);
 
     os << Color()->get(GRAY) << "Adjacent Sectors: ";
 
@@ -340,3 +341,52 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
 }
 
+std::string VoidCommandDisplay::DisplaySentinelsInSector(int sector)
+{
+    std::string query = "select ncount, kplayer, player.kalliance from sentinels, player where sentinels.kplayer = player.sname and sentinels.ksector = '" +
+	IntToString(sector) + "';";
+
+    PGresult *dbresult =get_thread()->DBExec(query);
+
+    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    {
+
+	DBException e("Display sentinels error: " + std::string(PQresultErrorMessage(dbresult)));
+	PQclear(dbresult);
+	throw e;
+    }
+
+    int groups = PQntuples(dbresult);
+
+    if(groups == 0) return "";
+
+    std::ostringstream os;
+
+    os << Color()->get(GREEN) << "Sentinels:" << endr;
+
+    for(int i = 0; i < groups; i++)
+    {
+	std::string count  = PQgetvalue(dbresult,i,0);
+	std::string player = PQgetvalue(dbresult,i,1);
+	
+	os << '\t' << Color()->get(WHITE) << count << Color()->get(BROWN) << " sentinel(s) owned by " <<
+	    Color()->get(LIGHTCYAN) << player;
+	
+	if(PQgetisnull(dbresult,i,2))
+	{
+	    os << endr;
+	}
+	else
+	{
+	    os << Color()->get(WHITE) << " {" << Color()->get(RED) << PQgetvalue(dbresult,i,2) << 
+		Color()->get(WHITE) << "} " << endr;
+	}
+
+	     
+    }
+
+    return os.str();
+
+
+    
+}

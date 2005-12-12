@@ -7,7 +7,9 @@ libtools_la_SOURCES =  CombatTools.h \
 			ShipTools.h \
 			ShipTools.cxx \
 			CommTools.h \
-			CommTools.cxx
+			CommTools.cxx \
+			SentinelTools.cxx \
+			SentinelTools.h
 
 
 INCLUDES = -I@top_srcdir@/src/ \

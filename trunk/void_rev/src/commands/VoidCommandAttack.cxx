@@ -13,7 +13,7 @@
 using std::min;
 
 
-VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDBConn(), thread->GetLocalSocket()), m_ship_tools(thread->GetDBConn())
+VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDBConn(), thread->GetLocalSocket()), m_ship_tools(thread->GetDBConn()),m_sentinel_tools(thread->GetDBConn(),thread->GetLocalSocket())
 {
 }
 VoidCommandAttack::~VoidCommandAttack()
@@ -290,7 +290,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
     }
 
 // Sentinel CounterAttack phase. Happens regardless of the other ship being destroyed or fleeing
-    int numcountersentinels = m_combat_tools.GetApplicableSentinelCount(oplayer,omaxattack,cursector);
+    int numcountersentinels = m_sentinel_tools.GetApplicableSentinelCount(oplayer,omaxattack,cursector);
     int countersentineldamage = 0;
     
     if(numcountersentinels)
@@ -299,8 +299,8 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	Send(Color()->get(BLACK,BG_WHITE) + IntToString(numcountersentinels) + Color()->get(WHITE) + 
 	     " sentinels fire at your ship in a counter-attack!" + endr);
 	    
-	countersentineldamage = m_combat_tools.InflictSentinelDamage(numcountersentinels, ship, oplayer, shields);
-	m_combat_tools.LogSentinelDamage(oshipname,player,cursector);
+	countersentineldamage = m_sentinel_tools.InflictSentinelDamage(numcountersentinels, ship, oplayer, shields, cursector);
+	m_sentinel_tools.LogSentinelDamage(oshipname,player,cursector);
 	    
 	Send(Color()->get(WHITE) + "The sentinels increase shield damage by " + Color()->get(LIGHTRED) + IntToString(countersentineldamage) + endr);
 	    
