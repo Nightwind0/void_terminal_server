@@ -16,8 +16,8 @@ class ShipHandle : public SerialObject
 
  public:
     ShipHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
-    ~ShipHandle(){CloseDownObject();}
-
+	virtual ~ShipHandle(){CloseDownObject();}
+	
 
     RESOURCE_TYPE GetType()const{return SHIPTYPE;};
 

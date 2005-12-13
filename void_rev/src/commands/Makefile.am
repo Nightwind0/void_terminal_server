@@ -41,7 +41,9 @@ libcommand_la_SOURCES =  VoidCommand.cxx \
 			VoidCommandComputer.h \
 			VoidCommandComputer.cxx \
 			VoidCommandDeploy.h \
-			VoidCommandDeploy.cxx
+			VoidCommandDeploy.cxx \
+			VoidCommandReclaim.h \
+			VoidCommandReclaim.cxx
 
 
 INCLUDES = 	-I@top_srcdir@/src \

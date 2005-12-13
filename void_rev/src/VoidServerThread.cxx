@@ -39,10 +39,7 @@
 #include "VoidCommandClaim.h"
 #include "VoidCommandComputer.h"
 #include "VoidCommandDeploy.h"
-
-
-
-
+#include "VoidCommandReclaim.h"
 
 using namespace std;
 
@@ -1428,6 +1425,7 @@ void VoidServerThread::RegisterCommands()
     add_command(new VoidCommandClaim(this));
     add_command(new VoidCommandComputer(this));
     add_command(new VoidCommandDeploy(this));
+    add_command(new VoidCommandReclaim(this));
 
 }
 

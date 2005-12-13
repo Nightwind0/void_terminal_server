@@ -13,9 +13,8 @@ ToolSet::~ToolSet()
 {
 }
 
-double ToolSet::g_random(int missiles) const
+double ToolSet::g_random(int missiles, float mean_per, float deviation) const
 {
-    double stddev = 1.75; /// @todo get from config table
 
     // the multiplier is actually the mean damage for each missile
     double multiplier = 2; /// @todo get from config table
@@ -24,7 +23,7 @@ double ToolSet::g_random(int missiles) const
     double total = 0;
     for(int i=0;i<missiles;i++)
     {
-        total += g_rand() *stddev  + multiplier;
+        total += g_rand() *deviation  + mean_per;
     }
                                                                                 
     return total;

@@ -18,7 +18,7 @@ protected:
     PGresult * DBExec(const std::string &stmt);
     PGconn * GetDBConn() const { return m_dbconn; }
 
-    double g_random(int) const;
+    double g_random(int number, float mean_per, float deviation) const;
     double g_rand() const;
 
 private:

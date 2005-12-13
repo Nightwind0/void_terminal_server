@@ -303,6 +303,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	m_sentinel_tools.LogSentinelDamage(oshipname,player,cursector);
 	    
 	Send(Color()->get(WHITE) + "The sentinels increase shield damage by " + Color()->get(LIGHTRED) + IntToString(countersentineldamage) + endr);
+
 	    
     }
 
