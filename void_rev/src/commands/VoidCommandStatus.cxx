@@ -43,6 +43,18 @@ bool VoidCommandStatus::HandleCommand(const string &command, const string &argum
     return true;
 }
 
+std::string VoidCommandStatus::PrettyValue(PGresult *dbresult, int row, int column, bool usedash)
+{
+    if(PQgetisnull(dbresult,row,column))
+    {
+	return usedash?"-":"0";
+    }
+    else
+    {
+	return PQgetvalue(dbresult,row,column);
+    }
+}
+
 std::string VoidCommandStatus::SendValue(const std::string &name, const std::string &value)
 {
 
@@ -76,7 +88,7 @@ std::string VoidCommandStatus::SendRow(const std::string &col1,const  std::strin
     os << Color()->get(WHITE);
     os.width(10);
     os << std::right << col2 << "    ";
-    os << Color()->get(BLUE);
+    os << Color()->get(CYAN);
     os.width(10);
     os << std::left <<  col3;
 
@@ -143,21 +155,21 @@ void VoidCommandStatus::ShowStatus()
     os << std::left <<  PQgetvalue(dbresult,0,6) << endr;
     os << SendValue("Ship Number:", PQgetvalue(dbresult,0,5)) << endr;
     os << SendValue("Ship Type:", PQgetvalue(dbresult,0,23)) << endr;
-    os << SendRow("Sentinels:",PQgetvalue(dbresult,0,9), PQgetvalue(dbresult,0,28)) << endr;
-    os << SendRow("Missiles:",PQgetvalue(dbresult,0,10), PQgetvalue(dbresult,0,24)) << endr;
-    os << SendRow("Mines:", PQgetvalue(dbresult,0,11), PQgetvalue(dbresult,0,30)) << endr;
-    os << SendRow("Trackers:",PQgetvalue(dbresult,0,12), PQgetvalue(dbresult,0,29)) << endr;
-    os << SendRow("Shields:",PQgetvalue(dbresult,0,13), PQgetvalue(dbresult,0,25)) << endr;
+    os << SendRow("Sentinels:",PrettyValue(dbresult,0,9), PrettyValue(dbresult,0,28)) << endr;
+    os << SendRow("Missiles:",PrettyValue(dbresult,0,10), PrettyValue(dbresult,0,24)) << endr;
+    os << SendRow("Mines:", PrettyValue(dbresult,0,11), PrettyValue(dbresult,0,30)) << endr;
+    os << SendRow("Trackers:",PrettyValue(dbresult,0,12), PrettyValue(dbresult,0,29)) << endr;
+    os << SendRow("Shields:",PrettyValue(dbresult,0,13), PrettyValue(dbresult,0,25)) << endr;
     os << SendRow("Holds:", IntToString(atoi(PQgetvalue(dbresult,0,14)) + atoi(PQgetvalue(dbresult,0,15))
 					+ atoi(PQgetvalue(dbresult,0,16))), PQgetvalue(dbresult,0,20)) << endr;
-    os << SendValue("Plasma:",PQgetvalue(dbresult,0,14)) << endr;
-    os << SendValue("Metals:",PQgetvalue(dbresult,0,15)) << endr;
-    os << SendValue("Carbon:",PQgetvalue(dbresult,0,16)) << endr;
-    os << SendRow("People:",PQgetvalue(dbresult,0,17), PQgetvalue(dbresult,0,31)) << endr;
-    os << SendRow("Probes:",PQgetvalue(dbresult,0,19),PQgetvalue(dbresult,0,32)) << endr;
-    os << SendValue("Tow:", PQgetvalue(dbresult,0,22)) << endr;
-    os << SendValue("Beam Range:", PQgetvalue(dbresult,0,39)) << endr;
-    os << SendValue("Scan:", PQgetvalue(dbresult,0,37)) << endr;
+    os << SendValue("Plasma:",PrettyValue(dbresult,0,14)) << endr;
+    os << SendValue("Metals:",PrettyValue(dbresult,0,15)) << endr;
+    os << SendValue("Carbon:",PrettyValue(dbresult,0,16)) << endr;
+    os << SendRow("People:",PrettyValue(dbresult,0,17), PrettyValue(dbresult,0,31)) << endr;
+    os << SendRow("Probes:",PrettyValue(dbresult,0,19), PrettyValue(dbresult,0,32)) << endr;
+    os << SendValue("Tow:", PrettyValue(dbresult,0,22,true)) << endr;
+    os << SendValue("Beam Range:", PrettyValue(dbresult,0,39)) << endr;
+    os << SendValue("Scan:", PrettyValue(dbresult,0,37,true)) << endr;
     os << SendValue("Warp Drive:", ToBool(PQgetvalue(dbresult,0,34))) << endr;
     os << SendValue("Cloak:",ToBool(PQgetvalue(dbresult,0,35))) << endr;
     os << SendValue("Analyzer:", ToBool(PQgetvalue(dbresult,0,36))) << endr;

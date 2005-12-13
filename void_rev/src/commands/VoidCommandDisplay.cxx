@@ -41,10 +41,24 @@ bool VoidCommandDisplay::HandleCommand(const string &command, const string &argu
 {
 
     int sector=0;
+    bool show_cloaked = false;
 
     if(arguments.size() && bFromPost)
     {
-	sector = atoi(arguments.c_str());
+	std::vector<std::string> words = WordsFromString( arguments );
+	
+	if( words.size())
+	{
+	    std::string sector_str = words[0];
+
+	    sector = atoi(sector_str.c_str());
+	    
+	    if( words.size() > 1)
+	    {
+		show_cloaked = words[1] == "cloaked" ?true:false;
+	    }
+	    
+	}
     }
     else
     {
@@ -53,12 +67,12 @@ bool VoidCommandDisplay::HandleCommand(const string &command, const string &argu
 	delete ship;
     }
 
-    get_thread()->Send(DisplaySector( sector ));
+    get_thread()->Send(DisplaySector( sector, show_cloaked ));
 
     return true;
 }
     
-std::string VoidCommandDisplay::DisplaySector(int sector)
+std::string VoidCommandDisplay::DisplaySector(int sector, bool show_cloaked)
 {
     std::vector<int> sectors = Universe::GetAdjacentSectors(sector);
     std::ostringstream os;
@@ -88,7 +102,7 @@ std::string VoidCommandDisplay::DisplaySector(int sector)
 
     os << DisplayStardockInSector(sector);
     os << DisplayOutpostsInSector(sector);
-    os << DisplayShipsInSector(sector);
+    os << DisplayShipsInSector(sector, show_cloaked);
     os << DisplaySentinelsInSector(sector);
 
     os << Color()->get(GRAY) << "Adjacent Sectors: ";
@@ -142,13 +156,18 @@ std::string VoidCommandDisplay::DisplayStardockInSector(int sector)
  
 
 
-std::string VoidCommandDisplay::DisplayShipsInSector(int sector)
+std::string VoidCommandDisplay::DisplayShipsInSector(int sector, bool show_cloaked)
 {
     std::ostringstream os;
-    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector ='"+IntToString(sector) + "' and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (s.bcloaked = false or s.bcloaked is null) and (p.sname = s.kowner) order by s.nkey;";
-    PGresult *dbresult;
+    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector ='"+IntToString(sector) + "' and s.ktype = t.nkey and tm.nkey = t.kmanufacturer ";
 
-    dbresult = get_thread()->DBExec(shipquery);
+    if( !show_cloaked)
+	shipquery +="and (s.bcloaked = false or s.bcloaked is null)";
+
+    shipquery +=" and (p.sname = s.kowner) order by s.nkey;";
+
+
+    PGresult *dbresult = get_thread()->DBExec(shipquery);
 
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
