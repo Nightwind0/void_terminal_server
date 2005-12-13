@@ -3,6 +3,7 @@
 #include "void_util.h"
 #include "ResourceMaster.h"
 #include <cmath>
+#include <algorithm>
 
 #define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
 
@@ -177,11 +178,17 @@ double OutpostHandle::GetBuyRateAfterPurchase(unsigned int stock, double current
 double OutpostHandle::GetSellRateAfterSale(unsigned int stock, double current_price)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
-    double r = atof(RM->GetConfig("sell_price_delta_per_unit").c_str());
-    double i = atof(RM->GetConfig("stock_unit").c_str());
-    double f = atof(RM->GetConfig("sellrate_floor").c_str());
-    
-    double result = (current_price - f) * pow(r,(double)stock/i) + f;
+    double r = CONFIG_FLOAT(RM,"sell_price_delta_per_unit");
+    double i = CONFIG_FLOAT(RM,"stock_unit");
+    double f = CONFIG_FLOAT(RM,"sellrate_floor");
+    double a = CONFIG_FLOAT(RM,"sellrate_linear_delta");
+
+//    p' = p + a*s/i
+
+    double linearprice = current_price + a * stock / i;
+    double exp_price = (current_price - f) * pow(r,(double)stock/i) + f;
+
+    double result = std::max(linearprice,exp_price);
     
     RM->Log(AUDIT,"#SLE P=" + DoubleToString(current_price) + "  S=" + DoubleToString(stock) + " P'=" + DoubleToString(result)) ;
 

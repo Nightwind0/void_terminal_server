@@ -24,6 +24,7 @@ public:
     int GetPersonalSentinelCount(const std::string &player, int cursector);
 private:
     void RemoveSentinels(int num, const std::string &player, int sector);       
+    void ClearZeroedSentinels();
 
     CommTools m_comm_tools;
 };

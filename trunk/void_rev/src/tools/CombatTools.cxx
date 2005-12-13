@@ -85,7 +85,12 @@ void CombatTools::DestroyShip(ShipHandle *pShip, PlayerHandle * pPlayer, PlayerH
 
 int CombatTools::FireMissilesAtShip(int missiles, ShipHandle * pShip, ShipHandle * pTargetShip, int oshields)
 {
-    int odamage = (int)g_random(missiles);
+    ResourceMaster * RM = ResourceMaster::GetInstance();
+
+    float mean_damage = CONFIG_FLOAT(RM, "mean_missile_dmg");
+    float deviation = CONFIG_FLOAT(RM,"missile_dmg_deviation");
+
+    int odamage = (int)g_random(missiles, mean_damage, deviation);
     
     if(odamage <0) odamage = 0;
         
