@@ -1,10 +1,17 @@
 
 
-Programming Clean Up:
-1) It would be nice to be able to have ints/doubles magically convert to strings in  Send method like cout object does....
-2) No more "delete ship". Either make it a regular object (not NEW, maybe write a deep copy method), or use auto_ptr. Prefer object...
-3) Always use handles. Quit using ints and strings and just pass handles around.
-4) It would be nice to be able to cache values in handles, so you could do a single select and get a bunch of values and fill them in to the object...
+
+
+SQL improvements:
+Use libpqxx. 
+Use begin/commit. Note: You don't have to submit an entire transaction as one SQL statement (I think). You can do BEGIN; then process some stuff and generate a SQL statement, exec it... keep going... exec more, then commit.
+Look at using "Begin isoloation level serializable", you can do
+transaction<serializable> in libpqxx.
+Use libpqxx transactors to contain the queries as objects derived from transactor<>
+Use handles always. Handles change, they no longer provide accessor functions which were inefficient and crappy. You have to write the SQL yourself or in a transactor. Handles now just provide locking (or do we remove the locking and handle it using database transactions?) and a convenient way to hold primary keys to pass around. 
+Use prepared statements. libpqxx supports them using transaction::prepared() and exec()
+Possibly use PL/pgSQL functions.
+
 
 
 

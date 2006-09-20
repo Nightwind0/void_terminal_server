@@ -30,7 +30,7 @@ public:
     void Lock(){ m_refcount++; m_mutex.Lock();}
     void Unlock(){m_mutex.Unlock(); m_refcount--; }
     bool NoCount()const{ return (m_refcount == 0);}
-    std::string Resource::GenerateID() const;
+    std::string GenerateID() const;
 
     bool operator==(const Resource &other) const;
     bool operator<(const Resource &other) const;

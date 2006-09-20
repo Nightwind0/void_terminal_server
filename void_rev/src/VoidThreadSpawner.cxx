@@ -9,7 +9,7 @@
 using std::list;
 using std::cerr;
 using std::endl;
-
+using std::cout;
 
 VoidThreadSpawner::VoidThreadSpawner(int port):m_port(port)
 {
@@ -25,10 +25,11 @@ bool VoidThreadSpawner::thread_init()
 {
 
     try{
-    m_socket = new TCPSocket("mrdanny.kicks-ass.net",m_port);
-    m_socket->Create();
-    m_socket->Bind(m_port, "mrdanny.kicks-ass.net");
-    m_socket->Listen();
+	m_socket = new TCPSocket("localhost",m_port);
+	m_socket->Create();
+	m_socket->Bind(m_port, "localhost");
+	m_socket->Listen();
+	cout << "Listening on port " << m_port << endl;
     }
     catch(SocketException &ex)
     {
@@ -36,12 +37,12 @@ bool VoidThreadSpawner::thread_init()
 	m_socket->Close();
 	return false;
     }
-
+    
     try{
-    unlink("/tmp/void-threadspawner");
-    m_unixsocket = new UNIXDatagramSocket("/tmp/void-threadspawner",0);
-    m_unixsocket->Create();
-    m_unixsocket->Bind(0,"/tmp/void-threadspawner");
+	unlink("/tmp/void-threadspawner");
+	m_unixsocket = new UNIXDatagramSocket("/tmp/void-threadspawner",0);
+	m_unixsocket->Create();
+	m_unixsocket->Bind(0,"/tmp/void-threadspawner");
     }
     catch(SocketException &exs)
     {
@@ -52,6 +53,8 @@ bool VoidThreadSpawner::thread_init()
 
 
     m_bKeepGoing = true;
+
+    return true;
 }
  
 void VoidThreadSpawner::thread_destroy()
@@ -75,12 +78,12 @@ void VoidThreadSpawner::thread_destroy()
 
 void VoidThreadSpawner::Stop()
 {
+    std::cout << "Thread stopping." << std::endl;
     m_bKeepGoing = false;
 }
 
 bool VoidThreadSpawner::run()
 {
-
 
     while(m_bKeepGoing)
     {
@@ -88,11 +91,12 @@ bool VoidThreadSpawner::run()
 	if(m_socket->Select(*m_unixsocket))
 	{
 
+	    std::cout << "TCP Socket came in." << std::endl;
 	    ResourceMaster::GetInstance()->Log(DEBUG2, "** Select Comes to TCP Socket **");
 	    Socket * newsocket;
 	     
 	    newsocket = m_socket->Accept();
-	    
+	    std::cout << "TCP Socket came in." << std::endl;
 	    VoidServerThread *newthread = new VoidServerThread((TCPSocket*)newsocket);
 	    
 	    threadlist.push_back(newthread);

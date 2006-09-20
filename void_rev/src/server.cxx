@@ -29,7 +29,7 @@ int main()
     int socket_num;
     int socket_num2;
 
-    char str[65536];
+    char str[1024];
     PGconn *RMconn;
 
     UNIXDatagramSocket * unixsocket = new UNIXDatagramSocket("/tmp/void-server");
@@ -88,7 +88,7 @@ int main()
 
 	int n;
 	try{
-	    n = unixsocket->RecvFrom(str, 65536,0);
+	    n = unixsocket->RecvFrom(str, 1024,0);
 	}
 	catch(SocketException e)
 	{

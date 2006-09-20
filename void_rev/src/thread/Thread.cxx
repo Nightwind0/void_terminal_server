@@ -1,5 +1,5 @@
 #include "thread.h"
-
+#include <iostream>
 
 void *ThreadStartRoutine(Thread *pthread)
 {
@@ -14,6 +14,10 @@ void *ThreadStartRoutine(Thread *pthread)
 
 	pthread->thread_destroy();
 	pthread->end();
+    }
+    else
+    {
+	std::cerr << "Thread did not init!" << std::endl;
     }
 
 
