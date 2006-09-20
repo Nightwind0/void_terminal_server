@@ -74,7 +74,7 @@ bool Socket::Select(const Socket &other)
     int selectval = select(std::max(other.m_socketid,m_socketid)+1,&readfs,NULL,NULL,NULL);
 
 
-    if(selectval == -1)
+    if(selectval < 0)
     {
 	throw SocketException(SELECTERROR);
     }
@@ -99,9 +99,10 @@ void TCPSocket::Create()
     int s = socket(AF_INET,SOCK_STREAM,0);
 
     unsigned int opt = 1;
-    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	throw SocketException(CREATEERROR);
 
-    if(s == -1)
+    if(s < 0)
     {
 	throw SocketException(CREATEERROR);
     }
@@ -122,17 +123,18 @@ void TCPSocket::Bind(int port, const std::string &addr)
 
     sockaddr_in my_addr;
 
+    memset(&my_addr,0,sizeof(my_addr));
     my_addr.sin_addr.s_addr = INADDR_ANY;
  
     my_addr.sin_family = AF_INET;     
     my_addr.sin_port = htons(port);    
 //    my_addr.sin_addr.s_addr = inet_addr(localIP);
-    memset(&(my_addr.sin_zero), '\0', 8); // zero the rest of the struct
+    //memset(&(my_addr.sin_zero), '\0', 8); // zero the rest of the struct
     
 
     int res = bind(getSocketid(), (struct sockaddr *)&my_addr, sizeof(struct sockaddr));
 
-    if(res == -1)
+    if(res < 0)
     {
 	throw SocketException(BINDERROR, errno);
     }
@@ -143,7 +145,7 @@ void TCPSocket::Listen(int backlog)
 
     int res = listen(getSocketid(), backlog);
 
-    if(res == -1)
+    if(res < 0)
     {
 	throw SocketException(LISTENERROR);
     }
@@ -153,6 +155,7 @@ Socket * TCPSocket::Accept()
 {
     socklen_t sin_size = sizeof(struct sockaddr_in);
     sockaddr_in their_addr;
+    memset(&their_addr,0,sizeof(their_addr));
     int new_fd = accept(getSocketid(), (struct sockaddr *)&their_addr, &sin_size);
 
     if(new_fd == -1)
