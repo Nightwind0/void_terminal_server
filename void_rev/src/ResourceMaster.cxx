@@ -1,6 +1,7 @@
 #include "ResourceMaster.h"
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include "void_util.h"
 #include "libpq-fe.h"
 #include <vector>
@@ -174,10 +175,10 @@ void ResourceMaster::AddServerThread(VoidServerThread *t)
     m_threadmutex.Unlock();
 }
 
-void ResourceMaster::RemoveSocket(TCPSocket *s)
+void ResourceMaster::RemoveSocket(const TCPSocket *s)
 {
     m_socketmutex.Lock();
-    std::vector<TCPSocket*>::iterator pos = find(m_sockets.begin(),m_sockets.end(),s);
+    auto pos = std::find(std::begin(m_sockets),std::end(m_sockets),s);
 
     if(pos != m_sockets.end()) m_sockets.erase(pos);
     m_socketmutex.Unlock();
@@ -186,7 +187,7 @@ void ResourceMaster::RemoveSocket(TCPSocket *s)
 void ResourceMaster::RemoveServerThread(VoidServerThread *t)
 {
     m_threadmutex.Lock();
-    std::vector<VoidServerThread*>::iterator pos = find(m_threads.begin(),m_threads.end(),t);
+    auto pos = find(m_threads.begin(),m_threads.end(),t);
 
     if(pos != m_threads.end()) m_threads.erase(pos);
 
@@ -212,7 +213,7 @@ void ResourceMaster::RemoveServerThread(VoidServerThread *t)
 
 
 
-void ResourceMaster::RegisterResource(RESOURCE_TYPE type, const PrimaryKey &key)
+void ResourceMaster::RegisterResource(ResourceType type, const PrimaryKey &key)
 {
     static NormalMutex mutex;
     mutex.Lock();
@@ -243,7 +244,7 @@ void ResourceMaster::RegisterResource(RESOURCE_TYPE type, const PrimaryKey &key)
 
 }
 
-void ResourceMaster::ReleaseResource(RESOURCE_TYPE type, const PrimaryKey &key)
+void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
 {
     static NormalMutex mutex;
 

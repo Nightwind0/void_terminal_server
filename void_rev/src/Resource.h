@@ -9,24 +9,32 @@
 #include "Mutex.h"
 
 
-enum RESOURCE_TYPE{LOGINTYPE=0,PLAYERTYPE,SHIPTYPE,SHIPTYPETYPE,PLANETTYPE,OUTPOSTTYPE,SECTORTYPE, TERRITORYTYPE, SERIALOBJECTTYPE};
+enum class ResourceType : unsigned char {
+  LOGIN=0,
+    PLAYER,
+    SHIP,
+    SHIPTYPE,
+    PLANET,
+    OUTPOST,
+    SECTOR,
+    TERRITORY,
+    SERIALOBJECT
+};
 
 class Resource
 {
 private:
     NormalMutex m_mutex;
     int m_refcount;
-    RESOURCE_TYPE m_type;
+    ResourceType m_type;
     PrimaryKey m_key;
-
-
 
     
 public:
 
 
     Resource();
-    Resource(RESOURCE_TYPE type, const PrimaryKey &key);
+    Resource(ResourceType type, const PrimaryKey &key);
     void Lock(){ m_refcount++; m_mutex.Lock();}
     void Unlock(){m_mutex.Unlock(); m_refcount--; }
     bool NoCount()const{ return (m_refcount == 0);}
@@ -38,7 +46,7 @@ public:
 };
 
 
-std::string TypeToString(RESOURCE_TYPE type);
+std::string TypeToString(ResourceType type);
 
 
 #endif

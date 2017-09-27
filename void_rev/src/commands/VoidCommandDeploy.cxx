@@ -61,7 +61,7 @@ bool VoidCommandDeploy::HandleCommand(const string &command, const string &argum
 
 void VoidCommandDeploy::Deploy(int num)
 {
-    std::auto_ptr<ShipHandle> ship( create_handle_to_current_ship( get_thread()->GetPlayer()));
+    std::unique_ptr<ShipHandle> ship( create_handle_to_current_ship( get_thread()->GetPlayer()));
 
     int sector = ship->GetSector();
 

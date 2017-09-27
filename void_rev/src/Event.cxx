@@ -48,7 +48,7 @@ std::string Event::GetSubject()const
     return m_subject;
 }
 
-void Event::SetShipType(int type)
+void Event::SetShipType(unsigned char type)
 {
     m_shiptype = type;
 }

@@ -47,7 +47,7 @@ void CombatTools::LogShipDestruction(ShipHandle * pShip, const std::string &atta
 
     Event event(Event::SHIPDESTROYED);
     event.SetActor(attacker);
-    event.SetShipType(pShip->GetType());
+    event.SetShipType(static_cast<unsigned char>(pShip->GetType()));
     event.SetShipName(target_ship);
 
     LogEvent(event);

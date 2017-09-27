@@ -41,7 +41,7 @@ bool VoidCommandScan::HandleCommand(const string &command, const string &argumen
 {
 
     int sector=0;
-    std::auto_ptr<ShipHandle> ship (create_handle_to_current_ship(get_thread()->GetPlayer()));
+    std::unique_ptr<ShipHandle> ship (create_handle_to_current_ship(get_thread()->GetPlayer()));
     int current_sector = ship->GetSector();
    
     if(arguments.size())
@@ -62,7 +62,7 @@ bool VoidCommandScan::HandleCommand(const string &command, const string &argumen
 void VoidCommandScan::ScanSector(int sector, int current_sector)
 {
 
-    std::auto_ptr<ShipHandle> ship (create_handle_to_current_ship(get_thread()->GetPlayer()));
+    std::unique_ptr<ShipHandle> ship (create_handle_to_current_ship(get_thread()->GetPlayer()));
 
     ShipTypeHandle shiptype = ship->GetShipTypeHandle();
     int scandistance = shiptype.GetScanDistance();

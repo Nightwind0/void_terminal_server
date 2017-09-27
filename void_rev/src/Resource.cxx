@@ -7,15 +7,6 @@
 #include "Resource.h"
 #include <iostream>
 
-//enum RESOURCE_TYPE{LOGIN,PLAYER,SPACESHIP,PLANET,OUTPOST,SECTOR};
-
-/*
-    MutEx m_mutex;
-    int m_refcount;
-    RESOURCE_TYPE m_type;
-    PrimaryKey m_key;
-*/
-
 
 static const char * RESOURCE_TYPE_STRINGS[] = {"LOGIN","PLAYER","SPACESHIP","PLANET","OUTPOST","SECTOR"};
 
@@ -25,7 +16,7 @@ Resource::Resource()
 }
 
     
-Resource::Resource(RESOURCE_TYPE type, const PrimaryKey &key):m_type(type),m_key(key)
+Resource::Resource(ResourceType type, const PrimaryKey &key):m_type(type),m_key(key)
 {
     m_refcount = 0;
 
@@ -78,22 +69,22 @@ bool Resource::operator<(const Resource &other) const
  
 }
 
-std::string TypeToString(RESOURCE_TYPE type)
+std::string TypeToString(ResourceType type)
 {
 
 
 
     switch(type)
     {
-    case LOGINTYPE:
+    case ResourceType::LOGIN:
 	return std::string("LOGIN");
-    case PLAYERTYPE:
+    case ResourceType::PLAYER:
 	return std::string("PLAYER");
-    case SHIPTYPE:
+    case ResourceType::SHIP:
 	return std::string("SHIP");
-    case SHIPTYPETYPE:
+    case ResourceType::SHIPTYPE:
 	return std::string("SHIPTYPE");
-    case OUTPOSTTYPE:
+    case ResourceType::OUTPOST:
 	return std::string("OUTPOST");
     
     default:

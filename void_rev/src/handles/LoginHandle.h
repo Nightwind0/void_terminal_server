@@ -17,10 +17,8 @@ class LoginHandle : public SerialObject
     ~LoginHandle(){CloseDownObject();}
 
 
-    RESOURCE_TYPE GetType()const{return LOGINTYPE;};
-
+    ResourceType GetType()const{return ResourceType::LOGIN;};
     enum FIELDS{LOGIN,PASSWORD,FIRSTLOGIN,LASTLOGIN,LASTIP,EMAIL,DISABLED,LOGINS};
-
     virtual std::string GetFieldName(int fieldnum)const;
     static std::string FieldName(int fieldnum){ return FIELD_NAMES[fieldnum]; }
     virtual void LoadFromDB();

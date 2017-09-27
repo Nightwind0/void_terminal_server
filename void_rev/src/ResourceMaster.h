@@ -29,7 +29,7 @@ class ResourceMaster
     void LoadEdges();
     void SetDBConn(PGconn *dbconn);
     void AddSocket(TCPSocket *s);
-    void RemoveSocket(TCPSocket *s);
+    void RemoveSocket(const TCPSocket *s);
 
     void AddServerThread(VoidServerThread *t);
     void RemoveServerThread(VoidServerThread *t);
@@ -37,8 +37,8 @@ class ResourceMaster
 
 //    SerialObject *GetHandle(RESOURCE_TYPE type, const PrimaryKey &key, 
 
-    void RegisterResource(RESOURCE_TYPE type, const PrimaryKey &key);
-    void ReleaseResource(RESOURCE_TYPE type, const PrimaryKey &key);
+    void RegisterResource(ResourceType type, const PrimaryKey &key);
+    void ReleaseResource(ResourceType type, const PrimaryKey &key);
 
     std::vector<TCPSocket*>::iterator GetSocketsBegin(){ return m_sockets.begin();}
     std::vector<TCPSocket*>::iterator GetSocketsEnd(){ return m_sockets.end();}

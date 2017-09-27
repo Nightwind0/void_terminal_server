@@ -19,7 +19,7 @@ class OutpostHandle : public SerialObject
     ~OutpostHandle(){CloseDownObject();}
 
 
-    RESOURCE_TYPE GetType()const{return OUTPOSTTYPE;};
+    ResourceType GetType()const{return ResourceType::OUTPOST;};
 
     enum FIELDS{NAME,SECTOR,SPECIAL,BUYPLASMA,BUYMETALS,BUYCARBON,DISCOVERER,LASTVISITOR,DAYSTOCOMPLETION, LASTVISIT, PLASMAPRICE, METALSPRICE,CARBONPRICE};
 

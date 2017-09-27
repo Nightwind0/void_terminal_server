@@ -5,6 +5,7 @@
 #include <string>
 #include <cctype>
 #include <vector>
+#include <algorithm>
 
 const int VOID_VER_MAJOR = 0;
 

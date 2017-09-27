@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include <deque>
+#include <memory>
 #include "libpq-fe.h"
 
 
@@ -45,15 +46,12 @@ std::deque<int> Universe::GetFlightPath(std::list<int> avoids, int fromsector, i
 {
     std::deque<int> path;
     std::set<int> closed;
-    std::deque<PathNode*> open;
-    std::vector<PathNode*> todelete;
-    
-	
-
-    PathNode *startNode = new PathNode;
-    todelete.push_back(startNode);
+    std::deque<std::shared_ptr<PathNode>> open;
+ 
+    std::shared_ptr<PathNode> startNode = std::make_shared<PathNode>();
+  
     startNode->sector = fromsector;
-    startNode->parent = NULL;
+    startNode->parent = nullptr;
     
     open.push_back(startNode);
     
@@ -62,13 +60,13 @@ std::deque<int> Universe::GetFlightPath(std::list<int> avoids, int fromsector, i
     while (!open.empty() && !done)
     {
 	
-	PathNode *node = open.front();
-	open.pop_front();
+       std::shared_ptr<PathNode> node = open.front();
+       open.pop_front();
 	
 	if (node->sector == sec) 
 	{
 	    // path found!
-	    while (node->parent != NULL)
+	    while (node->parent != nullptr)
 	    {
 		path.push_front(node->sector);
 //		      node->parent = node;
@@ -91,16 +89,15 @@ std::deque<int> Universe::GetFlightPath(std::list<int> avoids, int fromsector, i
 		i != adj.end();
 		i++)
 	    {
-		PathNode *nextnode = new PathNode;
-		todelete.push_back(nextnode);
+	      std::shared_ptr<PathNode> nextnode = std::make_shared<PathNode>();
 		nextnode->sector = *i;
-		nextnode->parent = NULL;
+		nextnode->parent = nullptr;
 		    
 
 		bool isclosed = false;
 		if(closed.find(*i) != closed.end()) isclosed = true;
 
-		for(std::deque<PathNode*>::iterator j = open.begin();
+		for(auto j = open.begin();
 		    j != open.end();
 		    j++)
 		{
@@ -127,15 +124,7 @@ std::deque<int> Universe::GetFlightPath(std::list<int> avoids, int fromsector, i
 	}//if
     }//while
     
-    for(std::vector<PathNode*>::iterator i = todelete.begin();
-	i != todelete.end();
-	i++)
-    {
-	if(*i != NULL)
-	{
-	    delete *i;
-	}
-    }
+
 
     return path;
 

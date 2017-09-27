@@ -18,7 +18,7 @@ class PlayerHandle : public SerialObject
     ~PlayerHandle(){CloseDownObject();}
 
 
-    RESOURCE_TYPE GetType()const{return PLAYERTYPE;};
+    ResourceType GetType()const{return ResourceType::PLAYER;};
 
     enum FIELDS{NAME, LOGIN, ISMOB, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY, ISDEAD};
 

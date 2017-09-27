@@ -61,7 +61,7 @@ bool VoidCommandReclaim::HandleCommand(const string &command, const string &argu
 
 void VoidCommandReclaim::Reclaim(int num)
 {
-    std::auto_ptr<ShipHandle> ship( create_handle_to_current_ship( get_thread()->GetPlayer()));
+    std::unique_ptr<ShipHandle> ship( create_handle_to_current_ship( get_thread()->GetPlayer()));
 
     ShipTypeHandle shiptype = ship->GetShipTypeHandle();
 

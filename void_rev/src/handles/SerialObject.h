@@ -43,8 +43,7 @@ class SerialObject
     virtual ~SerialObject();
 
     void SetDBConn(PGconn *dbconn){ m_dbconn = dbconn; }
-    virtual RESOURCE_TYPE GetType()const{ return SERIALOBJECTTYPE;};
-
+    virtual ResourceType GetType()const{ return ResourceType::SERIALOBJECT;};
     virtual std::string GetFieldName(int field)const =0;
 
     virtual void LoadFromDB()=0;

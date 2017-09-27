@@ -5,6 +5,7 @@
 #include <string>
 #include "libpq-fe.h"
 #include <list>
+#include <memory>
 #include <deque>
 
 class Universe
@@ -22,7 +23,7 @@ class Universe
     struct PathNode
     {
 	int sector;
-        PathNode * parent;
+      std::shared_ptr<PathNode> parent;
     };
 
 };

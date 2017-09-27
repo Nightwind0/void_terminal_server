@@ -27,7 +27,7 @@ class Event
     void SetSubject(const std::string &msg);
     std::string GetSubject()const;
 
-    void SetShipType(int type);
+    void SetShipType(unsigned char type);
     int GetShipType() const;
 
     void SetShipName(const std::string &msg);
@@ -39,7 +39,7 @@ class Event
    string m_actor;
    string m_msg;
    string m_subject;
-   int m_shiptype;
+   unsigned char m_shiptype;
    string m_shipname;
 };
 
