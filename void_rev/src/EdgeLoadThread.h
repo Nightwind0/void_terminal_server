@@ -16,7 +16,7 @@ class EdgeLoadThread : public Thread
 
 
  private:
-    UNIXDatagramSocket * m_usocket;
+    UNIXDatagramSocketPtr m_usocket;
     PGconn *m_dbconn;
     void OpenDataBaseConnection();
     void CloseDataBaseConnection();

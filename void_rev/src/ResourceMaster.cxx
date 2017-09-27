@@ -75,7 +75,7 @@ void ResourceMaster::SendSystemMail(const std::string &player, const std::string
     mutex.Unlock();
 }
 
-void ResourceMaster::SendMessageAll(DatagramSocket *socket, Message *msg)
+void ResourceMaster::SendMessageAll(DatagramSocketPtr socket, MessagePtr msg)
 {
 
     static NormalMutex mutex;
@@ -98,7 +98,7 @@ void ResourceMaster::SendMessageAll(DatagramSocket *socket, Message *msg)
 }
 
 
-bool ResourceMaster::SendMessage(DatagramSocket *socket, const std::string &player, Message * msg)
+bool ResourceMaster::SendMessage(DatagramSocketPtr socket, const std::string &player, MessagePtr msg)
 {
     static NormalMutex mutex;
 
@@ -160,7 +160,7 @@ void ResourceMaster::SetDBConn(PGconn *dbconn)
     m_dbconn = dbconn;
 }
 
-void ResourceMaster::AddSocket(TCPSocket *s)
+void ResourceMaster::AddSocket(TCPSocketPtr s)
 {
     m_socketmutex.Lock();
     m_sockets.push_back(s);
@@ -175,7 +175,7 @@ void ResourceMaster::AddServerThread(VoidServerThread *t)
     m_threadmutex.Unlock();
 }
 
-void ResourceMaster::RemoveSocket(const TCPSocket *s)
+void ResourceMaster::RemoveSocket(const TCPSocketPtr s)
 {
     m_socketmutex.Lock();
     auto pos = std::find(std::begin(m_sockets),std::end(m_sockets),s);

@@ -3,6 +3,7 @@
 
 #include <sys/socket.h>
 #include <string>
+#include <memory>
 
 class Socket
 {
@@ -14,8 +15,6 @@ class Socket
     virtual void Create()=0;
    
     virtual void Bind(int port, const std::string &addr)=0;
-
-
 
     virtual void Close();
 
@@ -33,6 +32,8 @@ class Socket
     std::string m_address;
 };
 
+using SocketPtr = std::shared_ptr<Socket>;
+
 
 class ConnectedSocket : public Socket
 {
@@ -42,7 +43,7 @@ class ConnectedSocket : public Socket
     virtual  void Send(const void *msg, int len, int flags)=0;
     virtual int Recv(void *buf, int len, unsigned int flags )=0;
     virtual void Listen(int backlog=5)=0;
-    virtual Socket * Accept()=0;
+    virtual SocketPtr  Accept()=0;
 };
 
 class DatagramSocket: public Socket
@@ -56,6 +57,7 @@ class DatagramSocket: public Socket
     virtual int RecvFrom(void *buf, int len, unsigned int flags)=0;
 };
 
+using DatagramSocketPtr = std::shared_ptr<DatagramSocket>;
 
 class TCPSocket : public ConnectedSocket
 {
@@ -67,12 +69,15 @@ class TCPSocket : public ConnectedSocket
 //    virtual void Connect(const std::string &addr, int port);;
     virtual void Bind(int port, const std::string &addr);
     virtual void Listen(int backlog=5);
-    virtual Socket * Accept();
+    virtual SocketPtr  Accept();
 
     void Send(const void *msg, int len, int flags);
     int Recv(void *buf, int len, unsigned int flags);
 };
 
+
+
+using TCPSocketPtr = std::shared_ptr<TCPSocket>;
 
 class UNIXDatagramSocket : public DatagramSocket
 {
@@ -92,6 +97,8 @@ class UNIXDatagramSocket : public DatagramSocket
 
 
 };
+
+using UNIXDatagramSocketPtr = std::shared_ptr<UNIXDatagramSocket>;
 
 
 #endif

@@ -28,8 +28,8 @@ class ResourceMaster
 
     void LoadEdges();
     void SetDBConn(PGconn *dbconn);
-    void AddSocket(TCPSocket *s);
-    void RemoveSocket(const TCPSocket *s);
+    void AddSocket(TCPSocketPtr s);
+    void RemoveSocket(const TCPSocketPtr s);
 
     void AddServerThread(VoidServerThread *t);
     void RemoveServerThread(VoidServerThread *t);
@@ -40,15 +40,15 @@ class ResourceMaster
     void RegisterResource(ResourceType type, const PrimaryKey &key);
     void ReleaseResource(ResourceType type, const PrimaryKey &key);
 
-    std::vector<TCPSocket*>::iterator GetSocketsBegin(){ return m_sockets.begin();}
-    std::vector<TCPSocket*>::iterator GetSocketsEnd(){ return m_sockets.end();}
+    std::vector<TCPSocketPtr>::iterator GetSocketsBegin(){ return m_sockets.begin();}
+    std::vector<TCPSocketPtr>::iterator GetSocketsEnd(){ return m_sockets.end();}
 
     std::vector<VoidServerThread*>::iterator GetServerThreadsBegin(){ return m_threads.begin();}
     std::vector<VoidServerThread*>::iterator GetServerThreadsEnd(){ return m_threads.end();}
 
     // Sends message to player if he/she is currently online. Otherwise, return false
-    bool SendMessage(DatagramSocket *socket,const std::string &player, Message * msg);
-    void SendMessageAll(DatagramSocket *socket, Message *msg);
+    bool SendMessage(DatagramSocketPtr socket,const std::string &player, MessagePtr msg);
+    void SendMessageAll(DatagramSocketPtr socket, MessagePtr msg);
 
 
     void SendSystemMail(const std::string &to, const std::string &msg);
@@ -76,7 +76,7 @@ class ResourceMaster
     static ResourceMaster * m_instance;
 
     std::map<int,std::vector<int> > m_edges;
-    std::vector<TCPSocket*> m_sockets;
+    std::vector<TCPSocketPtr> m_sockets;
 
     std::map<std::string,Resource*> m_resources;
 

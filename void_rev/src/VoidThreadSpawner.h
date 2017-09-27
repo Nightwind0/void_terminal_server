@@ -21,8 +21,8 @@ class VoidThreadSpawner : public Thread
 
  private:
     bool m_bKeepGoing;
-    UNIXDatagramSocket * m_unixsocket;
-    TCPSocket *m_socket;
+    UNIXDatagramSocketPtr m_unixsocket;
+    TCPSocketPtr m_socket;
     int m_port;
     std::list<VoidServerThread *> threadlist;
 };

@@ -36,7 +36,7 @@ bool EdgeLoadThread::thread_init()
     std::string sockname = "/tmp/void-edgeloader" ;
     unlink(sockname.c_str());
 
-    m_usocket = new UNIXDatagramSocket(sockname);
+    m_usocket = std::make_shared<UNIXDatagramSocket>(sockname);
 
     m_usocket->Create();
     m_usocket->Bind(0,sockname);
@@ -58,11 +58,11 @@ bool EdgeLoadThread::run()
 
 
 
-    Message message;
-    message.SetType(Message::ADMIN);
-    message.SetString("Flight computer reports an increase in path computation speed");
+    MessagePtr message = std::make_shared<Message>();
+    message->SetType(Message::ADMIN);
+    message->SetString("Flight computer reports an increase in path computation speed");
 
-    RM->SendMessageAll(m_usocket,&message);
+    RM->SendMessageAll(m_usocket,message);
 
     return true;
 }

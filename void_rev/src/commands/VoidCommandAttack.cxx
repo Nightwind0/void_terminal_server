@@ -345,8 +345,8 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	    Send(Color()->get(WHITE) + endr + "The other ship is out of missiles." + endr);
 	    
 	    /// @todo broadcast to sector
-	    Message missilemsg(Message::BATTLE, "You are out of missiles.");
-	    RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, &missilemsg);
+	    MessagePtr missilemsg = std::make_shared<Message>(Message::BATTLE, "You are out of missiles.");
+	    RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, missilemsg);
 	}
 	
 	
@@ -359,8 +359,8 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
 	m_combat_tools.DestroyShip(ship,&otherplayer,get_thread()->GetPlayer(),cursector);	    
 
-	Message deathmsg(Message::BATTLE, "You destroyed " + shipname + "!!!" + endr);
-	RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, &deathmsg);
+	MessagePtr deathmsg = std::make_shared<Message>(Message::BATTLE, "You destroyed " + shipname + "!!!" + endr);
+	RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, deathmsg);
 	    
 	m_ship_tools.DeleteShip(shipn);
 	    

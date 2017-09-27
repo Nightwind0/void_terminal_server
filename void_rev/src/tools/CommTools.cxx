@@ -3,7 +3,7 @@
 #include "ResourceMaster.h"
 
 
-CommTools::CommTools(PGconn * dbconn, DatagramSocket * pSocket):ToolSet(dbconn),m_pLocalSocket(pSocket)
+CommTools::CommTools(PGconn * dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_pLocalSocket(pSocket)
 {
 }
 
@@ -41,12 +41,12 @@ std::list<std::string> CommTools::get_players_in_sector(int sector)
 
 void CommTools::SendMsgToSector(const std::string &str, int sec, const std::string &exceptplayer)
 {
-    Message msg;
-    msg.SetType(Message::BATTLE);
-    msg.SetFrom("SYSTEM");
+  MessagePtr msg = std::make_shared<Message>();
+    msg->SetType(Message::BATTLE);
+    msg->SetFrom("SYSTEM");
 
 
-    msg.SetString(str);
+    msg->SetString(str);
 
     std::list<std::string> players = get_players_in_sector(sec);
 
@@ -54,15 +54,15 @@ void CommTools::SendMsgToSector(const std::string &str, int sec, const std::stri
 	iter != players.end(); iter++)
     {
 	if(*iter != exceptplayer)
-	    ResourceMaster::GetInstance()->SendMessage(m_pLocalSocket, *iter, &msg);
+	    ResourceMaster::GetInstance()->SendMessage(m_pLocalSocket, *iter, msg);
     }
     
     
 }
 
-void CommTools::SendMessage( const std::string &to, Message * pMessage )
+void CommTools::SendMessage( const std::string &to, MessagePtr  pMessage )
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    RM->SendMessage( m_pLocalSocket, to, pMessage );
+    RM->SendMessage( m_pLocalSocket, to, pMessage);
 }

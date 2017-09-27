@@ -53,7 +53,7 @@ std::string Message::SetString(const std::string &str)
     return str;
 }
 
-std::string Message::ReadFromSocket(DatagramSocket *socket)
+std::string Message::ReadFromSocket(DatagramSocketPtr socket)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
    
@@ -101,7 +101,7 @@ std::string Message::ReadFromSocket(DatagramSocket *socket)
     return "";
 }
 
-void Message::WriteToSocket(DatagramSocket * socket, std::string to)const
+void Message::WriteToSocket(DatagramSocketPtr socket, std::string to)const
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
     

@@ -11,7 +11,7 @@
 class CombatTools : public ToolSet
 {
 public:
-    CombatTools(PGconn * dbconn, DatagramSocket * pSocket);
+    CombatTools(PGconn * dbconn, DatagramSocketPtr  pSocket);
     virtual ~CombatTools();
     
     void DestroyShip(ShipHandle *pShip, PlayerHandle * pPlayer, PlayerHandle * pTarget, int cursector);

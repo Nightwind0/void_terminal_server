@@ -85,14 +85,14 @@ bool VoidCommandHail::HandleCommand(const string &command, const string &argumen
 
 bool VoidCommandHail::Hail(std::string player, std::string msg)
 {
-    Message message;
-    std::string fromname = (std::string)get_thread()->GetPlayer()->GetName();
+  MessagePtr message = std::make_shared<Message>();
+  std::string fromname = (std::string)get_thread()->GetPlayer()->GetName();
 
-    message.SetType(Message::COMM);
-    message.SetFrom(fromname);
-    message.SetString(msg + endr);
-
-    return ResourceMaster::GetInstance()->SendMessage(get_thread()->GetLocalSocket(),player, &message);
+  message->SetType(Message::COMM);
+  message->SetFrom(fromname);
+  message->SetString(msg + endr);
+  
+  return ResourceMaster::GetInstance()->SendMessage(get_thread()->GetLocalSocket(),player, message);
 }
 
  

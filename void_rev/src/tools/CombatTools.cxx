@@ -6,7 +6,7 @@
 #include "ResourceMaster.h"
 #include "Universe.h"
 
-CombatTools::CombatTools(PGconn *dbconn, DatagramSocket * pSocket):ToolSet(dbconn),m_comm_tools(dbconn, pSocket)
+CombatTools::CombatTools(PGconn *dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_comm_tools(dbconn, pSocket)
 {
 }
 
@@ -17,8 +17,8 @@ CombatTools::~CombatTools()
 
 void CombatTools::SendShipDestroyed(const std::string &target)
 {
-    Message explodemsg(Message::SYSTEM, "SHIPEXPLODE");
-    m_comm_tools.SendMessage(target, &explodemsg);
+  MessagePtr explodemsg = std::make_shared<Message>(Message::SYSTEM, "SHIPEXPLODE");
+    m_comm_tools.SendMessage(target, explodemsg);
 
 }
 
@@ -136,11 +136,11 @@ void CombatTools::KillPlayer(PlayerHandle * pPlayer, PlayerHandle * pTarget)
     pTarget->SetIsDead( true );
     pTarget->Unlock();
 
-    Message deathmsg(Message::BATTLE, player + " destroys your escape pod." + endr + "You are finished.");
-    m_comm_tools.SendMessage(target, &deathmsg);
+    MessagePtr deathmsg = std::make_shared<Message>(Message::BATTLE, player + " destroys your escape pod." + endr + "You are finished.");
+    m_comm_tools.SendMessage(target, deathmsg);
 	    
-    Message explodemsg(Message::SYSTEM, "PLAYERDEATH");
-    m_comm_tools.SendMessage(target, &explodemsg);
+    MessagePtr explodemsg = std::make_shared<Message>(Message::SYSTEM, "PLAYERDEATH");
+    m_comm_tools.SendMessage(target, explodemsg);
     
     RM->SendSystemMail(target, (std::string)"Your escape pod was destroyed, and you have died." + endr + "Therefore will not be able to sign on for 24 hours after your death occured." + (std::string)endr);
     

@@ -139,7 +139,7 @@ void VoidServerThread::OpenLocalSocket()
     std::string sockname = "/tmp/void-" + IntToString((long)this);
     unlink(sockname.c_str());
 
-    m_unixsocket = new UNIXDatagramSocket(sockname);
+    m_unixsocket = std::make_unique<UNIXDatagramSocket>(sockname);
     
     m_unixsocket->Create();
     m_unixsocket->Bind(0,sockname);
@@ -523,12 +523,12 @@ bool VoidServerThread::Login()
 		// This login is already in use on the system.
 		// Kill the other login so that we can proceed
 		ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN: " + loginid + " KILLED EXISTING LOGIN>");
-		Message msg(Message::SYSTEM, "KILL");
+		MessagePtr msg = std::make_shared<Message>(Message::SYSTEM, "KILL");
 	       
 		ResourceMaster::GetInstance()->
 		    SendMessage(m_unixsocket,
 				(*i)->GetPlayer()->GetName().GetAsString(),
-		    &msg);
+		    msg);
 
 	    
 	    }
@@ -1431,7 +1431,7 @@ void VoidServerThread::RegisterCommands()
 
 }
 
-VoidServerThread::VoidServerThread(TCPSocket *socket) : Thread()
+VoidServerThread::VoidServerThread(TCPSocketPtr socket) : Thread()
 {
     m_socket = socket;
     
@@ -1445,6 +1445,4 @@ VoidServerThread::~VoidServerThread()
     delete m_player;
     delete m_login;
     delete m_pColor;
-    delete m_socket;
-
 }

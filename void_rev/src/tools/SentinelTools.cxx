@@ -1,7 +1,7 @@
 #include "SentinelTools.h"
 #include "ResourceMaster.h"
 
-SentinelTools::SentinelTools(PGconn *dbconn, DatagramSocket * pSocket):ToolSet(dbconn),m_comm_tools(dbconn,pSocket)
+SentinelTools::SentinelTools(PGconn *dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_comm_tools(dbconn,pSocket)
 {
 }
 

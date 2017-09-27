@@ -151,7 +151,7 @@ void TCPSocket::Listen(int backlog)
     }
 }
 
-Socket * TCPSocket::Accept()
+SocketPtr  TCPSocket::Accept()
 {
     socklen_t sin_size = sizeof(struct sockaddr_in);
     sockaddr_in their_addr;
@@ -165,7 +165,7 @@ Socket * TCPSocket::Accept()
 
     std::string addy  = inet_ntoa(their_addr.sin_addr);
 
-    TCPSocket * nSocket = new TCPSocket(addy, new_fd);
+    TCPSocketPtr nSocket = std::make_shared<TCPSocket>(addy, new_fd);
 
     return nSocket;
 

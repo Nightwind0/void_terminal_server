@@ -89,12 +89,12 @@ bool VoidCommandTransmit::Transmit(std::string msg)
 
     std::string myname = (std::string)get_thread()->GetPlayer()->GetName();
     
-    Message message;
+    MessagePtr message = std::shared_ptr<Message>();
     std::string fromname = (std::string)get_thread()->GetPlayer()->GetName();
 
-    message.SetFrom(fromname);
-    message.SetType(Message::TRANSMIT);
-    message.SetString(msg + endr);
+    message->SetFrom(fromname);
+    message->SetType(Message::TRANSMIT);
+    message->SetString(msg + endr);
 
     
 
@@ -105,7 +105,7 @@ bool VoidCommandTransmit::Transmit(std::string msg)
 	iter++)
     {
 	if(*iter != myname)
-	    ResourceMaster::GetInstance()->SendMessage(get_thread()->GetLocalSocket(),*iter, &message);
+	    ResourceMaster::GetInstance()->SendMessage(get_thread()->GetLocalSocket(),*iter, message);
     }
 
 

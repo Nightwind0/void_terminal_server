@@ -134,11 +134,11 @@ int main()
 	{
 	    // TODO: List connections
 	    cout << "TCP Connections:" << endl;
-	    for(vector<TCPSocket*>::iterator i = ResourceMaster::GetInstance()->GetSocketsBegin();
+	    for(vector<TCPSocketPtr>::iterator i = ResourceMaster::GetInstance()->GetSocketsBegin();
 		i != ResourceMaster::GetInstance()->GetSocketsEnd();
 		i++)
 	    {
-		TCPSocket *s = *i;
+		TCPSocketPtr s = *i;
 		cout << s->GetAddress() << endl;
 	    }
 

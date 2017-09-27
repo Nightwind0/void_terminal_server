@@ -28,8 +28,8 @@ class Message
     std::string SetString(const std::string &str);
     
     // Returns the name of the sender socket
-    virtual std::string ReadFromSocket(DatagramSocket * socket);
-    virtual void WriteToSocket(DatagramSocket *socket, std::string to)const;
+    virtual std::string ReadFromSocket(DatagramSocketPtr socket);
+    virtual void WriteToSocket(DatagramSocketPtr socket, std::string to)const;
 
 
  private:
@@ -46,6 +46,8 @@ class Message
     std::string m_from;
 
 };
+
+using MessagePtr = std::shared_ptr<Message>;
 
 
 #endif

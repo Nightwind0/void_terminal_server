@@ -25,7 +25,7 @@ bool VoidThreadSpawner::thread_init()
 {
 
     try{
-	m_socket = new TCPSocket("localhost",m_port);
+      m_socket = std::make_shared<TCPSocket>("localhost",m_port);
 	m_socket->Create();
 	m_socket->Bind(m_port, "localhost");
 	m_socket->Listen();
@@ -40,7 +40,7 @@ bool VoidThreadSpawner::thread_init()
     
     try{
 	unlink("/tmp/void-threadspawner");
-	m_unixsocket = new UNIXDatagramSocket("/tmp/void-threadspawner",0);
+	m_unixsocket = std::make_shared<UNIXDatagramSocket>("/tmp/void-threadspawner",0);
 	m_unixsocket->Create();
 	m_unixsocket->Bind(0,"/tmp/void-threadspawner");
     }
@@ -72,8 +72,6 @@ void VoidThreadSpawner::thread_destroy()
     }
     ResourceMaster::GetInstance()->Log(DEBUG2, "** Threadspawner finished waiting on threads **");
 
-    delete m_socket;
-
 }
 
 void VoidThreadSpawner::Stop()
@@ -93,11 +91,11 @@ bool VoidThreadSpawner::run()
 
 	    std::cout << "TCP Socket came in." << std::endl;
 	    ResourceMaster::GetInstance()->Log(DEBUG2, "** Select Comes to TCP Socket **");
-	    Socket * newsocket;
+	    SocketPtr newsocket;
 	     
 	    newsocket = m_socket->Accept();
 	    std::cout << "TCP Socket came in." << std::endl;
-	    VoidServerThread *newthread = new VoidServerThread((TCPSocket*)newsocket);
+	    VoidServerThread *newthread = new VoidServerThread(std::dynamic_pointer_cast<TCPSocket>(newsocket));
 	    
 	    threadlist.push_back(newthread);
 	    
@@ -120,12 +118,12 @@ bool VoidThreadSpawner::run()
 
 	    if(message == "SHUTDOWN")
 	    {
-		Message msg;
-		msg.SetType(Message::SYSTEM);
-		msg.SetString("SHUTDOWN");
-		msg.SetFrom("THREADSPAWNER");
-		ResourceMaster::GetInstance()->SendMessageAll(m_unixsocket, &msg);
-		return true;
+	      MessagePtr msg = std::make_shared<Message>();
+	      msg->SetType(Message::SYSTEM);
+	      msg->SetString("SHUTDOWN");
+	      msg->SetFrom("THREADSPAWNER");
+	      ResourceMaster::GetInstance()->SendMessageAll(m_unixsocket, msg);
+	      return true;
 	    }
 	}
 	

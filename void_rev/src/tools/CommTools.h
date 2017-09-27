@@ -8,17 +8,18 @@
 #include <string>
 
 class Message;
+using MessagePtr = std::shared_ptr<Message>;
 
 class CommTools : public ToolSet
 {
 public:
-    CommTools(PGconn *dbconn, DatagramSocket * pLocalSocket);
+    CommTools(PGconn *dbconn, DatagramSocketPtr pLocalSocket);
     virtual ~CommTools();
     void SendMsgToSector( const std::string &str, int sec, const std::string &exceptplayer);
     std::list<std::string> get_players_in_sector(int sector);
-    void SendMessage( const std::string &to, Message * pMessage );
+    void SendMessage( const std::string &to, MessagePtr pMessage );
 private:
-    DatagramSocket * m_pLocalSocket;
+    DatagramSocketPtr m_pLocalSocket;
 };
 
 #endif
