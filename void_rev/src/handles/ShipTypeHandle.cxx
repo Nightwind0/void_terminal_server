@@ -128,7 +128,7 @@ std::string ShipTypeHandle::GetManufacturerName()
     
 }
 
-std::string ShipTypeHandle::GetShipTypeName(ColorType *color)
+std::string ShipTypeHandle::GetShipTypeName(std::shared_ptr<ColorType> color)
 {
     
     return color->get((FGColor)GetForeColor().GetValue(),(BGColor)GetBackColor().GetValue()) + GetManufacturerName() + " " +(std::string)GetName();

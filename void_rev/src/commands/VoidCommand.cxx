@@ -14,7 +14,7 @@ using std::string;
 const char *  VoidCommand::endr = "\n\r";
 
 
-ColorType * VoidCommand::Color()const
+std::shared_ptr<ColorType>  VoidCommand::Color()const
 {
     return get_thread()->Color();
 }

@@ -285,7 +285,6 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
-
 	DBException e("Display outpost error: " + std::string(PQresultErrorMessage(dbresult)));
 	PQclear(dbresult);
 	throw e;
@@ -297,11 +296,9 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
     os << Color()->get(GREEN) << "Outposts:" << endr;
 
-
     for(int i=0; i < numoutposts; i++)
     {
 	os << '\t' << Color()->get(LIGHTPURPLE) << PQgetvalue(dbresult,i,0);
-
 	os << Color()->get(WHITE) << " (";
 
 	int minutes = atoi(PQgetvalue(dbresult,i,7));
@@ -328,6 +325,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 	    os << ',';
 	}
 
+
 	if(buymetals.GetValue())
 	{
 	    os << Color()->get(LIGHTBLUE) << 'B';
@@ -340,6 +338,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,metalsprice));
 	    os << ',';
 	}
+
 
 	if(buycarbon.GetValue())
 	{

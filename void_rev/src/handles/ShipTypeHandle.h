@@ -5,6 +5,7 @@
 #include <libpq-fe.h>
 #include "Resource.h"
 #include "PrimaryKey.h"
+#include <memory>
 #include <string>
 #include "void_util.h"
 
@@ -52,7 +53,7 @@ class ShipTypeHandle : public SerialObject
     Boolean GetForSale()const;
     Integer GetTransRange()const;
     std::string GetManufacturerName();
-    std::string GetShipTypeName(ColorType * color);
+    std::string GetShipTypeName(std::shared_ptr<ColorType>  color);
     
 
 

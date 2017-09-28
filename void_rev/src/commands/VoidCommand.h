@@ -31,7 +31,7 @@ class VoidCommand
 
  protected:
 
-    ColorType * Color()const;
+    std::shared_ptr<ColorType>  Color()const;
     void Send(const std::string &str)const;
     std::string ReceiveLine()const;
 

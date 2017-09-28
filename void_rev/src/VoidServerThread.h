@@ -39,7 +39,7 @@ class VoidServerThread: public Thread
 	void Send(const std::string& str);
 	void SendClearScreen();
 	void SendWordWrapped(const std::string &str, int screen_width);
-	ColorType *Color()const{ return m_pColor; }
+	std::shared_ptr<ColorType> Color()const{ return m_pColor; }
 	std::string Receive(bool block);
 	std::string ReceiveLine();
 	
@@ -79,7 +79,7 @@ class VoidServerThread: public Thread
     void SetTurnsLeft();
     bool ReadMail();
 
-    ColorType * m_pColor;
+    std::shared_ptr<ColorType> m_pColor;
 
     std::string CommandPrompt();
 

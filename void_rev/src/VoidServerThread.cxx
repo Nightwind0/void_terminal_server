@@ -1051,7 +1051,7 @@ void        VoidServerThread::Service()
 
     RegisterCommands();
 
-    m_pColor = new ANSIColor;
+    m_pColor = std::make_shared<ANSIColor>();
 
     ResourceMaster::GetInstance()->Log(DEBUG,"<Connection from:" + std::string(m_socket->GetAddress()) +  ">");
 
@@ -1084,13 +1084,6 @@ void        VoidServerThread::Service()
     Send( os.str());
 
     std::string enter = ReceiveLine();
-
-    if(enter == "VOIDGUI")
-    {
-	delete m_pColor;
-	m_pColor = new GUIColor;
-    }
-
 
 
 	while(!Login())
@@ -1385,11 +1378,11 @@ void        VoidServerThread::Service()
 
     ResourceMaster::GetInstance()->RemoveThreadForPlayer((std::string)m_player->GetName());
 
-    delete m_pColor;
+
     delete m_login;
     delete m_player;
 
-    m_pColor = NULL;
+
     m_login  = NULL;
     m_player = NULL;
 
@@ -1444,5 +1437,4 @@ VoidServerThread::~VoidServerThread()
 {
     delete m_player;
     delete m_login;
-    delete m_pColor;
 }
