@@ -85,10 +85,10 @@ class ResourceMaster
     ResourceMaster();
     PGconn * GetDBConn();
 
-    NormalMutex m_dbmutex;
-    NormalMutex m_threadmutex;
-    NormalMutex m_edgemutex;
-    NormalMutex m_socketmutex;
+    Mutex m_dbmutex;
+    Mutex m_threadmutex;
+    Mutex m_edgemutex;
+    Mutex m_socketmutex;
 
     void LoadSector(int i);
 

@@ -24,7 +24,7 @@ enum class ResourceType : unsigned char {
 class Resource
 {
 private:
-    NormalMutex m_mutex;
+    Mutex m_mutex;
     int m_refcount;
     ResourceType m_type;
     PrimaryKey m_key;
@@ -35,8 +35,8 @@ public:
 
     Resource();
     Resource(ResourceType type, const PrimaryKey &key);
-    void Lock(){ m_refcount++; m_mutex.Lock();}
-    void Unlock(){m_mutex.Unlock(); m_refcount--; }
+    void Lock(){ m_refcount++; m_mutex.lock();}
+    void Unlock(){m_mutex.unlock(); m_refcount--; }
     bool NoCount()const{ return (m_refcount == 0);}
     std::string GenerateID() const;
 

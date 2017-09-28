@@ -48,11 +48,10 @@ ThreadException::~ThreadException()
 
 void Thread::start()
 {
-    m_mutex.Lock();
+    m_mutex.lock();
 }
 Thread::Thread()
 {
-    m_mutex.CreateMutex();
     m_bRunning = false;
 }
 Thread::~Thread()
@@ -67,21 +66,18 @@ void Thread::setRunning(bool running)
 
 void Thread::Start()
 {
-    int thread_response = pthread_create(&m_thread,NULL, (void*(*)(void*))&(ThreadStartRoutine),this);
-
-    if(thread_response)
-       throw ThreadException(ThreadException::BADTHREADCREATE);
+  m_thread = std::thread(ThreadStartRoutine, this); 
 }
 void Thread::Wait()
 {
-    m_mutex.Lock();
-    m_mutex.Unlock();
+    m_mutex.lock();
+    m_mutex.unlock();
 }
 
 
 
 void Thread::end()
 {
-    m_mutex.Unlock();
+    m_mutex.unlock();
 }
 

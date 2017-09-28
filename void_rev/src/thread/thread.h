@@ -4,10 +4,8 @@
 
 #include <pthread.h>
 #include <string>
+#include <thread>
 #include "Condition.h"
-#include "Mutex.h"
-
-//class Mutex;
 
 
 class ThreadException : public PThreadException
@@ -58,9 +56,9 @@ class Thread
 
 
     private:
-    pthread_t m_thread;
+    std::thread m_thread;
 //    Condition m_condition;
-    ErrChkMutex m_mutex;
+    std::mutex m_mutex;
     void end();
     bool m_bRunning;
 

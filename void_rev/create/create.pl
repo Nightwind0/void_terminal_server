@@ -8,7 +8,7 @@
 
 use strict;
 use DBI;
-
+use Digest::MD5 qw(md5);
 
 
 my $numsectors = 5000;
@@ -204,7 +204,7 @@ sub create_sectors_db
     for(my $s=0;$s<$num_sectors;$s++)
     {
 	my $sql = "INSERT INTO Sectors (NSECTOR,KTERRITORY,BDISCOVERED) VALUES($s,NULL,FALSE);";
-
+	print $sql;
 	my $sth = $dbh->prepare($sql) or die "Insert failed: $!";
 	$sth->execute();
 	$sth->finish();
@@ -429,9 +429,9 @@ sub claim_territory()
 
 
 srand(time());
-&create_database();
-&create_sectors_db();
-&create_sectors($numsectors) ;
-&create_outposts(500);
+#&create_database();
+&create_sectors_db($numsectors);
+#&create_sectors($numsectors) ;
+#&create_outposts(500);
 
 $dbh->disconnect();

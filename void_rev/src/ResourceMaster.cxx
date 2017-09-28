@@ -35,23 +35,23 @@ ResourceMaster *ResourceMaster::GetInstance()
 
 std::string ResourceMaster::GetConfig(const std::string &key)
 {
-    static NormalMutex mutex;
-    mutex.Lock();
-    m_dbmutex.Lock();
+    static Mutex mutex;
+    mutex.lock();
+    m_dbmutex.lock();
 
     std::string sql = "select svalue from config where sname = '" + PrepareForSQL(key) + "';";
 
     PGresult *dbresult = PQexec(m_dbconn, sql.c_str());
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK )    
+    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK || PQntuples(dbresult) < 1)    
     {
 	Log(ERROR,">Config for key: " + key + " not found<");
 
 	PQclear(dbresult);
 	return "";
     }
-    m_dbmutex.Unlock();
-    mutex.Unlock();
+    m_dbmutex.unlock();
+    mutex.unlock();
 
     
     return PQgetvalue(dbresult,0,0);
@@ -59,10 +59,10 @@ std::string ResourceMaster::GetConfig(const std::string &key)
 
 void ResourceMaster::SendSystemMail(const std::string &player, const std::string &msg)
 {
-    static NormalMutex mutex;
+    static Mutex mutex;
 
-    mutex.Lock();
-    m_dbmutex.Lock();
+    mutex.lock();
+    m_dbmutex.lock();
     std::string sql = "insert into mail values(nextval('mail_id_seq'), now(),'" + player + "',NULL, TRUE,'" + PrepareForSQL(msg) + "');";
 
     PGresult *dbresult = PQexec(m_dbconn, sql.c_str());
@@ -71,18 +71,18 @@ void ResourceMaster::SendSystemMail(const std::string &player, const std::string
     {
     }
 
-    m_dbmutex.Unlock();
-    mutex.Unlock();
+    m_dbmutex.unlock();
+    mutex.unlock();
 }
 
 void ResourceMaster::SendMessageAll(DatagramSocketPtr socket, MessagePtr msg)
 {
 
-    static NormalMutex mutex;
+    static Mutex mutex;
 
     std::string player;
 
-    mutex.Lock();
+    mutex.lock();
     
     for(std::map<std::string,const VoidServerThread*>::iterator iter = m_playermap.begin();
 	iter != m_playermap.end();
@@ -93,16 +93,16 @@ void ResourceMaster::SendMessageAll(DatagramSocketPtr socket, MessagePtr msg)
 	SendMessage(socket,player,msg);
     }
 
-    mutex.Unlock();
+    mutex.unlock();
 
 }
 
 
 bool ResourceMaster::SendMessage(DatagramSocketPtr socket, const std::string &player, MessagePtr msg)
 {
-    static NormalMutex mutex;
+    static Mutex mutex;
 
-    mutex.Lock();
+    mutex.lock();
     if(m_playermap.count(player))
     {
 	const VoidServerThread *t = m_playermap.find(player)->second;
@@ -111,37 +111,37 @@ bool ResourceMaster::SendMessage(DatagramSocketPtr socket, const std::string &pl
 	
 	msg->WriteToSocket(socket, socketname);
 
-	mutex.Unlock();
+	mutex.unlock();
 	return true;
 
     }
     else
     {
-	mutex.Unlock();
+	mutex.unlock();
 	return false;
     }
 
-    mutex.Unlock();
+    mutex.unlock();
 }
 
 void ResourceMaster::SetThreadForPlayer(const VoidServerThread * t, const std::string &player)
 {
-    m_threadmutex.Lock();
+    m_threadmutex.lock();
     if(m_playermap.count(player) == 0)
     {
 	m_playermap[player] = t;
     }
-    m_threadmutex.Unlock();
+    m_threadmutex.unlock();
 }
 
 void ResourceMaster::RemoveThreadForPlayer(const std::string &player)
 {
-    m_threadmutex.Lock();
+    m_threadmutex.lock();
     if(m_playermap.count(player))
     {
 	m_playermap.erase(player);
     }
-    m_threadmutex.Unlock();
+    m_threadmutex.unlock();
 }
 
 
@@ -162,31 +162,31 @@ void ResourceMaster::SetDBConn(PGconn *dbconn)
 
 void ResourceMaster::AddSocket(TCPSocketPtr s)
 {
-    m_socketmutex.Lock();
+    m_socketmutex.lock();
     m_sockets.push_back(s);
-    m_socketmutex.Unlock();
+    m_socketmutex.unlock();
 }
 
 
 void ResourceMaster::AddServerThread(VoidServerThread *t)
 {
-    m_threadmutex.Lock();
+    m_threadmutex.lock();
     m_threads.push_back(t);
-    m_threadmutex.Unlock();
+    m_threadmutex.unlock();
 }
 
 void ResourceMaster::RemoveSocket(const TCPSocketPtr s)
 {
-    m_socketmutex.Lock();
+    m_socketmutex.lock();
     auto pos = std::find(std::begin(m_sockets),std::end(m_sockets),s);
 
     if(pos != m_sockets.end()) m_sockets.erase(pos);
-    m_socketmutex.Unlock();
+    m_socketmutex.unlock();
 }
 
 void ResourceMaster::RemoveServerThread(VoidServerThread *t)
 {
-    m_threadmutex.Lock();
+    m_threadmutex.lock();
     auto pos = find(m_threads.begin(),m_threads.end(),t);
 
     if(pos != m_threads.end()) m_threads.erase(pos);
@@ -205,7 +205,7 @@ void ResourceMaster::RemoveServerThread(VoidServerThread *t)
 	}
     }
 
-    m_threadmutex.Unlock();
+    m_threadmutex.unlock();
 }
 
 
@@ -215,8 +215,8 @@ void ResourceMaster::RemoveServerThread(VoidServerThread *t)
 
 void ResourceMaster::RegisterResource(ResourceType type, const PrimaryKey &key)
 {
-    static NormalMutex mutex;
-    mutex.Lock();
+    static Mutex mutex;
+    mutex.lock();
 
     Resource *res= new Resource(type,key);
 
@@ -240,15 +240,15 @@ void ResourceMaster::RegisterResource(ResourceType type, const PrimaryKey &key)
     }
     Log(DEBUG2, ">Resource: " + res->GenerateID() + " locked.<");
 
-    mutex.Unlock();
+    mutex.unlock();
 
 }
 
 void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
 {
-    static NormalMutex mutex;
+    static Mutex mutex;
 
-    mutex.Lock();
+    mutex.lock();
     
     Resource *res = new Resource(type,key);
 
@@ -278,22 +278,22 @@ void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
 	}
     }
 
-    mutex.Unlock();
+    mutex.unlock();
 
 }
 
 void ResourceMaster::Log(LOG_SEVERITY severity, std::string message) 
 {
-    static NormalMutex mutex;
+    static Mutex mutex;
 
-    mutex.Lock();
+    mutex.lock();
 
 
     LOG_SEVERITY debug_level = (LOG_SEVERITY)atoi(GetConfig("log_level").c_str());
 
     if ( debug_level < severity)
     {
-	mutex.Unlock();
+	mutex.unlock();
 	return;
     }
 
@@ -303,7 +303,7 @@ void ResourceMaster::Log(LOG_SEVERITY severity, std::string message)
     os << "INSERT INTO Log (dstamp,nseverity,smessage) values (now()," << severity << ",\'" << PrepareForSQL(message) << '\'' << ");";
 
 
-    m_dbmutex.Lock();
+    m_dbmutex.lock();
     dbresult = PQexec(m_dbconn, os.str().c_str());
     
     if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
@@ -312,23 +312,23 @@ void ResourceMaster::Log(LOG_SEVERITY severity, std::string message)
 	std::cerr << err << " from " << os.str() << std:: endl;
 	PQclear(dbresult);
 
-	m_dbmutex.Unlock();
-	mutex.Unlock();
+	m_dbmutex.unlock();
+	mutex.unlock();
 	throw DBException(err);
     }
 
     PQclear(dbresult);
 
-    m_dbmutex.Unlock();
-    mutex.Unlock();
+    m_dbmutex.unlock();
+    mutex.unlock();
 }
 
 void ResourceMaster::LoadEdge(int sector)
 {
-    m_edgemutex.Lock();
+    m_edgemutex.lock();
     if(!m_edges.count(sector))
 	LoadSector(sector);
-    m_edgemutex.Unlock();
+    m_edgemutex.unlock();
 }
 
 
@@ -340,7 +340,7 @@ void ResourceMaster::LoadSector(int i)
     
     std::string query = "select nsector2 from edges where nsector =" + IntToString(i) + " union select nsector from edges where nsector2 =" +IntToString(i) + ';';
     
-    m_dbmutex.Lock();
+    m_dbmutex.lock();
     PGresult *dbresult =  PQexec(m_dbconn, query.c_str());
     
     ExecStatusType  status = PQresultStatus(dbresult);
@@ -349,7 +349,7 @@ void ResourceMaster::LoadSector(int i)
     {
 	DBException e("Load sector error:" + std::string(PQerrorMessage(m_dbconn)) + std::string(" Query was: ") + query);
 	PQclear(dbresult);
-	m_dbmutex.Unlock();
+	m_dbmutex.unlock();
 	throw e;
     }
     
@@ -365,14 +365,14 @@ void ResourceMaster::LoadSector(int i)
     
     PQclear(dbresult);
 
-    m_dbmutex.Unlock();
+    m_dbmutex.unlock();
     
 }
 
 
 void ResourceMaster::LoadEdges()
 {
-    m_edgemutex.Lock();
+    m_edgemutex.lock();
     for(int i=0;i< Universe::GetNumSectors(m_dbconn); i++)
     {
 
@@ -381,28 +381,28 @@ void ResourceMaster::LoadEdges()
 	LoadSector(i);
 	
     }
-    m_edgemutex.Unlock();
+    m_edgemutex.unlock();
 }
 
 
 std::vector<int>::iterator ResourceMaster::GetEdgesBegin(int sector)
 {
-    m_edgemutex.Lock();
+    m_edgemutex.lock();
 
     if(!m_edges.count(sector))
 	LoadSector(sector);
-    m_edgemutex.Unlock();
+    m_edgemutex.unlock();
 
     return m_edges[sector].begin();
 }
 
 std::vector<int>::iterator ResourceMaster::GetEdgesEnd(int sector)
 {
-    m_edgemutex.Lock();
+    m_edgemutex.lock();
     if(!m_edges.count(sector))
 	LoadSector(sector);
 
-    m_edgemutex.Unlock();
+    m_edgemutex.unlock();
 
     return m_edges[sector].end();
 }
