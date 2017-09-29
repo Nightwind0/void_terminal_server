@@ -63,12 +63,12 @@ PGresult * VoidServerThread::DBExec(const std::string &query)
     return PQexec(m_dbconn, query.c_str());
 }
 
-PlayerHandle * VoidServerThread::GetPlayer() const
+PlayerHandlePtr VoidServerThread::GetPlayer() const
 {
     return m_player;
 }
 
-LoginHandle * VoidServerThread::GetLogin() const
+LoginHandlePtr VoidServerThread::GetLogin() const
 {
     return m_login;
 }
@@ -266,6 +266,11 @@ bool     VoidServerThread::run()
 	    ResourceMaster::GetInstance()->Log(EMERGENCY, "Execute: " + ex.GetMessage());
 	    std::cerr << "DB ERROR!!!" << std::endl;
 
+	}
+	catch(MissingConfig& exmc)
+	{
+	  ResourceMaster::GetInstance()->Log(EMERGENCY, "Missing Config: " + exmc.getKey());
+	  std::cerr << "Missing config: " << exmc.getKey() << std::endl;
 	}
 	catch(ShutdownException &exp)
 	{
@@ -535,7 +540,7 @@ bool VoidServerThread::Login()
 	}
     }
 
-    m_login= new LoginHandle(m_dbconn, key, false);
+    m_login = std::make_shared<LoginHandle>(m_dbconn, key, false);
     std::string ip = m_login->GetLastIP().GetAsString();
 
     ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN: " + loginid + " Logged In. Last IP = " + ip + ">");
@@ -661,7 +666,7 @@ bool VoidServerThread::RegisterNewLogin()
     Text logint(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
 
     PrimaryKey key((Field*)&logint); 
-    m_login= new LoginHandle(m_dbconn, key, true);
+    m_login= std::make_shared<LoginHandle>(m_dbconn, key, true);
 
 
     m_login->Lock();
@@ -676,7 +681,7 @@ bool VoidServerThread::RegisterNewLogin()
     m_login->Insert();
     m_login->Unlock();
 
-    delete m_login; // This should both insert and lock
+
     Send(Color()->get(WHITE) + "You have successfully registered. Please log in." + endr);
 
     return true;
@@ -845,7 +850,7 @@ void VoidServerThread::StartNewPlayer()
     Text namet(PlayerHandle::FieldName(PlayerHandle::NAME),name);
     PrimaryKey key(&namet);
 
-    m_player = new PlayerHandle(m_dbconn, key, true);
+    m_player = std::make_shared<PlayerHandle>(m_dbconn, key, true);
 
     m_player->Lock();
     m_player->SetName(name);
@@ -922,7 +927,7 @@ void VoidServerThread::ChoosePlayer()
 	Text logint(PlayerHandle::FieldName(PlayerHandle::NAME), playername);
 	PrimaryKey key(&logint);
 	
-	m_player = new PlayerHandle(m_dbconn, key, false);
+	m_player = std::make_shared<PlayerHandle>(m_dbconn, key, false);
 
 	ResourceMaster::GetInstance()->Log(DEBUG, "Player: " + PrepareForSQL(m_player->GetName()) + " joins realm.");
 
@@ -1379,13 +1384,6 @@ void        VoidServerThread::Service()
     ResourceMaster::GetInstance()->RemoveThreadForPlayer((std::string)m_player->GetName());
 
 
-    delete m_login;
-    delete m_player;
-
-
-    m_login  = NULL;
-    m_player = NULL;
-
     DestroyCommands();
 
 }
@@ -1427,14 +1425,9 @@ void VoidServerThread::RegisterCommands()
 VoidServerThread::VoidServerThread(TCPSocketPtr socket) : Thread()
 {
     m_socket = socket;
-    
-    m_player = NULL;
-    m_login = NULL;
- 
 }
 
 VoidServerThread::~VoidServerThread()
 {
-    delete m_player;
-    delete m_login;
+
 }

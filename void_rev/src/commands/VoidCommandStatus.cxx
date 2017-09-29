@@ -99,10 +99,10 @@ std::string VoidCommandStatus::SendRow(const std::string &col1,const  std::strin
 void VoidCommandStatus::ShowStatus()
 {
 
-    PlayerHandle * player = get_player();
-    ShipHandle * ship = create_handle_to_current_ship(player);
+    PlayerHandlePtr player = get_player();
+    ShipHandlePtr ship = create_handle_to_current_ship(player);
 
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
 
     std::ostringstream os;
     std::ostringstream query;
@@ -136,10 +136,10 @@ void VoidCommandStatus::ShowStatus()
 	Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), PQgetvalue(dbresult,0,22));
 	PrimaryKey key(&towship);
 	ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
-	ShipTypeHandle tsthandle= towshiphandle.GetShipTypeHandle();
+	ShipTypeHandlePtr tsthandle= towshiphandle.GetShipTypeHandle();
 	
 	
-	tps += tsthandle.GetTurnsPerSector();
+	tps += tsthandle->GetTurnsPerSector();
     }
 
     os << SendValue("Turns/Sector", IntToString(tps)) << endr;
@@ -195,7 +195,6 @@ void VoidCommandStatus::ShowStatus()
 
 
 */
-    delete ship;
-//    delete shiptype;
+
 }
 

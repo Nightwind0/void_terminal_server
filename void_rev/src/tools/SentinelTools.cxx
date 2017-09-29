@@ -27,7 +27,7 @@ void SentinelTools::ClearZeroedSentinels()
 
 }
 
-void SentinelTools::ReclaimAndReloadSentinels( int num, PlayerHandle * player, ShipHandle * pShip, int cursector )
+void SentinelTools::ReclaimAndReloadSentinels( int num, PlayerHandlePtr player, ShipHandlePtr pShip, int cursector )
 {
 
     std::string stmt = "update sentinels set ncount = ncount - " + IntToString(num) + " where ksector = '" + IntToString(cursector)+ 
@@ -81,7 +81,7 @@ int SentinelTools::SentinelCapacity ( int sector )
     return maximum - present;
 }
 
-void SentinelTools::DeploySentinelsAndUnload(int num, PlayerHandle * pPlayer, ShipHandle * pFrom, int sector)
+void SentinelTools::DeploySentinelsAndUnload(int num, PlayerHandlePtr pPlayer, ShipHandlePtr pFrom, int sector)
 {
     // At this level, "num" should be verified as acceptable
     std::string player = pPlayer->GetName();
@@ -193,7 +193,7 @@ void SentinelTools::LogSentinelDamage(const std::string &shipname, const std::st
 }  
 
 
-int SentinelTools::InflictSentinelDamage(int numsentinels, ShipHandle * pTarget, const std::string &sentinel_owner, int shields, int sector)
+int SentinelTools::InflictSentinelDamage(int numsentinels, ShipHandlePtr pTarget, const std::string &sentinel_owner, int shields, int sector)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 

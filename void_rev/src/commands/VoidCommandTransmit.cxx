@@ -82,10 +82,9 @@ std::list<std::string> VoidCommandTransmit::get_players_in_sector(int sector)
 
 bool VoidCommandTransmit::Transmit(std::string msg)
 {
-    ShipHandle * ship = create_handle_to_current_ship(get_thread()->GetPlayer());
+    ShipHandlePtr ship = create_handle_to_current_ship(get_thread()->GetPlayer());
     int sector = (int)ship->GetSector();
 
-    delete ship;
 
     std::string myname = (std::string)get_thread()->GetPlayer()->GetName();
     

@@ -18,7 +18,7 @@ ShipListBehavior::~ShipListBehavior()
 
 std::list<int> ShipListBehavior::GetOwnedShips()
 {
-    PlayerHandle * player = get_behavior_thread()->GetPlayer();
+    PlayerHandlePtr player = get_behavior_thread()->GetPlayer();
 
     std::string query = "select nkey from ship where kowner = '" + (std::string)player->GetName() + "';";
 
@@ -78,14 +78,14 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
 	PrimaryKey key(&nkey);
 	ShipHandle shiph(get_behavior_thread()->GetDBConn(), key);
 
-	ShipTypeHandle shiptype = shiph.GetShipTypeHandle();
+	ShipTypeHandlePtr shiptype = shiph.GetShipTypeHandle();
 
 	int sector = (int)shiph.GetSector();
 	
 	char cloaked = shiph.GetIsCloaked()?'T':'F';
 	
-	FGColor fgcolor = (FGColor)((int)shiptype.GetForeColor());
-	BGColor bgcolor = (BGColor)((int)shiptype.GetBackColor());
+	FGColor fgcolor = (FGColor)((int)shiptype->GetForeColor());
+	BGColor bgcolor = (BGColor)((int)shiptype->GetBackColor());
 	
 
 	os << get_behavior_thread()->Color()->get(WHITE);
@@ -96,7 +96,7 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
 	os << left << (std::string)shiph.GetName();
 	os << get_behavior_thread()->Color()->get(fgcolor,bgcolor);
 	os.width(25 + get_behavior_thread()->Color()->get(fgcolor,bgcolor).size());
-	os << left << (std::string)shiptype.GetShipTypeName(get_behavior_thread()->Color());
+	os << left << (std::string)shiptype->GetShipTypeName(get_behavior_thread()->Color());
 	os << get_behavior_thread()->Color()->get(WHITE,BG_BLACK);
 	os.width(6);
 	os << right << sector;

@@ -26,9 +26,9 @@ class VoidCommandPurchaseShipItem : public VoidCommand
  protected:
 
     virtual std::string GetItemName()const=0;
-    virtual int GetMaxOfItem(ShipTypeHandle *shiptype)const=0;
-    virtual int GetCurrentOfItem(ShipHandle * shiptype)const =0;
-    virtual void SetItemNumber(ShipHandle *ship,int num)=0;
+    virtual int GetMaxOfItem(ShipTypeHandlePtr shiptype)const=0;
+    virtual int GetCurrentOfItem(ShipHandlePtr shiptype)const =0;
+    virtual void SetItemNumber(ShipHandlePtr ship,int num)=0;
     virtual int GetPriceOfItem()const =0;
     
     void ShowItemStatus();

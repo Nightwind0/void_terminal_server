@@ -47,7 +47,7 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
     std::ostringstream os;
     int sec = atoi(arguments.c_str());
 
-    std::unique_ptr<ShipHandle>  ship ( create_handle_to_current_ship(get_player()));
+    ShipHandlePtr ship = create_handle_to_current_ship(get_player());
 
     if(ship->GetSector() == sec)
     {

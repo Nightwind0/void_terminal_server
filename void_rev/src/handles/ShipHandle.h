@@ -8,6 +8,9 @@
 #include <string>
 #include "ShipTypeHandle.h"
 
+class ShipHandle;
+using ShipHandlePtr = std::shared_ptr<ShipHandle>;
+
 class ShipHandle : public SerialObject
 {
  private:
@@ -27,7 +30,7 @@ class ShipHandle : public SerialObject
     static std::string FieldName(int fieldnum){return FIELD_NAMES[fieldnum];}
     virtual void LoadFromDB();
 
-    ShipTypeHandle  GetShipTypeHandle()const;
+    ShipTypeHandlePtr  GetShipTypeHandle()const;
     
 
     Integer GetNkey()const;
@@ -84,7 +87,7 @@ class ShipHandle : public SerialObject
   
     virtual std::string DBTable()const { return "Ship";};
 
-    static ShipHandle HandleFromNkey( PGconn *dbconn, const int ship);
+    static ShipHandlePtr HandleFromNkey( PGconn *dbconn, const int ship);
 
 };
 

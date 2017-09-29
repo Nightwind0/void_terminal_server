@@ -14,23 +14,23 @@ public:
     CombatTools(PGconn * dbconn, DatagramSocketPtr  pSocket);
     virtual ~CombatTools();
     
-    void DestroyShip(ShipHandle *pShip, PlayerHandle * pPlayer, PlayerHandle * pTarget, int cursector);
+    void DestroyShip(ShipHandlePtr pShip, PlayerHandlePtr pPlayer, PlayerHandlePtr pTarget, int cursector);
     void LogAttack(const std::string &attacker, const std::string &target, 
 		   const std::string &target_ship, int missiles, int cursector);
     void LogDamage(const std::string &attacker, const std::string &target_ship, 
 		   int damage, int cursector);
-    int FireMissilesAtShip(int missiles, ShipHandle * pShip, ShipHandle * pTargetShip, int oshields);
-    void KillPlayer(PlayerHandle * pPlayer, PlayerHandle * pTarget);
+    int FireMissilesAtShip(int missiles, ShipHandlePtr pShip, ShipHandlePtr pTargetShip, int oshields);
+    void KillPlayer(PlayerHandlePtr pPlayer, PlayerHandlePtr pTarget);
 
-    ShipHandle CreateEscapePodForPlayer(const std::string &player, int cursector);
-    void MoveShipRandomly(ShipHandle *ship);
+    ShipHandlePtr CreateEscapePodForPlayer(const std::string &player, int cursector);
+    void MoveShipRandomly(ShipHandlePtr ship);
     void SendShipDestroyed(const std::string &target);
 
 private:
 
-    void AwardPointsForShipDestroy(PlayerHandle *player);
-    void AwardPointsForKill(PlayerHandle * player);
-    void LogShipDestruction(ShipHandle * pShip, const std::string &attacker, const std::string &target, int cur_sector);
+    void AwardPointsForShipDestroy(PlayerHandlePtr player);
+    void AwardPointsForKill(PlayerHandlePtr player);
+    void LogShipDestruction(ShipHandlePtr pShip, const std::string &attacker, const std::string &target, int cur_sector);
 
     CommTools m_comm_tools;
 };

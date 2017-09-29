@@ -68,14 +68,12 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    PlayerHandle * player = get_player();
-    ShipHandle * ship = create_handle_to_current_ship(player);
+    PlayerHandlePtr player = get_player();
+    ShipHandlePtr ship = create_handle_to_current_ship(player);
 
     if(ship->GetIsCloaked())
     {
 	Send(Color()->get(RED) + "You cannot port with a cloaked ship." + endr );
-	delete ship;
-
 	return true;
     }
 
@@ -144,7 +142,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     PrimaryKey key(&outpostt);
     
     
-    OutpostHandle *outpost = new OutpostHandle(get_thread()->GetDBConn(),key,false);
+    OutpostHandlePtr outpost = std::make_shared<OutpostHandle>(get_thread()->GetDBConn(),key,false);
     
 
     get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + Color()->blackout() + endr);
@@ -484,11 +482,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	get_thread()->Send(Color()->get(GREEN) + "Looks like you have nothing we want, and we have nothing you want. Come back again!" + endr);
     }
     
-    
-
-    delete ship;
-    delete outpost;
-    
+        
     return true;
 
 }

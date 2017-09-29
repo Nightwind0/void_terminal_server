@@ -2,7 +2,7 @@
 #define VOID_LOGIN_HANDLE_H
 
 #include "PrimaryKey.h"
-
+#include <memory>
 #include "Resource.h"
 #include "SerialObject.h"
 
@@ -53,9 +53,8 @@ class LoginHandle : public SerialObject
 //    virtual void ForceDBUpdate()=0;
   
     virtual std::string DBTable()const { return "Login";};
-
-
-
 };
+
+using LoginHandlePtr = std::shared_ptr<LoginHandle>;
 
 #endif

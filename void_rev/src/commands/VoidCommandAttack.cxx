@@ -109,7 +109,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
     int escapepod_num = CONFIG_INT(RM,"escape_pod_nkey");
     
-    ShipHandle *  ship (create_handle_to_current_ship(get_player()));
+    ShipHandlePtr  ship (create_handle_to_current_ship(get_player()));
 
     if(ship->GetNkey() == othership)
     {
@@ -189,7 +189,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
     
     Integer othershipi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(othership));
     PrimaryKey key(&othershipi);
-    ShipHandle othershiph(get_thread()->GetDBConn(),key);
+    ShipHandlePtr othershiph = std::make_shared<ShipHandle>(get_thread()->GetDBConn(),key);
 	
     dbresult = get_thread()->DBExec(othershipquery);
   
@@ -222,9 +222,9 @@ bool VoidCommandAttack::CommandAttack(int othership)
     Text namet(PlayerHandle::FieldName(PlayerHandle::NAME),oplayer);
     PrimaryKey okey(&namet);
 
-    PlayerHandle otherplayer(get_thread()->GetDBConn(), okey, true);
+    PlayerHandlePtr otherplayer = std::make_shared<PlayerHandle>(get_thread()->GetDBConn(), okey, true);
  
-    bool bplayerinship =  (otherplayer.GetCurrentShip() == othership);
+    bool bplayerinship =  (otherplayer->GetCurrentShip() == othership);
     int nm = PromptNumberOfMissiles(maxattack,missiles);
 	
     missiles -= nm;
@@ -233,7 +233,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
     
     m_combat_tools.LogAttack ( player, oplayer, oshipname, nm, cursector);
 
-    int odamage = m_combat_tools.FireMissilesAtShip ( nm, ship, &othershiph, oshields );
+    int odamage = m_combat_tools.FireMissilesAtShip ( nm, ship, othershiph, oshields );
     
     try{
 	Send(Color()->get(BROWN) + "Your attack destroys " + Color()->get(BLACK, BG_RED) + IntToString(odamage) 
@@ -259,7 +259,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
     {
 	targetdestroyed = true;
 
-	m_combat_tools.DestroyShip ( &othershiph, get_thread()->GetPlayer(),&otherplayer, cursector);
+	m_combat_tools.DestroyShip ( othershiph, get_thread()->GetPlayer(), otherplayer, cursector);
 
 	m_ship_tools.DeleteShip(othership);	   	    
 
@@ -269,7 +269,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	    Send(Color()->get(BLACK, BG_RED) + "You obliterate the escape pod!!");
 
 	    if(bplayerinship)
-		m_combat_tools.KillPlayer( get_thread()->GetPlayer(), &otherplayer);
+		m_combat_tools.KillPlayer( get_thread()->GetPlayer(), otherplayer);
 	    
 	}
 	else
@@ -278,8 +278,8 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	    Send(Color()->get(BLACK,BG_RED) + "*** YOU HAVE DESTROYED THE OTHER SHIP ***" + endr);
 	    if(bplayerinship)
 	    {
-		ShipHandle escapepod = m_combat_tools.CreateEscapePodForPlayer(oplayer, cursector);
-		m_combat_tools.MoveShipRandomly(&escapepod);
+		ShipHandlePtr escapepod = m_combat_tools.CreateEscapePodForPlayer(oplayer, cursector);
+		m_combat_tools.MoveShipRandomly(escapepod);
 
 		m_combat_tools.SendShipDestroyed(oplayer);
 	    		    
@@ -316,7 +316,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
     {
 
 	int countermissiles = std::min(omissiles,omaxattack);
-	int counterattack = m_combat_tools.FireMissilesAtShip(countermissiles,&othershiph,ship,shields);
+	int counterattack = m_combat_tools.FireMissilesAtShip(countermissiles,othershiph,ship,shields);
 
 	m_combat_tools.LogAttack(oplayer,player,shipname,countermissiles,cursector);
 	
@@ -357,7 +357,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
     {
 	// OUR SHIP BLEW UP! OH NOES!
 
-	m_combat_tools.DestroyShip(ship,&otherplayer,get_thread()->GetPlayer(),cursector);	    
+	m_combat_tools.DestroyShip(ship,otherplayer,get_thread()->GetPlayer(),cursector);	    
 
 	MessagePtr deathmsg = std::make_shared<Message>(Message::BATTLE, "You destroyed " + shipname + "!!!" + endr);
 	RM->SendMessage(get_thread()->GetLocalSocket(),oplayer, deathmsg);
@@ -369,15 +369,15 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	    // Escape pod goes byebye
 	    Send(Color()->get(BLACK, BG_RED) + "Your escape pod was destroyed!!" + endr);
 
-	    m_combat_tools.KillPlayer(get_thread()->GetPlayer(), &otherplayer);
+	    m_combat_tools.KillPlayer(get_thread()->GetPlayer(), otherplayer);
 		
 	}
 	else
 	{
 
-	    ShipHandle escapepod = m_combat_tools.CreateEscapePodForPlayer(player, cursector);
+	    ShipHandlePtr escapepod = m_combat_tools.CreateEscapePodForPlayer(player, cursector);
 
-	    m_combat_tools.MoveShipRandomly(&escapepod);
+	    m_combat_tools.MoveShipRandomly(escapepod);
 
 	    Send(Color()->get(RED) + "Your escape pod explodes off into space." + endr);
 		

@@ -29,8 +29,8 @@ class VoidServerThread: public Thread
 
 	PGconn * GetDBConn() const { return m_dbconn; }
 	
-	PlayerHandle *GetPlayer()const;
-	LoginHandle  *GetLogin()const;
+	PlayerHandlePtr GetPlayer()const;
+	LoginHandlePtr  GetLogin()const;
 	
 	PGresult *DBExec(const std::string &sql);
 	
@@ -58,8 +58,8 @@ class VoidServerThread: public Thread
     TCPSocketPtr m_socket;
     UNIXDatagramSocketPtr  m_unixsocket;
 
-    LoginHandle *m_login;
-    PlayerHandle *m_player;
+    LoginHandlePtr m_login;
+    PlayerHandlePtr m_player;
 
 
     static const char *  blackout;

@@ -28,15 +28,15 @@ std::string VoidCommandDockArmoryShields::GetItemName()const
 {
     return "shields";
 }
-int VoidCommandDockArmoryShields::GetMaxOfItem(ShipTypeHandle *shiptype)const
+int VoidCommandDockArmoryShields::GetMaxOfItem(ShipTypeHandlePtr shiptype)const
 {
     return shiptype->GetMaxShields();
 }
-int VoidCommandDockArmoryShields::GetCurrentOfItem(ShipHandle * ship)const
+int VoidCommandDockArmoryShields::GetCurrentOfItem(ShipHandlePtr ship)const
 {
     return ship->GetShields();
 }
-void VoidCommandDockArmoryShields::SetItemNumber(ShipHandle *ship,int num)
+void VoidCommandDockArmoryShields::SetItemNumber(ShipHandlePtr ship,int num)
 {
     ship->Lock();
     ship->SetShields(num);

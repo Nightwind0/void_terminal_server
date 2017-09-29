@@ -23,9 +23,9 @@ class VoidCommandDockArmorySentinels : public VoidCommandPurchaseShipItem
  private:
     
     std::string GetItemName()const;
-    int GetMaxOfItem(ShipTypeHandle *shiptype)const;
-    int GetCurrentOfItem(ShipHandle * shiptype)const;
-    void SetItemNumber(ShipHandle *ship,int num);
+    int GetMaxOfItem(ShipTypeHandlePtr shiptype)const;
+    int GetCurrentOfItem(ShipHandlePtr shiptype)const;
+    void SetItemNumber(ShipHandlePtr ship,int num);
     int GetPriceOfItem()const;
 
     VoidCommandDockArmorySentinels();

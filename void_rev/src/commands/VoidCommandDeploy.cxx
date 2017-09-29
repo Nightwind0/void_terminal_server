@@ -61,7 +61,7 @@ bool VoidCommandDeploy::HandleCommand(const string &command, const string &argum
 
 void VoidCommandDeploy::Deploy(int num)
 {
-    std::unique_ptr<ShipHandle> ship( create_handle_to_current_ship( get_thread()->GetPlayer()));
+    ShipHandlePtr ship = create_handle_to_current_ship( get_thread()->GetPlayer());
 
     int sector = ship->GetSector();
 
@@ -85,7 +85,7 @@ void VoidCommandDeploy::Deploy(int num)
 	return;
     }
 
-    m_sentinel_tools.DeploySentinelsAndUnload( num, get_thread()->GetPlayer(), ship.get(), sector );
+    m_sentinel_tools.DeploySentinelsAndUnload( num, get_thread()->GetPlayer(), ship, sector );
 
     Send(Color()->get(WHITE) + IntToString(num) + Color()->get(GREEN) + " sentinels have been deployed to this sector." + endr);
 

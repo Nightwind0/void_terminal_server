@@ -106,8 +106,8 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 	return false;
     }
 
-    ShipHandle * ship = create_handle_to_current_ship(get_player());
-    PlayerHandle * player = get_thread()->GetPlayer();
+    ShipHandlePtr ship = create_handle_to_current_ship(get_player());
+    PlayerHandlePtr player = get_thread()->GetPlayer();
 
     int sector = (int)ship->GetSector();
 
@@ -118,7 +118,6 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 	Send(Color()->get(RED) + "There are no ships that you can claim in this sector." + Color()->get(GREEN) + endr);
 	get_thread()->SendWordWrapped(rules,80);
 
-	delete ship;
 	return true;
     }
 
@@ -131,7 +130,6 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 	Send(Color()->get(RED) + "You cannot claim that ship." + Color()->get(GREEN) + endr);
 	get_thread()->SendWordWrapped(rules,80);
 
-	delete ship;
 	return true;
     }
 
@@ -164,25 +162,25 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 
     if(occupied)
     {
-	ShipHandle shiph = m_combat_tools.CreateEscapePodForPlayer(oplayer,sector);
+	ShipHandlePtr shiph = m_combat_tools.CreateEscapePodForPlayer(oplayer,sector);
 
-	m_combat_tools.MoveShipRandomly(&shiph);
+	m_combat_tools.MoveShipRandomly(shiph);
 
     }
 
 
 
 
-    ShipHandle oshiph = ShipHandle::HandleFromNkey(get_thread()->GetDBConn(),shipdestnum);
+    ShipHandlePtr oshiph = ShipHandle::HandleFromNkey(get_thread()->GetDBConn(),shipdestnum);
 
     
 
-    oshiph.Lock();
-    oshiph.SetOwner(playername);
-    oshiph.Unlock();
+    oshiph->Lock();
+    oshiph->SetOwner(playername);
+    oshiph->Unlock();
     
 
-    std::string shipname = oshiph.GetName();
+    std::string shipname = oshiph->GetName();
 
     Event claimevent(Event::SHIPCLAIMED);
     claimevent.SetActor(playername);
@@ -210,7 +208,7 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 
     Send(Color()->get(GREEN) + "You have taken ownership of this craft." + endr);
     Send(Color()->get(WHITE) + "500 " + Color()->get(GREEN) + " points." + endr);
-    delete ship;
+
     return true;
     
 }

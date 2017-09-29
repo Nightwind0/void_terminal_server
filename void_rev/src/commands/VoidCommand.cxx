@@ -28,7 +28,7 @@ VoidCommand::~VoidCommand()
 }
 
 
-bool VoidCommand::isValidPlayer(const std::string playername)const
+bool VoidCommand::isValidPlayer(const std::string& playername)const
 {
     std::string query = "select count(0) from player where sname = '" + playername + "';";
 
@@ -60,8 +60,12 @@ std::string VoidCommand::ReceiveLine() const
     return get_thread()->ReceiveLine();
 }
 
+void VoidCommand::log(LOG_SEVERITY severity, const std::string& message) const
+{
+  ResourceMaster::GetInstance()->Log(severity,message);
+}
 
-PlayerHandle * VoidCommand::get_player() const
+PlayerHandlePtr VoidCommand::get_player() const
 {
     return get_thread()->GetPlayer();
 }
@@ -70,9 +74,9 @@ PlayerHandle * VoidCommand::get_player() const
 bool VoidCommand::move_player_to_sector(int sector)
 {
 
-    ShipHandle *pship = create_handle_to_current_ship(get_player());
+    ShipHandlePtr pship = create_handle_to_current_ship(get_player());
 
-    PlayerHandle * player = get_thread()->GetPlayer();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
 
     // TODO: Broadcast this data to players in the sector ("Player blah blah just left the sector to sector blah")
 
@@ -85,8 +89,8 @@ bool VoidCommand::move_player_to_sector(int sector)
     {
 
 	int cur_turns = (int)player->GetTurnsLeft();
-	ShipTypeHandle shiptype= pship->GetShipTypeHandle();
-	int tps = (int)shiptype.GetTurnsPerSector();
+	ShipTypeHandlePtr shiptype= pship->GetShipTypeHandle();
+	int tps = (int)shiptype->GetTurnsPerSector();
 
 
 
@@ -98,9 +102,9 @@ bool VoidCommand::move_player_to_sector(int sector)
 	    PrimaryKey key(&towship);
 
 	    ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
-	    ShipTypeHandle towshiptype = towshiphandle.GetShipTypeHandle();
+	    ShipTypeHandlePtr towshiptype = towshiphandle.GetShipTypeHandle();
 
-	    tps += (int)towshiptype.GetTurnsPerSector();
+	    tps += (int)towshiptype->GetTurnsPerSector();
 
 	    if(tps <= cur_turns)
 	    {
@@ -132,20 +136,18 @@ bool VoidCommand::move_player_to_sector(int sector)
 	else
 	{
 	    Send(Color()->get(LIGHTRED) + "You don't have enough turns." + endr);
-	    delete pship;
 	    return false;
 	}
 	
 	//TODO: Determine if there are interesting things here and provide option to stop
     }
 
-    delete pship;
     return true;
 }
 
 
 
-PlayerHandle* VoidCommand::create_handle_to_player_in_ship(int ship) const
+PlayerHandlePtr VoidCommand::create_handle_to_player_in_ship(int ship) const
 {
     std::string query = "SELECT sname from Player where kcurrentship = " + IntToString(ship) + ";";
 
@@ -180,7 +182,7 @@ PlayerHandle* VoidCommand::create_handle_to_player_in_ship(int ship) const
     Text playername(PlayerHandle::FieldName(PlayerHandle::NAME), name);
     PrimaryKey key(&playername);
 
-    PlayerHandle * player = new PlayerHandle(get_thread()->GetDBConn(),key, false);
+    PlayerHandlePtr player = std::make_shared<PlayerHandle>(get_thread()->GetDBConn(),key, false);
 
     return player;
 
@@ -191,12 +193,12 @@ VoidServerThread * VoidCommand::get_thread()const
     return m_pthread;
 }
 
-ShipHandle *VoidCommand::create_handle_to_current_ship(PlayerHandle *player) const
+ShipHandlePtr VoidCommand::create_handle_to_current_ship(PlayerHandlePtr player) const
 {
     Integer shipnum(ShipHandle::FieldName(ShipHandle::NKEY), player->GetCurrentShip().GetAsString());
     PrimaryKey key(&shipnum);
 
-    ShipHandle *ship = new ShipHandle(get_thread()->GetDBConn(), key, false);
+    ShipHandlePtr ship = std::make_shared<ShipHandle>(get_thread()->GetDBConn(), key, false);
 
     return ship;
 }

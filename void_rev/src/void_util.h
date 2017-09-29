@@ -22,7 +22,7 @@ enum BGColor{BG_BLACK=0,BG_RED,BG_GREEN,BG_YELLOW,BG_BLUE,BG_MAGENTA,BG_CYAN,BG_
 
 extern const char * endr ; //=  "\n\r";
 
-
+enum LOG_SEVERITY {EMERGENCY, ERROR, WARNING, DEBUG, DEBUG2, AUDIT};
 
 class ColorType
 {

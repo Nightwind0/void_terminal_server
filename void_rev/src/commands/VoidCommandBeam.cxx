@@ -68,7 +68,7 @@ std::list<int> VoidCommandBeam::GetValidShipList(int cur_sector, int beamrange, 
 	PrimaryKey key(&nkey);
 	ShipHandle shiph(get_thread()->GetDBConn(), key);
 
-	ShipTypeHandle shiptype = shiph.GetShipTypeHandle();
+	ShipTypeHandlePtr shiptype = shiph.GetShipTypeHandle();
 
 	int sector = (int)shiph.GetSector();
 
@@ -92,18 +92,17 @@ std::list<int> VoidCommandBeam::GetValidShipList(int cur_sector, int beamrange, 
 bool VoidCommandBeam::CommandBeam(const std::string &arguments)
 {
 
-    ShipHandle * ship = create_handle_to_current_ship(get_player());
+    ShipHandlePtr ship = create_handle_to_current_ship(get_player());
 
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
-    PlayerHandle * player = get_thread()->GetPlayer();
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
 
-    std::list<int> valid_ships = GetValidShipList((int)ship->GetSector(), (int)shiptype.GetTransRange(), (int)ship->GetNkey());
+    std::list<int> valid_ships = GetValidShipList((int)ship->GetSector(), (int)shiptype->GetTransRange(), (int)ship->GetNkey());
 
     if(!valid_ships.size())
     {
 	Send(Color()->get(RED) + "There are no ships you can currently beam to from this ship.");
 
-	delete ship;
 	return true;
     }
 
@@ -126,7 +125,6 @@ bool VoidCommandBeam::CommandBeam(const std::string &arguments)
 
 	    if(shipdestnum < 0)
 	    {
-		delete ship;
 		return true;
 	    }
 
@@ -178,10 +176,5 @@ bool VoidCommandBeam::CommandBeam(const std::string &arguments)
     Send(Color()->get(GREEN));
     get_thread()->SendWordWrapped(std::string(endr) + "You have beamed successfully to another ship." + endr,80);
 
-
-
-    
-    delete ship;
     return true;
-    
 }

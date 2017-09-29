@@ -7,7 +7,7 @@
 #include <libpq-fe.h>
 #include "Field.h"
 #include <map>
-
+#include <memory>
 
 
 class SerialObject

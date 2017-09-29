@@ -59,6 +59,7 @@ class PlayerHandle : public SerialObject
 };
 
 
+using PlayerHandlePtr = std::shared_ptr<PlayerHandle>;
 
 
 #endif

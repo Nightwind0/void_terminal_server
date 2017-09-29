@@ -48,7 +48,7 @@ bool VoidCommandDockShipYardBuy::HandleCommand(const string &command, const stri
 bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 {
 
-    PlayerHandle * player = get_thread()->GetPlayer();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
     int shiptype = atoi(arguments.c_str());
     
     std::string query = "select shiptype.nkey,shiptype.sname, shipmanufacturer.sname, nforecolor, nbackcolor, ncost from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey and shiptype.nkey = '" + IntToString(shiptype) + "';";
@@ -93,7 +93,7 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 
     if(CompStrings(response,"yes"))
     {
-	ShipHandle * oldship = create_handle_to_current_ship(get_thread()->GetPlayer());
+	ShipHandlePtr oldship = create_handle_to_current_ship(get_thread()->GetPlayer());
 
 	Integer shiptypei(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY), oldship->GetTypeKey().GetAsString());
 	PrimaryKey key(&shiptypei);
@@ -193,8 +193,6 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 	    }
 	
 	}
-	
-	delete oldship;
 
 	Send(Color()->get(GREEN) + "Thank you very much, please visit again!" + endr);
 

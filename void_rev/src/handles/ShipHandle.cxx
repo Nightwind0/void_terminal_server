@@ -20,23 +20,23 @@ void ShipHandle::LoadFromDB()
     // screw this method man... I'm not gonna write it. blah
 }
 
-ShipTypeHandle  ShipHandle::GetShipTypeHandle()const
+ShipTypeHandlePtr  ShipHandle::GetShipTypeHandle()const
 {
     Integer shiptypenum(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY), GetTypeKey().GetAsString());
     PrimaryKey key(&shiptypenum);
 
-    ShipTypeHandle handle(m_dbconn, key);
+    ShipTypeHandlePtr handle= std::make_shared<ShipTypeHandle>(m_dbconn, key);
 
     return handle;
 }
 
-ShipHandle ShipHandle::HandleFromNkey(PGconn *dbconn, const int ship)
+ShipHandlePtr ShipHandle::HandleFromNkey(PGconn *dbconn, const int ship)
 {
     Integer shipi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(ship));
 
     PrimaryKey key(&shipi);
 
-   return ShipHandle(dbconn, key);
+    return std::make_shared<ShipHandle>(dbconn, key);
 }
 
 

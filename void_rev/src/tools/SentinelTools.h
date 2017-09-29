@@ -16,11 +16,11 @@ public:
 
 
     int GetApplicableSentinelCount(const std::string &target, int maxattack, int cursector);
-    int InflictSentinelDamage(int numsentinels, ShipHandle * pTarget, const std::string &sentinel_owner, int shields, int cursector);
+    int InflictSentinelDamage(int numsentinels, ShipHandlePtr pTarget, const std::string &sentinel_owner, int shields, int cursector);
     void LogSentinelDamage(const std::string &shipname, const std::string &attacker, int cursector);
-    void DeploySentinelsAndUnload(int num, PlayerHandle * pPlayer, ShipHandle * pFrom, int cursector);    
+    void DeploySentinelsAndUnload(int num, PlayerHandlePtr pPlayer, ShipHandlePtr pFrom, int cursector);    
     int SentinelCapacity ( int sector );
-    void ReclaimAndReloadSentinels(int num, PlayerHandle * player, ShipHandle * pShip, int cursector );
+    void ReclaimAndReloadSentinels(int num, PlayerHandlePtr player, ShipHandlePtr pShip, int cursector );
     int GetPersonalSentinelCount(const std::string &player, int cursector);
 private:
     void RemoveSentinels(int num, const std::string &player, int sector);       

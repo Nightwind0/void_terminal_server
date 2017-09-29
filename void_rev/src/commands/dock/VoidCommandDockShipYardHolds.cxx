@@ -28,15 +28,15 @@ std::string VoidCommandDockShipYardHolds::GetItemName()const
 {
     return "holds";
 }
-int VoidCommandDockShipYardHolds::GetMaxOfItem(ShipTypeHandle *shiptype)const
+int VoidCommandDockShipYardHolds::GetMaxOfItem(ShipTypeHandlePtr shiptype)const
 {
     return shiptype->GetMaxHolds();
 }
-int VoidCommandDockShipYardHolds::GetCurrentOfItem(ShipHandle * ship)const
+int VoidCommandDockShipYardHolds::GetCurrentOfItem(ShipHandlePtr ship)const
 {
     return ship->GetHolds();
 }
-void VoidCommandDockShipYardHolds::SetItemNumber(ShipHandle *ship,int num)
+void VoidCommandDockShipYardHolds::SetItemNumber(ShipHandlePtr ship,int num)
 {
     ship->Lock();
     ship->SetHolds(num);

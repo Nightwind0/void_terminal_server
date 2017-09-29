@@ -48,7 +48,7 @@ bool VoidCommandTow::HandleCommand(const string &command, const string &argument
 
 std::list<int> VoidCommandTow::GetValidShipList(int cur_sector, int cur_ship)
 {
-    PlayerHandle * player = get_thread()->GetPlayer();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
 
     std::list<int> valid_ships;
 
@@ -84,10 +84,10 @@ std::list<int> VoidCommandTow::GetValidShipList(int cur_sector, int cur_ship)
 bool VoidCommandTow::CommandTow(const std::string &arguments)
 {
 
-    ShipHandle * ship = create_handle_to_current_ship(get_player());
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
+    ShipHandlePtr ship = create_handle_to_current_ship(get_player());
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
 
-    int tps = (int)shiptype.GetTurnsPerSector();
+    int tps = (int)shiptype->GetTurnsPerSector();
 
 //    PlayerHandle * player = get_thread()->GetPlayer();
 
@@ -97,7 +97,6 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
     {
 	Send(Color()->get(RED) + "There are no ships that you can tow in this sector.");
 
-	delete ship;
 	return true;
     }
 
@@ -109,7 +108,6 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
 	ship->BreakTow();
 	ship->Unlock();
 	Send(Color()->get(GREEN) + "You have disengaged your tow" + endr);
-	delete ship;
 
 	return true;
     }
@@ -125,7 +123,7 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
 	    get_thread()->SendWordWrapped(std::string(endr) + "That is not a valid ship to tow. Remember that in order to tow"
 					  " a ship, you must be in the same sector, and it must be owned by you." + endr,80);
 	 
-	    delete ship;
+
 	    return true;
 	}
     }
@@ -140,14 +138,13 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
     Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipdestnum));
     PrimaryKey key(&towship);
     ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
-    ShipTypeHandle tsthandle= towshiphandle.GetShipTypeHandle();
+    ShipTypeHandlePtr tsthandle= towshiphandle.GetShipTypeHandle();
 
-    tps += tsthandle.GetTurnsPerSector();
+    tps += tsthandle->GetTurnsPerSector();
     
     Send(Color()->get(GREEN) + "You now take " + Color()->get(WHITE) + IntToString(tps) + Color()->get(GREEN) + " turns per sector." + endr);
 
-    
-    delete ship;
+
     return true;
     
 }

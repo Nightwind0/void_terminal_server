@@ -13,8 +13,19 @@
 #include "Message.h"
 #include "Socket.h"
 #include "Mutex.h"
+#include "void_util.h"
 
-enum LOG_SEVERITY {EMERGENCY, ERROR, WARNING, DEBUG, DEBUG2, AUDIT};
+
+
+class MissingConfig {
+ public:
+ MissingConfig(std::string key):m_key(key){
+ }
+
+  std::string getKey() const { return m_key; }
+ private:
+  std::string m_key;
+};
 
 
 class ResourceMaster

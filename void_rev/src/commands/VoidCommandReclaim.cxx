@@ -61,13 +61,13 @@ bool VoidCommandReclaim::HandleCommand(const string &command, const string &argu
 
 void VoidCommandReclaim::Reclaim(int num)
 {
-    std::unique_ptr<ShipHandle> ship( create_handle_to_current_ship( get_thread()->GetPlayer()));
+    ShipHandlePtr ship = create_handle_to_current_ship( get_thread()->GetPlayer());
 
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
 
     int sector = ship->GetSector();
 
-    int sentinel_max = shiptype.GetMaxSentinels();
+    int sentinel_max = shiptype->GetMaxSentinels();
     int current_sentinels = ship->GetSentinels();
 
     int sentinel_room = sentinel_max - current_sentinels;
@@ -96,7 +96,7 @@ void VoidCommandReclaim::Reclaim(int num)
 	return;
     }
 
-    m_sentinel_tools.ReclaimAndReloadSentinels( num, get_thread()->GetPlayer(), ship.get(), sector );
+    m_sentinel_tools.ReclaimAndReloadSentinels( num, get_thread()->GetPlayer(), ship, sector );
 
     Send(Color()->get(WHITE) + IntToString(num) + Color()->get(GREEN) + " sentinels have been reclaimed to your ship." + endr);
 

@@ -29,15 +29,15 @@ std::string VoidCommandDockArmorySentinels::GetItemName()const
 {
     return "sentinels";
 }
-int VoidCommandDockArmorySentinels::GetMaxOfItem(ShipTypeHandle *shiptype)const
+int VoidCommandDockArmorySentinels::GetMaxOfItem(ShipTypeHandlePtr shiptype)const
 {
     return shiptype->GetMaxSentinels();
 }
-int VoidCommandDockArmorySentinels::GetCurrentOfItem(ShipHandle * ship)const
+int VoidCommandDockArmorySentinels::GetCurrentOfItem(ShipHandlePtr ship)const
 {
     return ship->GetSentinels();
 }
-void VoidCommandDockArmorySentinels::SetItemNumber(ShipHandle *ship,int num)
+void VoidCommandDockArmorySentinels::SetItemNumber(ShipHandlePtr ship,int num)
 {
     ship->Lock();
     ship->SetSentinels(num);

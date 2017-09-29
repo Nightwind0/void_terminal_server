@@ -55,16 +55,14 @@ bool VoidCommandComputerCloak::CommandComputerCloak(const std::string &arguments
 
     bool to_cloak = true;
 
-    ShipHandle * ship = create_handle_to_current_ship(get_player());
+    ShipHandlePtr ship = create_handle_to_current_ship(get_player());
 
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
-    PlayerHandle * player = get_thread()->GetPlayer();
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
 
-    if(!shiptype.GetIsCloakable())
+    if(!shiptype->GetIsCloakable())
     {
 	Send(Color()->get(RED) + "This ship is not capable of cloaking." + endr);
-
-	delete ship;
 	return true;
     }
 
@@ -88,6 +86,6 @@ bool VoidCommandComputerCloak::CommandComputerCloak(const std::string &arguments
 	Send(Color()->get(GREEN) + "Your ship is now visible." + endr);
     }
 
-    delete ship;
+
     return true;
 }

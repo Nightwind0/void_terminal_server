@@ -55,7 +55,7 @@ bool VoidCommandDockShipYardSpec::HandleCommand(const string &command, const str
 bool VoidCommandDockShipYardSpec::DockShipYardSpec(const string &arguments)
 {
 
-    PlayerHandle * player = get_thread()->GetPlayer();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
     int shiptype = atoi(arguments.c_str());
     
     std::string query = "select shiptype.nkey,shiptype.sname, nmaxmissiles,nmaxshields,nmaxattack,nmaxholds,ninitholds,nmaxsentinels,nmaxtrackers,nmaxmines,nmaxpeople,nmaxprobes,nturnspersector,bwarpdrive,bcloakable,banalyzer,nscandistance,ncost,  shipmanufacturer.sname, nforecolor, nbackcolor, ntransrange from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey and shiptype.nkey = '" + IntToString(shiptype) + "' order by shiptype.nkey;";

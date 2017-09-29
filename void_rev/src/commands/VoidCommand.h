@@ -35,12 +35,13 @@ class VoidCommand
     void Send(const std::string &str)const;
     std::string ReceiveLine()const;
 
-    PlayerHandle * get_player() const;
+    PlayerHandlePtr get_player() const;
 
-    bool isValidPlayer(const std::string playername)const;
+    bool isValidPlayer(const std::string& playername)const;
+    void log(LOG_SEVERITY severity, const std::string& message)const;
 
-    ShipHandle *create_handle_to_current_ship(PlayerHandle * player) const;
-    PlayerHandle *create_handle_to_player_in_ship(int ship)const;
+    ShipHandlePtr create_handle_to_current_ship(PlayerHandlePtr player) const;
+    PlayerHandlePtr create_handle_to_player_in_ship(int ship)const;
 
     bool move_player_to_sector(int sector);
     static const char * endr;

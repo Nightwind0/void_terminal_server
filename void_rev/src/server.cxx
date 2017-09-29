@@ -149,7 +149,7 @@ int main()
 		i++)
 	    {
 		VoidServerThread *t = *i;
-		LoginHandle *login = t->GetLogin();
+		LoginHandlePtr login = t->GetLogin();
 
 		cout << (std::string)login->GetLogin() << endl;
 		

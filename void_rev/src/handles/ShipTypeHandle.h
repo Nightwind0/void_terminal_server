@@ -64,6 +64,6 @@ class ShipTypeHandle : public SerialObject
 };
 
 
-
+using ShipTypeHandlePtr = std::shared_ptr<ShipTypeHandle>;
 
 #endif

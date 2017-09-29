@@ -62,9 +62,8 @@ bool VoidCommandDisplay::HandleCommand(const string &command, const string &argu
     }
     else
     {
-	ShipHandle * ship=  create_handle_to_current_ship(get_thread()->GetPlayer());
+	ShipHandlePtr ship=  create_handle_to_current_ship(get_thread()->GetPlayer());
 	sector = ship->GetSector();
-	delete ship;
     }
 
     get_thread()->Send(DisplaySector( sector, show_cloaked ));
@@ -205,7 +204,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(int sector, bool show_cloak
 	os << " w/" << Color()->get(WHITE) << atoi(PQgetvalue(dbresult,i,4)) << Color()->get(GREEN) << " missiles ";
 	os << Color()->get(LIGHTPURPLE) << '(' << Color()->get(GRAY) << pc << '%' << Color()->get(LIGHTPURPLE) << ')' << Color()->get(GREEN) + " shields " <<  endr;
 
-	PlayerHandle * player = create_handle_to_player_in_ship(ship);
+	PlayerHandlePtr player = create_handle_to_player_in_ship(ship);
 // Need to check for null here, there may not be a player in the ship.
 	
 
@@ -259,8 +258,6 @@ std::string VoidCommandDisplay::DisplayShipsInSector(int sector, bool show_cloak
 	}
 	os << endr;
 	
-	
-	delete player;
 	    
     }
     
@@ -292,6 +289,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
     int numoutposts = PQntuples(dbresult);
 
+
     if(numoutposts == 0 ) return "";
 
     os << Color()->get(GREEN) << "Outposts:" << endr;
@@ -303,6 +301,8 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
 	int minutes = atoi(PQgetvalue(dbresult,i,7));
 
+
+
 	Boolean buyplasma("bbuyplasma", PQgetvalue(dbresult,i,1), PQgetisnull(dbresult,i,1));
 	Boolean buymetals("bbuymetals", PQgetvalue(dbresult,i,2), PQgetisnull(dbresult,i,2));
 	Boolean buycarbon("bbuycarbon", PQgetvalue(dbresult,i,3), PQgetisnull(dbresult,i,3));
@@ -310,6 +310,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 	double plasmaprice = atof(PQgetvalue(dbresult,i,4));
 	double metalsprice = atof(PQgetvalue(dbresult,i,5));
 	double carbonprice = atof(PQgetvalue(dbresult,i,6));
+
 
 
 	if(buyplasma.GetValue())

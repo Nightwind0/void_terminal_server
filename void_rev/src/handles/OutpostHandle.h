@@ -61,7 +61,7 @@ class OutpostHandle : public SerialObject
 
 };
 
-
+using OutpostHandlePtr = std::shared_ptr<OutpostHandle>;
 
 
 #endif

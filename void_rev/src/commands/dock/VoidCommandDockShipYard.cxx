@@ -86,8 +86,8 @@ std::string VoidCommandDockShipYard::GetOptionColor()const
 void VoidCommandDockShipYard::DisplayIntro()const
 {
 
-    PlayerHandle * player = get_player();
-    ShipHandle * ship = create_handle_to_current_ship(player);
+    PlayerHandlePtr player = get_player();
+    ShipHandlePtr ship = create_handle_to_current_ship(player);
     
     get_thread()->SendClearScreen();
 

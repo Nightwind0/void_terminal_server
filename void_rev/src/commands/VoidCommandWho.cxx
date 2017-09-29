@@ -55,7 +55,7 @@ void VoidCommandWho::ListPlayers()
 	i != RM->GetServerThreadsEnd();
 	i++)
     {
-	PlayerHandle *player = (*i)->GetPlayer();
+	PlayerHandlePtr player = (*i)->GetPlayer();
 	
 	if(player)
 	{

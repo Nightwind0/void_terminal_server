@@ -53,19 +53,19 @@ bool VoidCommandPurchaseShipItem::HandleCommand(const string &command, const str
 
 void VoidCommandPurchaseShipItem::ShowItemStatus()
 {
-    ShipHandle * ship = create_handle_to_current_ship(get_thread()->GetPlayer());
+    ShipHandlePtr ship = create_handle_to_current_ship(get_thread()->GetPlayer());
 
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
 
     ostringstream os;
 
     os << endr << Color()->get(GREEN);
     os << "Your ship has " << Color()->get(WHITE) << GetCurrentOfItem(ship);
     os << Color()->get(GREEN) << ' ' << GetItemName() << " out of ";
-    os << Color()->get(WHITE) << GetMaxOfItem(&shiptype);
+    os << Color()->get(WHITE) << GetMaxOfItem(shiptype);
     os << Color()->get(GREEN) << " maximum." << endr;
     os << "Leaving room for " ;
-    os << Color()->get(LIGHTCYAN) << GetMaxOfItem(&shiptype) - GetCurrentOfItem(ship);
+    os << Color()->get(LIGHTCYAN) << GetMaxOfItem(shiptype) - GetCurrentOfItem(ship);
     os << Color()->get(GREEN) << " more." << endr;
 
     int playercredits = (int)get_thread()->GetPlayer()->GetCredits();
@@ -80,15 +80,13 @@ void VoidCommandPurchaseShipItem::ShowItemStatus()
     os << Color()->get(GREEN) << ' ' << GetItemName()  << endr << endr;
 
     Send(os.str());
-    
-    delete ship;
 }
     
 
 bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 {
 
-    PlayerHandle * player = get_thread()->GetPlayer();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
 
 
     if(!arguments.size())
@@ -106,19 +104,18 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 	return true;
     }
 
-    ShipHandle * ship = create_handle_to_current_ship(get_thread()->GetPlayer());
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
+    ShipHandlePtr ship = create_handle_to_current_ship(get_thread()->GetPlayer());
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
 
     int playercredits = (int)get_thread()->GetPlayer()->GetCredits();
     int afford = playercredits / GetPriceOfItem(); // TODO: Grab missile price from config table
 
-    int maxmissiles = GetMaxOfItem(&shiptype) - GetCurrentOfItem(ship);
+    int maxmissiles = GetMaxOfItem(shiptype) - GetCurrentOfItem(ship);
 
 
     if(afford <= 0)
     {
 	Send(Color()->get(RED) + "You can't afford any " + GetItemName() + endr);
-	delete ship;
 
 	return true;
     }
@@ -126,7 +123,6 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
     if(maxmissiles <= 0)
     {
 	Send(Color()->get(RED) + "You don't have room for more " + GetItemName() + " in your ship." + endr);
-	delete ship;
 
 	return true;
     }
@@ -145,7 +141,6 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 	}
 	else
 	{
-	    delete ship;
 	    return true;
 	}
     }
@@ -165,7 +160,6 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 	}
 	else
 	{
-	    delete ship;
 	    return true;
 	}
     }
@@ -189,14 +183,11 @@ bool VoidCommandPurchaseShipItem::PurchaseShipItem(const string &arguments)
 
 	Send(Color()->get(GREEN) + endr + "Thank you, your " +  GetItemName() + " were loaded onto your ship." + endr);
 
-	delete ship;
-
 	return true;
 
     }
     else
     {
-	delete ship;
 	return true;
     }
 

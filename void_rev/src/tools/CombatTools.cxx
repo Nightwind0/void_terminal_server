@@ -39,7 +39,7 @@ void CombatTools::LogAttack(const std::string &attacker, const std::string &targ
 }
 
 
-void CombatTools::LogShipDestruction(ShipHandle * pShip, const std::string &attacker,
+void CombatTools::LogShipDestruction(ShipHandlePtr pShip, const std::string &attacker,
 					const std::string &target, int cursector)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
@@ -58,7 +58,7 @@ void CombatTools::LogShipDestruction(ShipHandle * pShip, const std::string &atta
 }
 
 
-void CombatTools::DestroyShip(ShipHandle *pShip, PlayerHandle * pPlayer, PlayerHandle * pTarget, int cursector)
+void CombatTools::DestroyShip(ShipHandlePtr pShip, PlayerHandlePtr pPlayer, PlayerHandlePtr pTarget, int cursector)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
 
@@ -83,7 +83,7 @@ void CombatTools::DestroyShip(ShipHandle *pShip, PlayerHandle * pPlayer, PlayerH
 
 
 
-int CombatTools::FireMissilesAtShip(int missiles, ShipHandle * pShip, ShipHandle * pTargetShip, int oshields)
+int CombatTools::FireMissilesAtShip(int missiles, ShipHandlePtr pShip, ShipHandlePtr pTargetShip, int oshields)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
@@ -118,7 +118,7 @@ int CombatTools::FireMissilesAtShip(int missiles, ShipHandle * pShip, ShipHandle
 }
 
 
-void CombatTools::KillPlayer(PlayerHandle * pPlayer, PlayerHandle * pTarget)
+void CombatTools::KillPlayer(PlayerHandlePtr pPlayer, PlayerHandlePtr pTarget)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
 
@@ -148,7 +148,7 @@ void CombatTools::KillPlayer(PlayerHandle * pPlayer, PlayerHandle * pTarget)
 
 
 
-ShipHandle CombatTools::CreateEscapePodForPlayer(const std::string &player, int cursector)
+ShipHandlePtr CombatTools::CreateEscapePodForPlayer(const std::string &player, int cursector)
 {
 
     std::string nextvalsql = "select nextval('ship_nkey_seq');";
@@ -193,17 +193,17 @@ ShipHandle CombatTools::CreateEscapePodForPlayer(const std::string &player, int 
     Integer epi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipnum));
     PrimaryKey key(&epi);
     
-    ShipHandle escapepod(GetDBConn(), key);
-    escapepod.Lock();
-    escapepod.SetSector(cursector);
-    escapepod.Unlock();
+    ShipHandlePtr escapepod = std::make_shared<ShipHandle>(GetDBConn(), key);
+    escapepod->Lock();
+    escapepod->SetSector(cursector);
+    escapepod->Unlock();
     
 
     return escapepod;
     
 }
 
-void CombatTools::MoveShipRandomly(ShipHandle *ship)
+void CombatTools::MoveShipRandomly(ShipHandlePtr ship)
 {
     const int NUMJUMPS = 3;
     int cursec = (int)ship->GetSector();
@@ -229,7 +229,7 @@ void CombatTools::MoveShipRandomly(ShipHandle *ship)
 }
 
 
-void CombatTools::AwardPointsForShipDestroy(PlayerHandle *player)
+void CombatTools::AwardPointsForShipDestroy(PlayerHandlePtr player)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
     int points = CONFIG_INT(RM,"point_gain_ship_destroy");
@@ -240,7 +240,7 @@ void CombatTools::AwardPointsForShipDestroy(PlayerHandle *player)
     
 }
 
-void CombatTools::AwardPointsForKill(PlayerHandle * player)
+void CombatTools::AwardPointsForKill(PlayerHandlePtr player)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
     int kill_points = CONFIG_INT(RM,"point_gain_kill");

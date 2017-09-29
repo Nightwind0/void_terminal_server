@@ -45,14 +45,13 @@ bool VoidCommandDock::HandleCommand(const string &command, const string &argumen
 {
 
     std::vector<std::string> argument_vector = WordsFromString(arguments);
-    PlayerHandle * player = get_player();
-    ShipHandle * ship = create_handle_to_current_ship(player);
+    PlayerHandlePtr player = get_player();
+    ShipHandlePtr ship = create_handle_to_current_ship(player);
 
 
     if(ship->GetIsCloaked())
     {
 	Send(Color()->get(RED) + "You cannot dock while your ship is cloaked." + endr );
-	delete ship;
 	return true;
     }
 
@@ -133,8 +132,8 @@ std::string VoidCommandDock::GetOptionColor()const
 void VoidCommandDock::DisplayIntro()const
 {
 
-    PlayerHandle * player = get_player();
-    ShipHandle * ship = create_handle_to_current_ship(player);
+    PlayerHandlePtr player = get_player();
+    ShipHandlePtr ship = create_handle_to_current_ship(player);
 
     int sector = ship->GetSector();
 

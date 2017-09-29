@@ -77,7 +77,7 @@ std::list<int> VoidCommandDockShipYardSell::GetOwnedEmptyShipsInSector(const std
 bool VoidCommandDockShipYardSell::DockShipYardSell(const string &arguments)
 {
 
-    PlayerHandle * player = get_thread()->GetPlayer();
+    PlayerHandlePtr player = get_thread()->GetPlayer();
     int shipnum = atoi(arguments.c_str());
 
     if(!arguments.size() || (shipnum == 0 && arguments.c_str() != "0"))
@@ -86,10 +86,9 @@ bool VoidCommandDockShipYardSell::DockShipYardSell(const string &arguments)
     }
 
     std::string playername = player->GetName();
-    ShipHandle * pship = create_handle_to_current_ship(player);
+    ShipHandlePtr pship = create_handle_to_current_ship(player);
     int sector = pship->GetSector();
 
-    delete pship;
 
     std::list<int> validships = GetOwnedEmptyShipsInSector(playername, sector);
 

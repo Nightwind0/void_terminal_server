@@ -41,7 +41,7 @@ bool VoidCommandScan::HandleCommand(const string &command, const string &argumen
 {
 
     int sector=0;
-    std::unique_ptr<ShipHandle> ship (create_handle_to_current_ship(get_thread()->GetPlayer()));
+    ShipHandlePtr ship = create_handle_to_current_ship(get_thread()->GetPlayer());
     int current_sector = ship->GetSector();
    
     if(arguments.size())
@@ -62,10 +62,10 @@ bool VoidCommandScan::HandleCommand(const string &command, const string &argumen
 void VoidCommandScan::ScanSector(int sector, int current_sector)
 {
 
-    std::unique_ptr<ShipHandle> ship (create_handle_to_current_ship(get_thread()->GetPlayer()));
+  ShipHandlePtr ship = create_handle_to_current_ship(get_thread()->GetPlayer());
 
-    ShipTypeHandle shiptype = ship->GetShipTypeHandle();
-    int scandistance = shiptype.GetScanDistance();
+    ShipTypeHandlePtr shiptype = ship->GetShipTypeHandle();
+    int scandistance = shiptype->GetScanDistance();
 
     if(scandistance == 0)
     {
@@ -73,7 +73,7 @@ void VoidCommandScan::ScanSector(int sector, int current_sector)
 	return;
     }
 
-    PlayerHandle * pPlayer = get_thread()->GetPlayer();
+    PlayerHandlePtr pPlayer = get_thread()->GetPlayer();
     int turns = pPlayer->GetTurnsLeft();
 
     if(sector == current_sector)

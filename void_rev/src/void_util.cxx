@@ -217,21 +217,12 @@ std::string PrepareForSQL(std::string message)
 
 std::string IntToString(const int &i)
 {
-    ostringstream os;
-
-    os << i;
-
-    return os.str();
-    
+  return std::to_string(i);
 }
 
 std::string DoubleToString(const double &d)
 {
-    ostringstream os;
-
-    os << d;
-
-    return os.str();
+  return std::to_string(d);
 }
 
 std::string BooleanToString(const bool &b)
