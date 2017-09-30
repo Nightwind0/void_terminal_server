@@ -155,6 +155,7 @@ ShipHandlePtr CombatTools::CreateEscapePodForPlayer(const std::string &player, i
     
     PGresult *dbresult = DBExec(nextvalsql);
 
+
     std::string nextval = PQgetvalue(dbresult,0,0);
     PQclear(dbresult);
 
@@ -164,31 +165,29 @@ ShipHandlePtr CombatTools::CreateEscapePodForPlayer(const std::string &player, i
     std::string stmt = "insert into ship (nkey, sname, kowner, ktype) values(" + nextval + ",'*POD*','" + player + "',10);";
     // TODO: Get escape pode type from config table
 
-     dbresult = DBExec(stmt);
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
     {
+      dbresult = DBExec(stmt);
+      ResultGuard g(dbresult);
+
+      if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
+      {
 	DBException e("Escape pod create error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
 	throw e;
+      }
     }
-
-
-    PQclear(dbresult);
 
     std::string sit = "update player set kcurrentship = '" + nextval + "' where sname = '" + player + "';";
-
-    dbresult = DBExec(sit);
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
     {
-	DBException e("Escape pod create error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
+      dbresult = DBExec(sit);
+      ResultGuard g(dbresult);
+
+      if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
+	{
+	  DBException e("Escape pod create error: " + std::string(PQresultErrorMessage(dbresult)));
+	  throw e;
+	}
     }
 
-
-    PQclear(dbresult);
     
     Integer epi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipnum));
     PrimaryKey key(&epi);
@@ -207,8 +206,6 @@ void CombatTools::MoveShipRandomly(ShipHandlePtr ship)
 {
     const int NUMJUMPS = 3;
     int cursec = (int)ship->GetSector();
-
-    srand(time(NULL));
 
     /// @todo get value from config table
     for(int i = 0; i < NUMJUMPS; i++)

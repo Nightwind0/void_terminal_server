@@ -7,20 +7,23 @@ void *ThreadStartRoutine(Thread *pthread)
 
     pthread->setRunning(true);
 
-    if(pthread->thread_init())
-    {
-	pthread->start();
-	pthread->run();
-
-	pthread->thread_destroy();
-	pthread->end();
+    bool thread_init  = false;
+    try {
+      thread_init = pthread->thread_init();
+      if(!thread_init) {
+	return NULL;
+      }
+      
+      pthread->start();
+      pthread->run();
+    }catch(...) {
+      // Swallow it for now
     }
-    else
-    {
-	std::cerr << "Thread did not init!" << std::endl;
-    }
-
-
+      
+    pthread->thread_destroy();
+    pthread->end();
+    
+    
     return NULL;
 }
 

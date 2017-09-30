@@ -51,8 +51,8 @@ class VoidServerThread: public Thread
 
     bool DoCommand(const std::string &command, const std::string &arguments, bool frompost);
 
-    std::list<VoidCommand *> m_commandlist; 
-    void add_command(VoidCommand *pcmd);
+    std::vector<std::shared_ptr<VoidCommand>> m_commandlist; 
+    void add_command(std::shared_ptr<VoidCommand> pcmd);
     
     PGconn *m_dbconn;
     TCPSocketPtr m_socket;
@@ -98,7 +98,6 @@ class VoidServerThread: public Thread
     std::string DisplayNews();
     
     void RegisterCommands();
-    void DestroyCommands();
 
 };
 

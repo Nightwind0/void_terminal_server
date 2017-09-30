@@ -52,7 +52,7 @@ void sigpipeHandler(int x)
 
 }
 
-void VoidServerThread::add_command(VoidCommand * cmd)
+void VoidServerThread::add_command(std::shared_ptr<VoidCommand>  cmd)
 {
     m_commandlist.push_back(cmd);
 }
@@ -166,7 +166,7 @@ bool VoidServerThread::DoCommand(const std::string &command, const std::string &
 
 
 
-    for(std::list<VoidCommand*>::iterator iter =  m_commandlist.begin(); iter != m_commandlist.end(); 
+    for(auto iter =  m_commandlist.begin(); iter != m_commandlist.end(); 
 	iter++)
     {
 	if(*iter == NULL)
@@ -184,7 +184,7 @@ bool VoidServerThread::DoCommand(const std::string &command, const std::string &
 	    if(!(*iter)->HandleCommand(command, arguments, frompost))
 	    {
 		Send(Color()->get(RED) + "Command syntax was incorrect." + endr + Color()->get(GREEN)
-		   + " Correct Syntax: " + Color()->get(WHITE) + (*iter)->GetSyntax() + endr);
+		     + " Correct Syntax: " + Color()->get(WHITE) + (*iter)->GetSyntax() + endr);
 	    }
 	    
 	    break;
@@ -228,12 +228,12 @@ bool VoidServerThread::thread_init()
 void VoidServerThread::thread_destroy()
 {
     try {
-    ResourceMaster::GetInstance()->Log(DEBUG,"<Thread Destroy>");
-    m_socket->Close();
-    CloseDataBaseConnection();
-    CloseLocalSocket();
-    ResourceMaster::GetInstance()->RemoveSocket(m_socket);
-    ResourceMaster::GetInstance()->RemoveServerThread(this);
+	ResourceMaster::GetInstance()->Log(DEBUG,"<Thread Destroy>");
+	m_socket->Close();
+	CloseDataBaseConnection();
+	CloseLocalSocket();
+	ResourceMaster::GetInstance()->RemoveSocket(m_socket);
+	ResourceMaster::GetInstance()->RemoveServerThread(this);
     }
     catch ( SocketException e)
     {
@@ -250,36 +250,36 @@ void VoidServerThread::thread_destroy()
 bool     VoidServerThread::run()
 {
 
-        try
-        {
+    try
+    {
 
-            Service();
+	Service();
 
-        }
-	catch(SocketException &excep)
-	{
+    }
+    catch(SocketException &excep)
+    {
 	   
-	}
-	catch(DBException &ex)
-	{
-	    // TODO: Print exception reason to stderr or log
-	    ResourceMaster::GetInstance()->Log(EMERGENCY, "Execute: " + ex.GetMessage());
-	    std::cerr << "DB ERROR!!!" << std::endl;
+    }
+    catch(DBException &ex)
+    {
+	// TODO: Print exception reason to stderr or log
+	ResourceMaster::GetInstance()->Log(EMERGENCY, "Execute: " + ex.GetMessage());
+	std::cerr << "DB ERROR!!!" << std::endl;
 
-	}
-	catch(MissingConfig& exmc)
-	{
-	  ResourceMaster::GetInstance()->Log(EMERGENCY, "Missing Config: " + exmc.getKey());
-	  std::cerr << "Missing config: " << exmc.getKey() << std::endl;
-	}
-	catch(ShutdownException &exp)
-	{
-	    return true;
-	}
-	catch(ShipDestroyedException dsh)
-	{
-	    return true;
-	}
+    }
+    catch(MissingConfig& exmc)
+    {
+	ResourceMaster::GetInstance()->Log(EMERGENCY, "Missing Config: " + exmc.getKey());
+	std::cerr << "Missing config: " << exmc.getKey() << std::endl;
+    }
+    catch(ShutdownException &exp)
+    {
+	return true;
+    }
+    catch(ShipDestroyedException dsh)
+    {
+	return true;
+    }
 
 
 }
@@ -318,7 +318,7 @@ std::string VoidServerThread::DisplayNews()
     for(int i=0;i<rows;i++)
     {
 	os  << endr << Color()->get(LIGHTPURPLE) << PQgetvalue(dbresult,i,0) << endr
-	   << Color()->get(WHITE) << PQgetvalue(dbresult,i,1) << endr;
+	    << Color()->get(WHITE) << PQgetvalue(dbresult,i,1) << endr;
     }
 
     PQclear(dbresult);
@@ -336,7 +336,7 @@ std::string VoidServerThread::DisplayCommands()
 
     os << Color()->get(BLACK,BG_WHITE) << "  System Commands  " << Color()->blackout() << endr;
 
-    for(std::list<VoidCommand*>::iterator iter =  m_commandlist.begin(); iter != m_commandlist.end(); iter++)
+    for(auto iter =  m_commandlist.begin(); iter != m_commandlist.end(); iter++)
     {
 	os << Color()->get(PURPLE) << (*iter)->GetSyntax() << Color()->get(GRAY) << " " << (*iter)->GetDescription() << endr;
     }
@@ -373,7 +373,7 @@ std::string VoidServerThread::Receive(bool block)
 /*
 
 
-*/
+ */
 
 	if(fromtcp)
 	{
@@ -533,7 +533,7 @@ bool VoidServerThread::Login()
 		ResourceMaster::GetInstance()->
 		    SendMessage(m_unixsocket,
 				(*i)->GetPlayer()->GetName().GetAsString(),
-		    msg);
+				msg);
 
 	    
 	    }
@@ -624,19 +624,19 @@ bool VoidServerThread::RegisterNewLogin()
     {
 	bool passdone = false;
 
-	    while(!passdone)
-	    {
+	while(!passdone)
+	{
 		
-		Send(Color()->get(WHITE) + "Enter your new password:" + Color()->get(BLACK));
-		password = ReceiveLine();
+	    Send(Color()->get(WHITE) + "Enter your new password:" + Color()->get(BLACK));
+	    password = ReceiveLine();
 
-		if(password.size() < 6) // TODO: Pull from config table
-		{
-		    Send(Color()->get(LIGHTRED) + "Please enter a password with at least 6 characters." + endr);
-		}
-		else passdone = true;
-		
+	    if(password.size() < 6) // TODO: Pull from config table
+	    {
+		Send(Color()->get(LIGHTRED) + "Please enter a password with at least 6 characters." + endr);
 	    }
+	    else passdone = true;
+		
+	}
 	
 
 	Send(Color()->get(WHITE) + "Enter again to confirm:" + Color()->get(BLACK));
@@ -842,7 +842,7 @@ void VoidServerThread::StartNewPlayer()
 	    else done = false;
 	}
 
-    PQclear(dbresult);
+	PQclear(dbresult);
 
     }
 
@@ -1050,46 +1050,57 @@ void VoidServerThread::SetTurnsLeft()
 		   
 }
 
- 
+class LoginGuard {
+public:
+    LoginGuard(const std::string& player):m_player(player){}
+    ~LoginGuard() {
+    }
+
+private:
+    std::string m_player;
+};
+
+
 void        VoidServerThread::Service()
 {
-
-    RegisterCommands();
-
-    m_pColor = std::make_shared<ANSIColor>();
-
-    ResourceMaster::GetInstance()->Log(DEBUG,"<Connection from:" + std::string(m_socket->GetAddress()) +  ">");
-
-    signal(SIGPIPE, sigpipeHandler);
-
-    std::string outstring;
-    std::string instring;
-    std::string input_buffer;
     std::string line;
     std::ostringstream os;
-    int tries =0;
+	
+    try{
+	RegisterCommands();
+
+	m_pColor = std::make_shared<ANSIColor>();
+
+	ResourceMaster::GetInstance()->Log(DEBUG,"<Connection from:" + std::string(m_socket->GetAddress()) +  ">");
+
+	signal(SIGPIPE, sigpipeHandler);
+
+	std::string outstring;
+	std::string instring;
+	std::string input_buffer;
+
+	int tries =0;
 
 
 
-    SendClearScreen();
+	SendClearScreen();
   
 
-    os << Color()->get(LIGHTBLUE);
-    os << endr << "Welcome to Void Revolution" <<  endr;
-    os << Color()->get(WHITE);
+	os << Color()->get(LIGHTBLUE);
+	os << endr << "Welcome to Void Revolution" <<  endr;
+	os << Color()->get(WHITE);
 #ifdef VERSION
-    os << "Version " << VERSION;
+	os << "Version " << VERSION;
 #endif
-
-    os << DisplayNews();
-    os << Color()->get(GRAY) << "Press Enter." << endr;
-
-    try{
-
-    Send( os.str());
-
-    std::string enter = ReceiveLine();
-
+	
+	os << DisplayNews();
+	os << Color()->get(GRAY) << "Press Enter." << endr;
+	
+	
+	Send( os.str());
+	
+	std::string enter = ReceiveLine();
+	
 
 	while(!Login())
 	{
@@ -1120,8 +1131,7 @@ void        VoidServerThread::Service()
 	ChoosePlayer();
 	
     }
-    catch(const DBException &e)
-    {
+    catch(const DBException &e) {
 	std::string err = "<DB Error during login: " + PrepareForSQL(e.GetMessage()) + ">";
 	ResourceMaster::GetInstance()->Log(EMERGENCY, err);
 	return;
@@ -1132,32 +1142,40 @@ void        VoidServerThread::Service()
 	return;
     }
 
-
+	
     ResourceMaster::GetInstance()->SetThreadForPlayer(this,(std::string) GetPlayer()->GetName());
+    LoginGuard lg((std::string) GetPlayer()->GetName());
 
+	
     bool done = false;
-      
-    SetTurnsLeft();
 
-    Send(Color()->get(YELLOW) + "Check your mail? (Y/n) :");
-    std::string checkmail = ReceiveLine();
-    LOWERCASE(checkmail);
-    
-    if(CompStrings(checkmail,"yes"))
-    {
-	PostCommand("checkmail","");
+    try {
+
+	SetTurnsLeft();
+
+	Send(Color()->get(YELLOW) + "Check your mail? (Y/n) :");
+	std::string checkmail = ReceiveLine();
+	LOWERCASE(checkmail);
+	
+	if(CompStrings(checkmail,"yes"))
+	{
+	    PostCommand("checkmail","");
+	}
+    }catch(SocketException &e) {
+	ResourceMaster::GetInstance()->Log(ERROR, "Socket Error #" + IntToString(e.GetType()));
+	return;
     }
-
+	
     if(m_player->GetIsDead())
     {
 	std::string checkdeadtime = "select extract(day from age(now(),dlastplay)) from player where sname = '" + m_player->GetName().GetAsString() + "';";
-
+	    
 	PGresult *dbresult= DBExec(checkdeadtime);
-
+	    
 	int days = atoi(PQgetvalue(dbresult,0,0));
-
+	    
 	PQclear(dbresult);
-
+	    
 	if(days < 1)
 	{
 	    Send(Color()->get(RED) + "Sorry, you are still dead. You will remain dead until 24 hours have passed since your death." + endr);
@@ -1169,7 +1187,7 @@ void        VoidServerThread::Service()
 	    m_player->SetIsDead(false);
 	    m_player->Unlock();
 	    try{
-	    Send(Color()->get(LIGHTGREEN) + "You have come back from the dead! You start with a new ship!" + endr);
+		Send(Color()->get(LIGHTGREEN) + "You have come back from the dead! You start with a new ship!" + endr);
 	    }
 	    catch(SocketException e)
 	    {
@@ -1182,13 +1200,13 @@ void        VoidServerThread::Service()
 	    ship->Lock();
 	    ship->SetSector(0);
 	    ship->Unlock();
-	    
+		
 	    m_player->Lock();
 	    m_player->SetCurrentShip(ship->GetNkey());
 	    m_player->Unlock();
-
+		
 	}
-	
+	    
     }
     
 
@@ -1213,125 +1231,125 @@ void        VoidServerThread::Service()
 
 
 	bool gotinput = false;
-	    int newline = 0;
+	int newline = 0;
 
 	    
-	    while(!gotinput)
-	    {
+	while(!gotinput)
+	{
 		
-		try{
-		    Send(endr);
-		    line = CommandPrompt();
-		    gotinput = true;
-		    ResourceMaster::GetInstance()->Log(AUDIT, "<Got command: " + line + ">");
-		}
-		catch(DBException dbe)
-		{
-		    ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + PrepareForSQL(dbe.GetMessage()) + ">");
-		    std::cerr << "DB Exception: " << dbe.GetMessage() << std::endl;
-		    done = true;
-		    break;
-		}
-		catch(SocketException e)
-		{
-		    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(e.GetType())) + ">");
-		    done = true;
-		    gotinput = true;
-		    break;
-
-		}
-
-		catch(exception ex)
-		{
-		    done = true;
-		    break;
-		}
-		catch(DeathException de)
-		{
-		    ResourceMaster::GetInstance()->Log(DEBUG,"<Death Exception Caught>");
-		    Send(Color()->get(GREEN) + "You will now be disconnected." + endr);
-		    done = true;
-		    gotinput = true;
-		    break;
-		}
-		catch(ShipDestroyedException sde)
-		{
-		    
-		}
+	    try{
+		Send(endr);
+		line = CommandPrompt();
+		gotinput = true;
+		ResourceMaster::GetInstance()->Log(AUDIT, "<Got command: " + line + ">");
 	    }
+	    catch(DBException dbe)
+	    {
+		ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + PrepareForSQL(dbe.GetMessage()) + ">");
+		std::cerr << "DB Exception: " << dbe.GetMessage() << std::endl;
+		done = true;
+		break;
+	    }
+	    catch(SocketException e)
+	    {
+		ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(e.GetType())) + ">");
+		done = true;
+		gotinput = true;
+		break;
+
+	    }
+
+	    catch(exception ex)
+	    {
+		done = true;
+		break;
+	    }
+	    catch(DeathException de)
+	    {
+		ResourceMaster::GetInstance()->Log(DEBUG,"<Death Exception Caught>");
+		Send(Color()->get(GREEN) + "You will now be disconnected." + endr);
+		done = true;
+		gotinput = true;
+		break;
+	    }
+	    catch(ShipDestroyedException sde)
+	    {
+		    
+	    }
+	}
 	    
 	    
     
-	    try{
+	try{
 
 
-		os.str("");
+	    os.str("");
 
 
 
 
-		std::string command; 
-		std::string arguments;
+	    std::string command; 
+	    std::string arguments;
 
-		std::string::size_type  space;
+	    std::string::size_type  space;
 
-		bool claimed;
+	    bool claimed;
 
-		space = line.find(" ");
+	    space = line.find(" ");
 
-		if(space == std::string::npos)
-		    command = line;
-		else command = line.substr(0,space);
+	    if(space == std::string::npos)
+		command = line;
+	    else command = line.substr(0,space);
 
-		if(space != std::string::npos)
-		    arguments = line.substr(space +1, line.size() - space -1 );
-		else
-		    arguments = "";
+	    if(space != std::string::npos)
+		arguments = line.substr(space +1, line.size() - space -1 );
+	    else
+		arguments = "";
 
 		
-		std::transform (command.begin(), command.end(), command.begin(), ToLower());
+	    std::transform (command.begin(), command.end(), command.begin(), ToLower());
 
 
-		if(command[0] >= '0' && command[0] <= '9')
+	    if(command[0] >= '0' && command[0] <= '9')
+	    {
+		// Number? Probably a sector number.
+		// So change command to move, and arguments to this number..
+		arguments = command;
+		command = "move";
+	    }
+
+
+
+
+	    claimed = DoCommand(command, arguments, false);
+
+
+
+	    if(!claimed)
+	    {
+
+		if(CompStrings(command, "news"))
 		{
-		    // Number? Probably a sector number.
-		    // So change command to move, and arguments to this number..
-		    arguments = command;
-		    command = "move";
+		    os << DisplayNews();
 		}
-
-
-
-
-		claimed = DoCommand(command, arguments, false);
-
-
-
-		if(!claimed)
+		else if(CompStrings(command,"help") || command == "?")
 		{
-
-		    if(CompStrings(command, "news"))
-		    {
-			os << DisplayNews();
-		    }
-		    else if(CompStrings(command,"help") || command == "?")
-		    {
-			os << DisplayCommands(); 
-		    }
-		    else if(command == "bye"  || command == "quit" || command == "exit")
-		    {
+		    os << DisplayCommands(); 
+		}
+		else if(command == "bye"  || command == "quit" || command == "exit")
+		{
 
 
 			
-			os <<  "\e8Goodbye!!" << endr;
+		    os <<  "\e8Goodbye!!" << endr;
 
-			done = true;
-		    }
+		    done = true;
 		}
+	    }
 
 	       
 
-		Send(os.str());
+	    Send(os.str());
 
 
         }
@@ -1381,44 +1399,29 @@ void        VoidServerThread::Service()
 
     ResourceMaster::GetInstance()->Log(DEBUG,"<Done servicing:" + PrepareForSQL(std::string(m_socket->GetAddress())) +  ">");
 
-    ResourceMaster::GetInstance()->RemoveThreadForPlayer((std::string)m_player->GetName());
-
-
-    DestroyCommands();
-
 }
 
-void VoidServerThread::DestroyCommands()
-{
-    for(std::list<VoidCommand*>::iterator iter = m_commandlist.begin();
-	iter != m_commandlist.end();
-	iter++)
-    {
-	delete *iter;
-    }
-   
-}
 
 void VoidServerThread::RegisterCommands()
 {
-    add_command(new VoidCommandDisplay(this));
-    add_command(new VoidCommandMove(this));
-    add_command(new VoidCommandPort(this));
-    add_command(new VoidCommandStatus(this));
-    add_command(new VoidCommandWho(this));
-    add_command(new VoidCommandHail(this));
-    add_command(new VoidCommandTransmit(this));
-    add_command(new VoidCommandDock(this));
-    add_command(new VoidCommandBeam(this));
-    add_command(new VoidCommandTow(this));
-    add_command(new VoidCommandCheckMail(this));
-    add_command(new VoidCommandMail(this));
-    add_command(new VoidCommandAttack(this));
-    add_command(new VoidCommandClaim(this));
-    add_command(new VoidCommandComputer(this));
-    add_command(new VoidCommandDeploy(this));
-    add_command(new VoidCommandReclaim(this));
-    add_command(new VoidCommandScan(this));
+    add_command(std::make_shared<VoidCommandDisplay>(this));
+    add_command(std::make_shared<VoidCommandMove>(this));
+    add_command(std::make_shared<VoidCommandPort>(this));
+    add_command(std::make_shared<VoidCommandStatus>(this));
+    add_command(std::make_shared<VoidCommandWho>(this));
+    add_command(std::make_shared<VoidCommandHail>(this));
+    add_command(std::make_shared<VoidCommandTransmit>(this));
+    add_command(std::make_shared<VoidCommandDock>(this));
+    add_command(std::make_shared<VoidCommandBeam>(this));
+    add_command(std::make_shared<VoidCommandTow>(this));
+    add_command(std::make_shared<VoidCommandCheckMail>(this));
+    add_command(std::make_shared<VoidCommandMail>(this));
+    add_command(std::make_shared<VoidCommandAttack>(this));
+    add_command(std::make_shared<VoidCommandClaim>(this));
+    add_command(std::make_shared<VoidCommandComputer>(this));
+    add_command(std::make_shared<VoidCommandDeploy>(this));
+    add_command(std::make_shared<VoidCommandReclaim>(this));
+    add_command(std::make_shared<VoidCommandScan>(this));
 
 }
 

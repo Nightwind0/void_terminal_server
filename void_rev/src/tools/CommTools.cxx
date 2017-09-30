@@ -18,12 +18,12 @@ std::list<std::string> CommTools::get_players_in_sector(int sector)
 	+  "' and player.kcurrentship = ship.nkey;";
 
     PGresult *dbresult = DBExec(query);
+    ResultGuard g(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 
 	DBException e("Get players in sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -33,8 +33,6 @@ std::list<std::string> CommTools::get_players_in_sector(int sector)
     {
 	playerlist.push_back(PQgetvalue(dbresult,i,0));
     }
-
-    PQclear(dbresult);
 
     return playerlist;
 }

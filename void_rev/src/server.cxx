@@ -29,6 +29,8 @@ int main()
     int socket_num;
     int socket_num2;
 
+    srand(time(NULL));
+
     char str[1024];
     PGconn *RMconn;
 

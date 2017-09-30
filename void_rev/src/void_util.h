@@ -6,6 +6,7 @@
 #include <cctype>
 #include <vector>
 #include <algorithm>
+#include <libpq-fe.h>
 
 const int VOID_VER_MAJOR = 0;
 
@@ -32,8 +33,6 @@ class ColorType
     virtual std::string get(FGColor fg, BGColor bg = BG_BLACK)const=0;
     virtual std::string blackout()const=0;
     virtual std::string clear()const=0;
-
-
 };
 
 class ANSIColor : public ColorType
@@ -107,6 +106,17 @@ class ShipDestroyedException : public ControlException
 
 class DeathException : public ShipDestroyedException
 {
+};
+
+class ResultGuard {
+ public:
+ ResultGuard(PGresult * presult):m_result(presult){
+ }
+  ~ResultGuard() {
+    PQclear(m_result);
+  }
+ private:
+  PGresult * m_result;
 };
 
                                                                                 
