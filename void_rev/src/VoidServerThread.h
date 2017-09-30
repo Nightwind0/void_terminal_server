@@ -21,33 +21,34 @@ class VoidServerThread: public Thread
 {
 	
 
- public:
+public:
 
-	VoidServerThread(TCPSocketPtr socket);
-	~VoidServerThread();
+    VoidServerThread(TCPSocketPtr socket);
+    ~VoidServerThread();
 
 
-	PGconn * GetDBConn() const { return m_dbconn; }
+    PGconn * GetDBConn() const { return m_dbconn; }
 	
-	PlayerHandlePtr GetPlayer()const;
-	LoginHandlePtr  GetLogin()const;
+    PlayerHandlePtr GetPlayer()const;
+    LoginHandlePtr  GetLogin()const;
 	
-	PGresult *DBExec(const std::string &sql);
+    PGresult *DBExec(const std::string &sql);
 	
-	bool PostCommand(const std::string &command, const std::string &arguments); 
+    bool PostCommand(const std::string &command, const std::string &arguments); 
 	
-	void Send(const std::string& str);
-	void SendClearScreen();
-	void SendWordWrapped(const std::string &str, int screen_width);
-	std::shared_ptr<ColorType> Color()const{ return m_pColor; }
-	std::string Receive(bool block);
-	std::string ReceiveLine();
+    void Send(const std::string& str);
+    void SendClearScreen();
+    void SendWordWrapped(const std::string &str, int screen_width);
+    std::shared_ptr<ColorType> Color()const{ return m_pColor; }
+    //std::string Receive(bool block);
+    std::string ReceiveLine();
 	
-	UNIXDatagramSocketPtr GetLocalSocket() const { return m_unixsocket; }
-	ShipHandle * CreateNewShip(int shiptype);	
+    UNIXDatagramSocketPtr GetLocalSocket() const { return m_unixsocket; }
+    ShipHandle * CreateNewShip(int shiptype);	
 
- protected:
+protected:
 
+    void Log(LOG_SEVERITY severity, const std::string& message)const;
 
     bool DoCommand(const std::string &command, const std::string &arguments, bool frompost);
 
@@ -60,7 +61,7 @@ class VoidServerThread: public Thread
 
     LoginHandlePtr m_login;
     PlayerHandlePtr m_player;
-
+    std::string m_inputbuffer;
 
     static const char *  blackout;
 

@@ -20,7 +20,10 @@ class Socket
 
     // True means this socket is the result of the select,
     // False means its "other"
-    bool Select(const Socket &other);
+    // Timeout of 0 means no timeout
+    enum class eSelectResult : unsigned char { THIS_SOCKET, OTHER_SOCKET, TIMEOUT };
+    
+    eSelectResult Select(const Socket &other, int sec_timeout=0);
     
     std::string GetAddress()const;
  protected:

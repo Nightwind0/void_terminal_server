@@ -62,7 +62,7 @@ void Socket::setAddress(const std::string &addr)
 }
 
 
-bool Socket::Select(const Socket &other)
+Socket::eSelectResult Socket::Select(const Socket &other, int sec_timeout)
 {
 
     fd_set readfs;
@@ -70,8 +70,20 @@ bool Socket::Select(const Socket &other)
     FD_ZERO(&readfs);
     FD_SET(m_socketid, &readfs);
     FD_SET(other.m_socketid,&readfs);
+
+    timeval timeout = {0};
+    timeout.tv_sec = sec_timeout; 
+    timeout.tv_usec = 0; 
     
-    int selectval = select(std::max(other.m_socketid,m_socketid)+1,&readfs,NULL,NULL,NULL);
+    int selectval = 0;
+    if(sec_timeout > 0) {
+      selectval = select(std::max(other.m_socketid,m_socketid)+1,&readfs,NULL,NULL,&timeout);
+      if(selectval == 0){
+	return eSelectResult::TIMEOUT;
+      }
+    } else {
+      selectval = select(std::max(other.m_socketid,m_socketid)+1,&readfs,NULL,NULL,NULL);
+    }
 
 
     if(selectval < 0)
@@ -79,10 +91,8 @@ bool Socket::Select(const Socket &other)
 	throw SocketException(SELECTERROR);
     }
 
-    if(FD_ISSET(m_socketid,&readfs)) return true;
-    else return false;
-    
-
+    if(FD_ISSET(m_socketid,&readfs)) return eSelectResult::THIS_SOCKET;
+    else return eSelectResult::OTHER_SOCKET;
 }
 
 
@@ -196,7 +206,7 @@ void TCPSocket::Send(const void *msg, int len, int flags=MSG_NOSIGNAL)
 
 
 
-int TCPSocket::Recv(void *buf, int len, unsigned int flags =MSG_NOSIGNAL)
+int TCPSocket::Recv(void *buf, int len, unsigned int flags = MSG_NOSIGNAL)
 {
     int res = recv(getSocketid(), buf, len, flags);
 
@@ -210,6 +220,8 @@ int TCPSocket::Recv(void *buf, int len, unsigned int flags =MSG_NOSIGNAL)
 	case ENOTCONN:
 	    throw SocketException(NOTCONN);
 	    break;
+	case EWOULDBLOCK:
+	  return 0;
 	default:
 	    throw SocketException(UNKNOWN);
 	}

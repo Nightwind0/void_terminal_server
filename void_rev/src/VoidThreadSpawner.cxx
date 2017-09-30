@@ -86,7 +86,8 @@ bool VoidThreadSpawner::run()
     while(m_bKeepGoing)
     {
 
-	if(m_socket->Select(*m_unixsocket))
+      Socket::eSelectResult select_result = m_socket->Select(*m_unixsocket); 
+      if(select_result == Socket::eSelectResult::THIS_SOCKET)
 	{
 
 	    std::cout << "TCP Socket came in." << std::endl;
@@ -102,7 +103,7 @@ bool VoidThreadSpawner::run()
 	    newthread->Start();
 	    ResourceMaster::GetInstance()->Log(DEBUG2, "** New Thread Started **");
 	}
-	else
+      else if(select_result == Socket::eSelectResult::OTHER_SOCKET)
 	{
 	    // Got a message
 	  ResourceMaster::GetInstance()->Log(DEBUG2, "(( Message to Threadspawner))");

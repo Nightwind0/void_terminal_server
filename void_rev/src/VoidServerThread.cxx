@@ -49,7 +49,6 @@ void sigpipeHandler(int x)
 {
     signal(SIGPIPE, sigpipeHandler);  //reset the signal handler
     ResourceMaster::GetInstance()->Log(EMERGENCY, "SIGPIPE");
-
 }
 
 void VoidServerThread::add_command(std::shared_ptr<VoidCommand>  cmd)
@@ -143,7 +142,6 @@ void VoidServerThread::OpenLocalSocket()
     
     m_unixsocket->Create();
     m_unixsocket->Bind(0,sockname);
-//    m_unixsocket.Listen();
 }
 
 void VoidServerThread::CloseLocalSocket()
@@ -281,15 +279,13 @@ bool     VoidServerThread::run()
 	return true;
     }
 
-
+    return false;
 }
 
 
 void VoidServerThread::SendClearScreen()
 {
-
     Send(Color()->clear());
-    
 }
 
 
@@ -345,51 +341,50 @@ std::string VoidServerThread::DisplayCommands()
 }
 
 
+void VoidServerThread::Log(LOG_SEVERITY severity, const std::string& message) const {
+    ResourceMaster::GetInstance()->Log(severity, message);
+}
 
 
 
 
-
-
-std::string VoidServerThread::Receive(bool block)
+std::string VoidServerThread::ReceiveLine()
 {
-
-    int  bytes;
+    const int timeout_secs = std::stoi(ResourceMaster::GetInstance()->GetConfig("idle_timeout_secs"));
     char buffer[65535];
-    std::string instring;
+    std::string instring(m_inputbuffer);
     bool gotstring = false;
-
-
-
-
-    
+    std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
 
     while(!gotstring)
     {
+	// timeout after 10s and check things out no matter what
+	Socket::eSelectResult result = m_socket->Select(*m_unixsocket, 10);
 
-
-	bool fromtcp = m_socket->Select(*m_unixsocket);
-
-/*
-
-
- */
-
-	if(fromtcp)
-	{
-
-	    
-	    bytes = m_socket->Recv(buffer,65535, MSG_NOSIGNAL);
-	    
-	    buffer[bytes] = 0;
-	    
-	    instring = buffer;
-	    
-	    gotstring = true;
+	if(result == Socket::eSelectResult::THIS_SOCKET) {
+	    std::string input;
+	    int bytes = m_socket->Recv(buffer,65535, MSG_DONTWAIT);
+	    if(bytes > 0){
+		buffer[bytes] = '\0';
+		input = buffer;
+		
+		auto it = input.find("\x0A");
+		if(it != string::npos) {
+		    instring += input.substr(0,it-1);
+		    Log(AUDIT, "Got input: '" + instring + '\'');
+		    m_inputbuffer = input.substr(it+1);
+		    // Clean this up. Should be a util...
+		    if(m_inputbuffer.back() == '\x0D'){
+			m_inputbuffer = m_inputbuffer.substr(0, m_inputbuffer.size()-1);
+		    }
+		    gotstring = true;
+		} else {
+		    instring += input;
+		}
+	    }
 
 	}
-	else 
-	{
+	else if(result == Socket::eSelectResult::OTHER_SOCKET) {
 
 	    Message msg;
 	    std::string from;
@@ -399,6 +394,14 @@ std::string VoidServerThread::Receive(bool block)
 	    ResourceMaster::GetInstance()->Log(DEBUG,"<MSG From: " + from + ">");
 
 	    HandleLocalMessage(msg);
+	} else if(result == Socket::eSelectResult::TIMEOUT) {
+	    std::chrono::time_point<std::chrono::system_clock> now_time = std::chrono::system_clock::now();
+	    auto difference = std::chrono::duration_cast<std::chrono::seconds>(now_time - start_time);
+
+	    // TODO: Get timeout from config.
+	    if(difference.count() >= timeout_secs) {
+		throw SocketException(CONNTIMEOUT);
+	    }
 	}
 
     }
@@ -408,6 +411,7 @@ std::string VoidServerThread::Receive(bool block)
     
 }
 
+#if 0 
 std::string VoidServerThread::ReceiveLine()
 {
     bool done = false;
@@ -455,6 +459,7 @@ std::string VoidServerThread::ReceiveLine()
 
     return line;
 }
+#endif
 
 
 bool VoidServerThread::Login()
@@ -488,27 +493,22 @@ bool VoidServerThread::Login()
 //    ResourceMaster::GetInstance()->Log(AUDIT,os.str());
 
     dbresult = PQexec(m_dbconn,os.str().c_str());
+    ResultGuard rg(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 
 	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
 	throw e;
     }
 
     if(atoi(PQgetvalue(dbresult,0,0)) != 1)
     {
-	PQclear(dbresult);
 	return false;
     }
 
-    PQclear(dbresult);
-
     Text logint(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
     PrimaryKey key(&logint); 
-
-
 
 
     for(std::vector<VoidServerThread*>::iterator i = ResourceMaster::GetInstance()->GetServerThreadsBegin();
@@ -518,7 +518,7 @@ bool VoidServerThread::Login()
 	// Skip yourself..
 	if(*i == this) continue;
 
-	if((*i)->GetLogin() != NULL)
+	if((*i)->GetLogin() != nullptr)
 	{
 	    
 	    Text login_name = (*i)->GetLogin()->GetLogin();
@@ -527,11 +527,11 @@ bool VoidServerThread::Login()
 	    {
 		// This login is already in use on the system.
 		// Kill the other login so that we can proceed
-		ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN: " + loginid + " KILLED EXISTING LOGIN>");
+		ResourceMaster::GetInstance()->Log(WARNING, "<LOGIN: " + loginid + " KILLED EXISTING LOGIN>");
 		MessagePtr msg = std::make_shared<Message>(Message::SYSTEM, "KILL");
 	       
 		ResourceMaster::GetInstance()->
-		    SendMessage(m_unixsocket,
+		    SendMessage((*i)->GetLocalSocket(),
 				(*i)->GetPlayer()->GetName().GetAsString(),
 				msg);
 
@@ -902,13 +902,13 @@ void VoidServerThread::ChoosePlayer()
     PGresult *dbresult;
 
     dbresult = PQexec(m_dbconn, query.c_str());
+    ResultGuard rg(dbresult);
 
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 
 	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -923,7 +923,6 @@ void VoidServerThread::ChoosePlayer()
     if(num_players == 1)
     {
 	std::string playername = PQgetvalue(dbresult,0,0);
-	PQclear(dbresult);
 	Text logint(PlayerHandle::FieldName(PlayerHandle::NAME), playername);
 	PrimaryKey key(&logint);
 	
@@ -940,10 +939,8 @@ void VoidServerThread::ChoosePlayer()
 	// TODO: Player menu for future expansion of possabilities for multiple players
     }
 
-    PQclear(dbresult);
-    return;
 
-    
+    return;
 }
 
 
@@ -1020,12 +1017,12 @@ void VoidServerThread::SetTurnsLeft()
     bool fill_turns = false;
 
     PGresult *dbresult = DBExec(sql);
+    ResultGuard rg(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 
 	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -1067,6 +1064,7 @@ void        VoidServerThread::Service()
     std::ostringstream os;
 	
     try{
+	
 	RegisterCommands();
 
 	m_pColor = std::make_shared<ANSIColor>();
@@ -1171,10 +1169,10 @@ void        VoidServerThread::Service()
 	std::string checkdeadtime = "select extract(day from age(now(),dlastplay)) from player where sname = '" + m_player->GetName().GetAsString() + "';";
 	    
 	PGresult *dbresult= DBExec(checkdeadtime);
+	ResultGuard rg(dbresult);
 	    
 	int days = atoi(PQgetvalue(dbresult,0,0));
 	    
-	PQclear(dbresult);
 	    
 	if(days < 1)
 	{
@@ -1220,15 +1218,9 @@ void        VoidServerThread::Service()
     
     }
     
-  
-
-
 
     while(!done)
     {
-
-      
-
 
 	bool gotinput = false;
 	int newline = 0;
@@ -1285,9 +1277,6 @@ void        VoidServerThread::Service()
 
 	    os.str("");
 
-
-
-
 	    std::string command; 
 	    std::string arguments;
 
@@ -1310,7 +1299,7 @@ void        VoidServerThread::Service()
 	    std::transform (command.begin(), command.end(), command.begin(), ToLower());
 
 
-	    if(command[0] >= '0' && command[0] <= '9')
+	    if(isdigit(command[0]))
 	    {
 		// Number? Probably a sector number.
 		// So change command to move, and arguments to this number..
@@ -1425,9 +1414,8 @@ void VoidServerThread::RegisterCommands()
 
 }
 
-VoidServerThread::VoidServerThread(TCPSocketPtr socket) : Thread()
+VoidServerThread::VoidServerThread(TCPSocketPtr socket):m_socket(socket)
 {
-    m_socket = socket;
 }
 
 VoidServerThread::~VoidServerThread()
