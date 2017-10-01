@@ -58,12 +58,12 @@ std::list<std::string> VoidCommandTransmit::get_players_in_sector(int sector)
 	+  "' and player.kcurrentship = ship.nkey;";
 
     PGresult *dbresult = get_thread()->DBExec(query);
+    ResultGuard rg(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 
 	DBException e("Get players in sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -74,7 +74,6 @@ std::list<std::string> VoidCommandTransmit::get_players_in_sector(int sector)
 	playerlist.push_back(PQgetvalue(dbresult,i,0));
     }
 
-    PQclear(dbresult);
 
     return playerlist;
 }
@@ -88,7 +87,7 @@ bool VoidCommandTransmit::Transmit(std::string msg)
 
     std::string myname = (std::string)get_thread()->GetPlayer()->GetName();
     
-    MessagePtr message = std::shared_ptr<Message>();
+    MessagePtr message = std::make_shared<Message>();
     std::string fromname = (std::string)get_thread()->GetPlayer()->GetName();
 
     message->SetFrom(fromname);

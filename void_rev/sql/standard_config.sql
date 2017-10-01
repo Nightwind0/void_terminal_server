@@ -29,4 +29,5 @@ sell_price_delta_per_unit,1.25
 sellrate_linear_delta,4
 buyrate_cap,75
 sellrate_floor,20
+idle_timeout_secs,600
 \.

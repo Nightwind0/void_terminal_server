@@ -88,6 +88,11 @@ void VoidServerThread::HandleSystemMessage(const Message &msg)
 	Send(Color()->get(LIGHTRED) + endr +  "This session has been kicked by a log in from the same user." + endr);
 	throw ShutdownException(true);
     }
+    if(msg.GetString() == "KICK")
+    {
+	Send(Color()->get(LIGHTRED) + endr +  "Thank you for calling TRACS. Goodbye..." + endr);
+	throw ShutdownException(true);
+    }
     if(msg.GetString() == "SHIPEXPLODE")
     {
 	Send(Color()->get(BLACK, BG_RED) + "Your ship has been destroyed!!" + endr);

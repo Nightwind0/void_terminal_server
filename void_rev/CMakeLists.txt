@@ -23,7 +23,7 @@ INCLUDE_DIRECTORIES(${PostgreSQL_INCLUDE_DIRS} src src/commands src/thread src/c
 
 # Executables
 
-set(server_HEADERS
+set(void_HEADERS
   src/EdgeLoadThread.h
   src/Event.h
   src/Field.h
@@ -92,7 +92,7 @@ set(server_HEADERS
   src/tools/ToolSet.h
 )
 
-set(server_SOURCES 
+set(void_SOURCES 
   src/EdgeLoadThread.cxx
   src/Event.cxx
   src/Field.cxx
@@ -159,15 +159,15 @@ set(server_SOURCES
   src/server.cxx
 )
 
-add_executable(server ${server_HEADERS} ${server_SOURCES})
+add_executable(void ${void_HEADERS} ${void_SOURCES})
 
-set_property(TARGET server PROPERTY CXX_STANDARD 14)
+set_property(TARGET void PROPERTY CXX_STANDARD 14)
 
 
 target_include_directories(
-    server PUBLIC
+    void PUBLIC
     src
 )
 
-target_link_libraries(server PUBLIC ${PostgreSQL_LIBRARIES} pthread)
+target_link_libraries(void PUBLIC ${PostgreSQL_LIBRARIES} pthread)
 
