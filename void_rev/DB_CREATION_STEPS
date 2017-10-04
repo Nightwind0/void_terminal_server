@@ -6,5 +6,7 @@
 	2b) psql void
 	2c) alter user void with password 'tiTVPok?';
 	2d) grant all on database void to void;
-3. Run the creation sqls using (psql void) as postgres user
+3. Run the create_database.sql using (psql void) as postgres user
+   psql void
+   # \i create_database.sql
 4. Add a line "local void void             password" before all other lines in your pg_hba.conf
