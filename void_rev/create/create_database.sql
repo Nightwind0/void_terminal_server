@@ -278,7 +278,9 @@ CREATE TABLE sectors (
     kterritory integer,
     bdiscovered boolean,
     bstardock boolean,
-    sstardockname character varying(60)
+    sstardockname character varying(60),
+    fx real,
+    fy real
 );
 
 

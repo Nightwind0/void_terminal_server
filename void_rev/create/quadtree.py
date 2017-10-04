@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import random
+import math
 
+def clamp(n, smallest, largest): return max(smallest, min(n, largest))
 
 class Square:
     def __init__(self, center, size):
@@ -29,6 +31,18 @@ class Circle:
     def __init__(self, center, radius):
         self.center = center
         self.radius = radius
+
+    def intersects(self, square):
+        closestX = clamp(self.center[0], square.center[0] - square.size / 2.0, square.center[0] + square.size / 2.0)
+        closestY = clamp(self.center[1], square.center[1] - square.size / 2.0, square.center[1] + square.size / 2.0)
+
+        # Calculate the distance between the circle's center and this closest point
+        distanceX = self.center[0] - closestX
+        distanceY = self.center[1] - closestY
+
+        # If the distance is less than the circle's radius, an intersection occurs
+        distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+        return distanceSquared < (self.radius * self.radius);
 
     def containsPoint(self, point):
         if math.hypot(point[0] - self.center[0], point[1] - self.center[1]) <= self.radius:
@@ -64,20 +78,20 @@ class Node:
     def getCenter(self):
         return self.center
     
-    def getContents(self, square):
+    def getContents(self, shape):
         if not self.is_split:
             contents = self.objects[:]
             return contents
         else:
             contents = []
-            if self.topleft.intersects(square):
-                contents.extend(self.topleft.getContents(square))
-            if self.topright.intersects(square):
-                contents.extend(self.topright.getContents(square))
-            if self.bottomleft.intersects(square):
-                contents.extend(self.bottomleft.getContents(square))
-            if self.bottomright.intersects(square):
-                contents.extend(self.bottomright.getContents(square))
+            if shape.intersects(self.topleft.square):
+                contents.extend(self.topleft.getContents(shape))
+            if shape.intersects(self.topright.square):
+                contents.extend(self.topright.getContents(shape))
+            if shape.intersects(self.bottomleft.square):
+                contents.extend(self.bottomleft.getContents(shape))
+            if shape.intersects(self.bottomright.square):
+                contents.extend(self.bottomright.getContents(shape))
             return contents
 
     def addToChild(self, object):
@@ -95,7 +109,6 @@ class Node:
                 
     def addObject(self, object):
         point = object.getPoint()
-#        print "Split? %s  depth = %s, object count = %s new object: %s" %(self.is_split, self.depth, len(self.objects), point)
         if not self.is_split:
             self.objects.append(object)
             if len(self.objects) > self.capacity and self.depth < 10:
@@ -148,17 +161,27 @@ class Thing:
     def getPoint(self):
         return self.point
     
-tree_size = 1000
+#tree_size = 1000
     
-tree = Quadtree( (0,0) , 1000,  20)
+#tree = Quadtree( (0,0) , 1000,  20)
 
-for i in range (0, 100000):
-    tree.add(Thing((random.randint(- tree_size / 2, tree_size /2), random.randint(- tree_size / 2, tree_size /2))))
+#for i in range (0, 100000):
+#    tree.add(Thing((random.randint(- tree_size / 2, tree_size /2), random.randint(- tree_size / 2, tree_size /2))))
 
-print "depth is %s" % (tree.depth())
-thingies = tree.findObjects( Square((0,0), 5.0))
+#print "depth is %s" % (tree.depth())
 
-count = 0
-for thingy in thingies:
-    count = count + 1
-    print "%s %s" % (count, thingy.getPoint())
+#print "Search with a square:"
+#thingies = tree.findObjects( Square((0,0), 5.0))
+
+#count = 0
+#for thingy in thingies:
+#    count = count + 1
+#    print "%s %s" % (count, thingy.getPoint())
+
+#count = 0
+#circlethingies = tree.findObjects ( Circle( (0,0), 5.0))
+
+#print "Search with a circle:"
+#for circlethingy in thingies:
+#    count = count + 1
+#    print "%s %s" % (count, circlethingy.getPoint())
