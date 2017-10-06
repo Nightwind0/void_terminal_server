@@ -13,12 +13,6 @@ VoidCommandSubCommands::VoidCommandSubCommands(VoidServerThread *thread):VoidCom
 }
 VoidCommandSubCommands::~VoidCommandSubCommands()
 {
-    for(std::list<VoidCommand*>::iterator iter = m_commandlist.begin();
-	iter != m_commandlist.end();
-	iter++)
-    {
-	delete *iter;
-    }
 }
 
 
@@ -40,7 +34,7 @@ bool VoidCommandSubCommands::HandleCommand(const string &command, const string &
     return true;
 }
 
-void VoidCommandSubCommands::AddSubCommand(VoidCommand* command)
+void VoidCommandSubCommands::AddSubCommand(std::shared_ptr<VoidCommand> command)
 {
     m_commandlist.push_back(command);
 }
@@ -48,13 +42,10 @@ void VoidCommandSubCommands::AddSubCommand(VoidCommand* command)
 
 bool VoidCommandSubCommands::DoCommand(const string &command, const string &arguments, bool bFromPost)
 {
-    for(std::list<VoidCommand*>::iterator iter = m_commandlist.begin();
-	iter != m_commandlist.end();
-	iter++)
-    {
-	if((*iter)->ClaimCommand(command))
+  for(auto iter : m_commandlist){
+	if(iter->ClaimCommand(command))
 	{
-	    (*iter)->HandleCommand(command, arguments, bFromPost);
+	    iter->HandleCommand(command, arguments, bFromPost);
 	    return true;
 	}
     }
@@ -66,11 +57,9 @@ bool VoidCommandSubCommands::DoCommand(const string &command, const string &argu
 void VoidCommandSubCommands::DisplayOptions()
 {
 
-    for(std::list<VoidCommand *>::iterator iter = m_commandlist.begin();
-	iter != m_commandlist.end();
-	iter++)
+  for(auto iter : m_commandlist)
     {
-	Send(GetOptionColor() + (*iter)->GetSyntax() + ": " + GetOptionDescriptionColor() +  (*iter)->GetDescription() + endr);
+	Send(GetOptionColor() + iter->GetSyntax() + ": " + GetOptionDescriptionColor() +  iter->GetDescription() + endr);
     }
 }
 

@@ -17,9 +17,10 @@
 #include "EdgeLoadThread.h"
 #include "VoidThreadSpawner.h"
 #include <unistd.h>
+#include <unordered_map>
 #include "SocketException.h"
 
-const int VOID_PORT = 5005;
+const int DEFAULT_VOID_PORT = 5005;
 
 
 using namespace std;
@@ -75,22 +76,67 @@ static void daemon()
   /* Open the log file */
   openlog ("void", LOG_PID, LOG_DAEMON);
 }
+
+void usage() {
+  std::cout << "Void Usage" << std::endl;
+  std::cout << "-p <port> use specified TCP port. Config file overrides." << std::endl;
+  std::cout << "--db <database name> use specified database. Config file overrides." << std::endl;
+  std::cout << "-i <instance name> give this process a specific name for control." << std::endl;
+  std::cout << "-c <path to config file> use config file (default is /etc/void/void.conf)" << std::endl;
+  std::cout << "-h this help" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
-  bool daemon_mode = false;
+  bool daemon_mode = true;
+  int port = DEFAULT_VOID_PORT;
+  std::string database = "void";
+  std::string instance = "default";
+  
   std::string configpath = "/etc/void/void.conf";
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
     if(arg == "-d") {
-      daemon_mode = true;
-    } else if(arg == "-c" && argc >= i + 1) {
+
+    } else if(arg == "-c" && argc >= i+1) {
       configpath = argv[i+1];
+    } else if(arg == "-p" && argc >= i+1) {
+      port = atoi(argv[i+1]);
+    } else if(arg == "--db" && argc >= i+1) {
+      database = argv[i+1];
+    } else {
+      usage();
+      return 0;
     }
   }
 
-  if(daemon_mode) {
-    daemon();
+  daemon();
+  
+  std::unordered_map<std::string, std::string> conf_values;
+  std::ifstream conf_in(configpath);
+  while(conf_in.good()){
+    std::string key, value;
+    conf_in >> key >> value;
+    conf_values[key] = value;
   }
+
+  auto port_conf_it = conf_values.find("PORT");
+  if(port_conf_it != conf_values.end()) {
+    port = std::stoi(port_conf_it->second);
+  }
+
+  auto db_conf_it = conf_values.find("DATABASE");
+  if(db_conf_it != conf_values.end()) {
+    database = db_conf_it->second;
+  }
+
+  auto instance_conf_it = conf_values.find("INSTANCE");
+  if(instance_conf_it != conf_values.end()) {
+    instance = instance_conf_it->second;
+  }
+
+  if(daemon_mode)
+    daemon();
 
     
   int socket_num;
@@ -101,17 +147,20 @@ int main(int argc, char** argv)
   char str[1024];
   PGconn *RMconn;
 
-  std::unique_ptr<UNIXDatagramSocket>  unixsocket = std::make_unique<UNIXDatagramSocket>("/tmp/void-server");
+  ResourceMaster::GetInstance()->SetInstanceName(instance);
+  ResourceMaster::GetInstance()->SetDatabaseName(database);
 
-  std::unique_ptr<VoidThreadSpawner> threadspawner = std::make_unique<VoidThreadSpawner>(VOID_PORT);
+  std::string pipe_path = "/tmp/"s + "void-socket-"s + instance;
 
+  std::unique_ptr<UNIXDatagramSocket>  unixsocket = std::make_unique<UNIXDatagramSocket>(pipe_path);
+  std::unique_ptr<VoidThreadSpawner> threadspawner = std::make_unique<VoidThreadSpawner>(port);
   std::unique_ptr<EdgeLoadThread>   edge_thread = std::make_unique<EdgeLoadThread>();
 
 
   bool done = false;
     
 
-  RMconn = PQsetdbLogin(NULL,NULL,NULL,NULL,"void","void","tiTVPok?");
+  RMconn = PQsetdbLogin(NULL,NULL,NULL,NULL,database.c_str(),"void","tiTVPok?");
 
   if(PQstatus(RMconn) == CONNECTION_BAD) {
     
@@ -135,7 +184,7 @@ int main(int argc, char** argv)
 
     threadspawner->Start();
 
-    ResourceMaster::GetInstance()->Log(DEBUG,"[Void Server Starting]");
+    ResourceMaster::GetInstance()->Log(DEBUG,"[Void Server Starting]"s + instance);
   }
   catch(DBException e) {
     syslog(LOG_ERR, e.GetMessage().c_str());
@@ -143,9 +192,11 @@ int main(int argc, char** argv)
     exit(1);
   }
 
-  unlink("/tmp/void-socket");
+
+
+  unlink(pipe_path.c_str());
   unixsocket->Create();
-  unixsocket->Bind(0,"/tmp/void-socket");
+  unixsocket->Bind(0,pipe_path);
 
 
   edge_thread->Start();
@@ -154,61 +205,65 @@ int main(int argc, char** argv)
   while(!done) {
     int n;
     try{
+      unixsocket->Select(2 /* wake up every other second */);
       n = unixsocket->RecvFrom(str, 1024,0);
     }
     catch(SocketException e) {
       cerr << "Caught socket exception doing RecvFrom in server: " << e.GetType() << ", " << e.GetErrno() << endl;
     }
-	
-    str[n] = 0;
-    string command = str; 
+
+    string command;
+    if(n > 0) {
+      str[n] = 0;
+      command = str;
+    }
 
     try{
       ResourceMaster::GetInstance()->Log(DEBUG,"[Server Socket Got Command :" + command + "]");
     }
     catch(DBException e) {
-      cerr  << "Logging exception:" << e.GetMessage() << endl;
+      syslog(LOG_ERR, ("Logging exception:"s + e.GetMessage()).c_str());
     }
       
 
     if(command == "shutdown" || command == "quit") {
-      cout << "Immediate Shutdown! Dropping connections..." << endl;
+      syslog(LOG_NOTICE, "Immediate Shutdown! Dropping connections...");
       done = true;
 
       try{
-	unixsocket->SendTo((void*)shutdownstr,strlen(shutdownstr),"/tmp/void-threadspawner",0);
+	unixsocket->SendTo((void*)shutdownstr,strlen(shutdownstr),ResourceMaster::GetInstance()->GetThreadSpawnerLocalSocketPath(),0);
       }
       catch(SocketException e) {
 	cerr << "Caught socket exception doing SendTo threadspawner: " << e.GetType() << ", " << e.GetErrno() << endl;
       }
 
-      cout << "Waiting on threadspawner.." << endl;
+      syslog(LOG_NOTICE, "Waiting on threadspawner...");
       threadspawner->Wait();
-      cout << "Threadspawner done." << endl;
+      syslog(LOG_NOTICE, "Threadspawner done.");
 
       done = true;
     }
 
     if(command == "list") {
       // TODO: List connections
-      cout << "TCP Connections:" << endl;
+      syslog(LOG_NOTICE, "Listing connections:");
       for(vector<TCPSocketPtr>::iterator i = ResourceMaster::GetInstance()->GetSocketsBegin();
 	  i != ResourceMaster::GetInstance()->GetSocketsEnd();
 	  i++)
 	{
 	  TCPSocketPtr s = *i;
-	  cout << s->GetAddress() << endl;
+	  syslog(LOG_NOTICE, s->GetAddress().c_str());
 	}
 
-      cout << "Logged in users:" << endl;
 
+      syslog(LOG_NOTICE, "Connected players:");
       for(vector<VoidServerThread*>::iterator i= ResourceMaster::GetInstance()->GetServerThreadsBegin();
 	  i != ResourceMaster::GetInstance()->GetServerThreadsEnd();
 	  i++) {
 	VoidServerThread *t = *i;
 	LoginHandlePtr login = t->GetLogin();
 
-	cout << (std::string)login->GetLogin() << endl;
+	syslog(LOG_NOTICE, ((std::string)login->GetLogin()).c_str());
 		
       }
 

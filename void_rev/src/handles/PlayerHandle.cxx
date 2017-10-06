@@ -8,7 +8,33 @@
 
 const char * PlayerHandle::FIELD_NAMES[] = {"sname","klogin","bmob","kmob","ncredits","nturnsleft","npoints","kalliance","kcurrentship", "dfirstplay", "dlastplay", "bdead"};
 
- std::string PlayerHandle::GetFieldName(int fieldnum)const
+
+PlayerHandle::PlayerHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew):SerialObject(dbconn,key,isnew)
+{
+  PGresult *dbresult = PQprepare(dbconn,
+                    "SetSectorFlags",
+		     "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 RETURNING *) INSERT INTO SectorFlags (nflags, ksector) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM upsert);",
+                    2,
+                    NULL);
+  PQclear(dbresult);
+  
+
+  dbresult = PQprepare(dbconn,
+                    "ClearSectorFlags",
+		     "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags & ~$1 WHERE ksector = $2 RETURNING *) INSERT INTO SectorFlags (nflags, ksector) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM upsert);",
+                    2,
+                    NULL);
+  PQclear(dbresult);
+
+  dbresult = PQprepare(dbconn,
+                    "GetSectorFlags",
+		       "SELECT nflags from SectorFlags WHERE ksector = $1;",
+                    1,
+                    NULL);
+  PQclear(dbresult);
+}
+
+std::string PlayerHandle::GetFieldName(int fieldnum)const
 {
     return FIELD_NAMES[fieldnum];
 }
@@ -151,4 +177,48 @@ void PlayerHandle::SetAlliance(const std::string &alliance)
 void PlayerHandle::SetCurrentShip(const int &ship)
 {
     SetField(CURRENTSHIP, new Integer(GetFieldName(CURRENTSHIP), IntToString(ship)));
+}
+
+
+void PlayerHandle::AddSectorFlag(const eSectorFlags &flag, Sector sector)
+{
+  std::string flags = std::to_string((unsigned int)flag);
+  std::string sectors = std::to_string((unsigned int)sector);
+  char *paramValues[2];
+  paramValues[0] = const_cast<char*>(flags.c_str());
+  paramValues[1] = const_cast<char*>(sectors.c_str());
+  const int lengths[] = {flags.size(), sectors.size() };
+  PGresult *res = PQexecPrepared(m_dbconn, "SetSectorFlags", 2, paramValues, lengths, NULL, 0);
+  
+  PQclear(res);
+}
+
+void PlayerHandle::ClearSectorFlag(const eSectorFlags &flag, Sector sector)
+{
+  //  const char *stm = "UPDATE SectorFlags SET nflags = nflags & ~$1 WHERE ksector = $2;";
+  // fancy postgres upsert stuff.
+  const char *stm = "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 RETURNING *) INSERT INTO SectorFlags (nflags, ksector) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM upsert);";
+  std::string flags = std::to_string((unsigned int)flag);
+  std::string sectors = std::to_string((unsigned int)sector);
+  char *paramValues[2];
+  paramValues[0] = const_cast<char*>(flags.c_str());
+  paramValues[1] = const_cast<char*>(sectors.c_str());
+  const int lengths[] = {flags.size(), sectors.size() };
+  PGresult *res = PQexecPrepared(m_dbconn, "ClearSectorFlags", 2, paramValues, lengths, NULL, 0);
+  PQclear(res);
+}
+
+unsigned int PlayerHandle::GetSectorFlags(Sector sector)
+{
+  std::string sectors = std::to_string((unsigned int)sector);
+  char* paramValues[1];
+  paramValues[0] = const_cast<char*>(sectors.c_str());
+  const int  lengths[] = {sectors.size()};
+  PGresult *res = PQexecPrepared(m_dbconn, "GetSectorFlags", 1, paramValues, lengths, NULL, 0);
+  ResultGuard rg(res);
+  if(PQntuples(res) < 1){
+    return 0;
+  } else {
+    return atoi(PQgetvalue(res,0,0));
+  }
 }

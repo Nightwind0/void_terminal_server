@@ -44,18 +44,6 @@ CREATE TABLE alliance (
 ALTER TABLE alliance OWNER TO postgres;
 
 --
--- Name: avoids; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE avoids (
-    kplayer character varying(30) NOT NULL,
-    ksector integer NOT NULL
-);
-
-
-ALTER TABLE avoids OWNER TO postgres;
-
---
 -- Name: config; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -414,13 +402,6 @@ ALTER TABLE ONLY alliance
     ADD CONSTRAINT alliance_pkey PRIMARY KEY (sname);
 
 
---
--- Name: avoids_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY avoids
-    ADD CONSTRAINT avoids_pkey PRIMARY KEY (kplayer, ksector);
-
 
 --
 -- Name: config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
@@ -542,19 +523,6 @@ ALTER TABLE ONLY territory
     ADD CONSTRAINT territory_sname_key UNIQUE (sname);
 
 
---
--- Name: avoids_kplayer_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX avoids_kplayer_idx ON avoids USING btree (kplayer);
-
-
---
--- Name: avoids_ksector_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX avoids_ksector_idx ON avoids USING btree (ksector);
-
 
 --
 -- Name: eventlog_dstamp; Type: INDEX; Schema: public; Owner: postgres
@@ -641,22 +609,6 @@ ALTER TABLE ONLY alliance
 
 ALTER TABLE ONLY alliance
     ADD CONSTRAINT alliance_nhomesector_fkey FOREIGN KEY (nhomesector) REFERENCES sectors(nsector);
-
-
---
--- Name: avoids_kplayer_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY avoids
-    ADD CONSTRAINT avoids_kplayer_fkey FOREIGN KEY (kplayer) REFERENCES player(sname);
-
-
---
--- Name: avoids_ksector_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY avoids
-    ADD CONSTRAINT avoids_ksector_fkey FOREIGN KEY (ksector) REFERENCES sectors(nsector);
 
 
 --
@@ -861,16 +813,6 @@ REVOKE ALL ON TABLE alliance FROM PUBLIC;
 REVOKE ALL ON TABLE alliance FROM postgres;
 GRANT ALL ON TABLE alliance TO postgres;
 GRANT ALL ON TABLE alliance TO void;
-
-
---
--- Name: avoids; Type: ACL; Schema: public; Owner: postgres
---
-
-REVOKE ALL ON TABLE avoids FROM PUBLIC;
-REVOKE ALL ON TABLE avoids FROM postgres;
-GRANT ALL ON TABLE avoids TO postgres;
-GRANT ALL ON TABLE avoids TO void;
 
 
 --

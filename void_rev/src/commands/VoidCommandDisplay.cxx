@@ -71,20 +71,20 @@ bool VoidCommandDisplay::HandleCommand(const string &command, const string &argu
     return true;
 }
     
-std::string VoidCommandDisplay::DisplaySector(int sector, bool show_cloaked)
+std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
 {
-    std::vector<int> sectors = Universe::GetAdjacentSectors(sector);
+    std::vector<Sector> sectors = Universe::GetAdjacentSectors(sector);
     std::ostringstream os;
 
     std::string query = "select sname from territory,sectors where sectors.kterritory = territory.nkey and sectors.nsector = '" + IntToString(sector) + "';";
 
     PGresult * dbresult = get_thread()->DBExec(query);
+    ResultGuard rg(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 
 	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -96,7 +96,7 @@ std::string VoidCommandDisplay::DisplaySector(int sector, bool show_cloaked)
     {
 	os << Color()->get(GRAY) << ' ' <<  PQgetvalue(dbresult,0,0);
     }
-    PQclear(dbresult);
+
     os << endr;
 
     os << DisplayStardockInSector(sector);
@@ -107,11 +107,22 @@ std::string VoidCommandDisplay::DisplaySector(int sector, bool show_cloaked)
     os << Color()->get(GRAY) << "Adjacent Sectors: ";
 
 
-    std::vector<int>::iterator i ;
-
-    for(i=sectors.begin();i != sectors.end(); ++i)
+    for(auto i=sectors.begin();i != sectors.end(); ++i)
     {
-	os << Color()->get(RED) << '[' << Color()->get(WHITE) << *i << Color()->get(RED) << "] ";
+      int flags = get_player()->GetSectorFlags(*i);
+      FGColor sector_color = WHITE;
+      if(!(flags & static_cast<int>(eSectorFlags::VISITED))){
+	sector_color = GRAY;
+      }
+      if(flags & static_cast<int>(eSectorFlags::FAVORITE)){
+	sector_color = YELLOW;
+      }
+      if(flags & static_cast<int>(eSectorFlags::AVOID)){
+	sector_color = LIGHTRED;
+      }
+      
+	
+      os << Color()->get(RED) << '[' << Color()->get(sector_color) << *i << Color()->get(RED) << "] ";
     }
 
     return os.str();   
@@ -121,7 +132,7 @@ std::string VoidCommandDisplay::DisplaySector(int sector, bool show_cloaked)
 }
 
 
-std::string VoidCommandDisplay::DisplayStardockInSector(int sector)
+std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
 {
     std::ostringstream os;
     
@@ -155,7 +166,7 @@ std::string VoidCommandDisplay::DisplayStardockInSector(int sector)
  
 
 
-std::string VoidCommandDisplay::DisplayShipsInSector(int sector, bool show_cloaked)
+std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cloaked)
 {
     std::ostringstream os;
     std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector ='"+IntToString(sector) + "' and s.ktype = t.nkey and tm.nkey = t.kmanufacturer ";
@@ -270,7 +281,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(int sector, bool show_cloak
 
 }
 
-std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
+std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
 {
 
     std::ostringstream os;
@@ -278,12 +289,11 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
     PGresult *dbresult;
 
     dbresult = get_thread()->DBExec(outpostquery);
-
+    ResultGuard rg(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 	DBException e("Display outpost error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -307,10 +317,16 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 	Boolean buymetals("bbuymetals", PQgetvalue(dbresult,i,2), PQgetisnull(dbresult,i,2));
 	Boolean buycarbon("bbuycarbon", PQgetvalue(dbresult,i,3), PQgetisnull(dbresult,i,3));
 
-	double plasmaprice = atof(PQgetvalue(dbresult,i,4));
-	double metalsprice = atof(PQgetvalue(dbresult,i,5));
-	double carbonprice = atof(PQgetvalue(dbresult,i,6));
+	const double plasmapricemult = atof(PQgetvalue(dbresult,i,4));
+	const double metalspricemult = atof(PQgetvalue(dbresult,i,5));
+	const double carbonpricemult = atof(PQgetvalue(dbresult,i,6));
 
+	const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
+	const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
+	const int base_carbon_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_carbon_price"));
+	const double plasmaprice = double(base_plasma_price) * plasmapricemult;
+	const double metalsprice = double(base_metals_price) * metalspricemult;
+	const double carbonprice = double(base_carbon_price) * carbonpricemult;
 
 
 	if(buyplasma.GetValue())
@@ -360,7 +376,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(int sector)
 
 }
 
-std::string VoidCommandDisplay::DisplaySentinelsInSector(int sector)
+std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
 {
     std::string query = "select ncount, kplayer, player.kalliance from sentinels, player where sentinels.kplayer = player.sname and sentinels.ksector = '" +
 	IntToString(sector) + "';";

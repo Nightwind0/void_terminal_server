@@ -29,7 +29,7 @@ class VoidCommandSubCommands : public VoidCommand
 
     virtual void DisplayOptions();
     virtual void MainLoop();
-    void AddSubCommand(VoidCommand* command);
+    void AddSubCommand(std::shared_ptr<VoidCommand> command);
 
     virtual void DisplayIntro()const =0;
     virtual void DisplayOutro()const =0;
@@ -44,7 +44,7 @@ class VoidCommandSubCommands : public VoidCommand
     VoidCommandSubCommands();
 
 
-    std::list<VoidCommand *> m_commandlist;
+    std::vector<std::shared_ptr<VoidCommand>> m_commandlist;
 
 };
 

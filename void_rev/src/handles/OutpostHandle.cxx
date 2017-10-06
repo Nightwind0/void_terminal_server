@@ -79,21 +79,22 @@ Float OutpostHandle::GetCarbonPrice() const
     return GetFloat(CARBONPRICE);
 }
 
-void OutpostHandle::SetMetalsPrice(double price)
+#if 1 
+void OutpostHandle::SetMetalsPriceMultiplier(double price)
 {
     SetField(METALSPRICE, new Float(GetFieldName(METALSPRICE),DoubleToString(price)));
 }
 
-void OutpostHandle::SetPlasmaPrice(double price)
+void OutpostHandle::SetPlasmaPriceMultiplier(double price)
 {
     SetField(PLASMAPRICE, new Float(GetFieldName(PLASMAPRICE),DoubleToString(price)));
 }
 
-void OutpostHandle::SetCarbonPrice(double price)
+void OutpostHandle::SetCarbonPriceMultiplier(double price)
 {
     SetField(CARBONPRICE, new Float(GetFieldName(CARBONPRICE),DoubleToString(price)));
 }
-
+#endif
 
 Boolean OutpostHandle::IsSpecial()const
 {
@@ -122,14 +123,14 @@ double OutpostHandle::GetBuyRateAfterTime(unsigned int minutes, double current_p
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    int delay = atoi(RM->GetConfig("price_change_delay").c_str());
+    int delay = std::stoi(RM->GetConfig("price_change_delay").c_str());
 
     if( minutes < delay ) return current_price;
     else minutes -= delay;
 
-    double rate_cap = atof(RM->GetConfig("buyrate_cap").c_str());
-    double gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
-    double stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
+    const double rate_cap = atof(RM->GetConfig("buyrate_cap").c_str());
+    const double gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
+    const double stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
  
     double result =   rate_cap - ((rate_cap - current_price) * pow(gap_ratio, (double)minutes / stock_recovery_minutes)) ;
 
@@ -143,14 +144,14 @@ double OutpostHandle::GetSellRateAfterTime(unsigned int minutes, double current_
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    int delay = atoi(RM->GetConfig("price_change_delay").c_str());
+    int delay = std::stoi(RM->GetConfig("price_change_delay").c_str());
 
     if( minutes < delay ) return current_price;
     else minutes -= delay;
 
-    double gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
-    double stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
-    double rate_floor = atof(RM->GetConfig("sellrate_floor").c_str());
+    const double gap_ratio = atof(RM->GetConfig("gap_ratio").c_str());
+    const double stock_recovery_minutes = atof(RM->GetConfig("stock_recovery_minutes").c_str());
+    const double rate_floor = atof(RM->GetConfig("sellrate_floor").c_str());
     
 
     double result = (current_price - rate_floor) * pow(gap_ratio, (double)minutes / stock_recovery_minutes) + rate_floor;
@@ -163,9 +164,9 @@ double OutpostHandle::GetSellRateAfterTime(unsigned int minutes, double current_
 double OutpostHandle::GetBuyRateAfterPurchase(unsigned int stock, double current_price)
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
-    double r = atof(RM->GetConfig("buy_price_delta_per_unit").c_str());
-    double i = atof(RM->GetConfig("stock_unit").c_str());
-    double f = atof(RM->GetConfig("sellrate_floor").c_str());
+    double r = std::stof(RM->GetConfig("buy_price_delta_per_unit").c_str());
+    double i = std::stof(RM->GetConfig("stock_unit").c_str());
+    double f = std::stof(RM->GetConfig("sellrate_floor").c_str());
     
     double result = (current_price - f) * pow(r,(double)stock/i) + f;
 

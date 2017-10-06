@@ -5,6 +5,7 @@
 #include <libpq-fe.h>
 #include "Resource.h"
 #include "PrimaryKey.h"
+#include "void_util.h"
 #include <string>
 
 class PlayerHandle : public SerialObject
@@ -14,7 +15,7 @@ class PlayerHandle : public SerialObject
 
 
  public:
-    PlayerHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
+    PlayerHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false);
     ~PlayerHandle(){CloseDownObject();}
 
 
@@ -51,9 +52,14 @@ class PlayerHandle : public SerialObject
     void SetAlliance(const std::string &);
     void SetCurrentShip(const int &);
     void SetIsDead(const bool &);
+
+    void AddSectorFlag(const eSectorFlags &flag, Sector sector);
+    void ClearSectorFlag(const eSectorFlags &flag, Sector sector);
+    unsigned int GetSectorFlags(Sector sector);
   
     virtual std::string DBTable()const { return "Player";};
-
+ private:
+    
 
 
 };

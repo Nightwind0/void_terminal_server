@@ -64,7 +64,6 @@ void Socket::setAddress(const std::string &addr)
 
 Socket::eSelectResult Socket::Select(const Socket &other, int sec_timeout)
 {
-
     fd_set readfs;
     
     FD_ZERO(&readfs);
@@ -93,6 +92,36 @@ Socket::eSelectResult Socket::Select(const Socket &other, int sec_timeout)
 
     if(FD_ISSET(m_socketid,&readfs)) return eSelectResult::THIS_SOCKET;
     else return eSelectResult::OTHER_SOCKET;
+}
+
+Socket::eSelectResult Socket::Select(int sec_timeout)
+{
+  fd_set readfs;
+    
+    FD_ZERO(&readfs);
+    FD_SET(m_socketid, &readfs);
+  
+    timeval timeout = {0};
+    timeout.tv_sec = sec_timeout; 
+    timeout.tv_usec = 0; 
+    
+    int selectval = 0;
+    if(sec_timeout > 0) {
+      selectval = select(m_socketid+1,&readfs,NULL,NULL,&timeout);
+      if(selectval == 0){
+	return eSelectResult::TIMEOUT;
+      }
+    } else {
+      selectval = select(m_socketid+1,&readfs,NULL,NULL,NULL);
+    }
+
+
+    if(selectval < 0)
+    {
+	throw SocketException(SELECTERROR);
+    }
+
+    return eSelectResult::THIS_SOCKET;
 }
 
 

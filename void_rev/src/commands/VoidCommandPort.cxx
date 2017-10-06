@@ -151,13 +151,21 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     player->SetTurnsLeft( cur_turns - 1);
     player->Unlock();
 
-    bool buyplasma = (strcmp(PQgetvalue(dbresult,whichoutpost,2),"t") == 0); 
-    bool buymetals = (strcmp(PQgetvalue(dbresult,whichoutpost,3),"t") == 0); 
-    bool buycarbon = (strcmp(PQgetvalue(dbresult,whichoutpost,4),"t") == 0); 
+    const bool buyplasma = (strcmp(PQgetvalue(dbresult,whichoutpost,2),"t") == 0); 
+    const bool buymetals = (strcmp(PQgetvalue(dbresult,whichoutpost,3),"t") == 0); 
+    const bool buycarbon = (strcmp(PQgetvalue(dbresult,whichoutpost,4),"t") == 0); 
 
-    double plasma_price = atof(PQgetvalue(dbresult,whichoutpost,13));
-    double metals_price = atof(PQgetvalue(dbresult,whichoutpost,14));
-    double carbon_price = atof(PQgetvalue(dbresult,whichoutpost,15));
+    const double plasma_price_mult = atof(PQgetvalue(dbresult,whichoutpost,13));
+    const double metals_price_mult = atof(PQgetvalue(dbresult,whichoutpost,14));
+    const double carbon_price_mult = atof(PQgetvalue(dbresult,whichoutpost,15));
+
+    const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
+    const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
+    const int base_carbon_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_carbon_price"));
+
+    double plasma_price = plasma_price_mult * double(base_plasma_price);
+    double metals_price = metals_price_mult * double(base_metals_price);
+    double carbon_price = carbon_price_mult * double(base_carbon_price);
 
 
     if(!PQgetisnull(dbresult,0,6))
@@ -200,9 +208,9 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	else carbon_price = OutpostHandle::GetSellRateAfterTime(minutes_delta, carbon_price );
 
 	outpost->Lock();
-	outpost->SetPlasmaPrice(plasma_price);
-	outpost->SetMetalsPrice(metals_price);
-	outpost->SetCarbonPrice(carbon_price);
+	outpost->SetPlasmaPriceMultiplier(plasma_price / double(base_plasma_price));
+	outpost->SetMetalsPriceMultiplier(metals_price / double(base_metals_price));
+	outpost->SetCarbonPriceMultiplier(carbon_price / double(base_carbon_price));
 	outpost->Unlock();
 
 	Send(visited);
@@ -269,7 +277,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 		plasma_price = OutpostHandle::GetBuyRateAfterPurchase( sold, plasma_price );
 		outpost->Lock();
-		outpost->SetPlasmaPrice( plasma_price );
+		outpost->SetPlasmaPriceMultiplier( plasma_price / double(base_plasma_price));
 		outpost->Unlock();
 
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
@@ -308,7 +316,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 		metals_price = OutpostHandle::GetBuyRateAfterPurchase( sold, metals_price );
 		outpost->Lock();
-		outpost->SetMetalsPrice( metals_price );
+		outpost->SetMetalsPriceMultiplier( metals_price / double(base_metals_price) );
 		outpost->Unlock();
 
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
@@ -346,7 +354,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 		carbon_price = OutpostHandle::GetBuyRateAfterPurchase( sold, carbon_price );
 		outpost->Lock();
-		outpost->SetCarbonPrice( carbon_price );
+		outpost->SetCarbonPriceMultiplier( carbon_price / double(base_carbon_price) );
 		outpost->Unlock();
 
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
@@ -388,7 +396,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 		plasma_price = OutpostHandle::GetSellRateAfterSale ( bought, plasma_price );
 		outpost->Lock();
-		outpost->SetPlasmaPrice( plasma_price );
+		outpost->SetPlasmaPriceMultiplier( plasma_price / double(base_plasma_price) );
 		outpost->Unlock();
 
 		
@@ -423,7 +431,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 		metals_price = OutpostHandle::GetSellRateAfterSale ( bought, metals_price );
 		outpost->Lock();
-		outpost->SetMetalsPrice( metals_price );
+		outpost->SetMetalsPriceMultiplier( metals_price / double(base_metals_price) );
 		outpost->Unlock();
 
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);
@@ -459,7 +467,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 		carbon_price = OutpostHandle::GetSellRateAfterSale ( bought, carbon_price );
 		outpost->Lock();
-		outpost->SetCarbonPrice( carbon_price );
+		outpost->SetCarbonPriceMultiplier( carbon_price / double(base_carbon_price) );
 		outpost->Unlock();
 
 		get_thread()->Send(Color()->get(LIGHTGREEN) + "Thank you!" + endr);

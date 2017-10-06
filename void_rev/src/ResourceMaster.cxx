@@ -33,6 +33,27 @@ ResourceMaster *ResourceMaster::GetInstance()
 }
 
 
+std::string ResourceMaster::GetDatabaseName() const
+{
+  return m_dbname;
+}
+
+void ResourceMaster::SetDatabaseName(const std::string& str)
+{
+  m_dbname = str;
+}
+void ResourceMaster::SetInstanceName(const std::string& name) {
+  m_instance_name = name;
+}
+
+std::string ResourceMaster::GetInstanceName() const {
+  return m_instance_name;
+}
+
+std::string ResourceMaster::GetThreadSpawnerLocalSocketPath() const {
+  return "/tmp/void-threadspawner-" + m_instance_name;
+}
+
 std::string ResourceMaster::GetConfig(const std::string &key)
 {
     static Mutex mutex;

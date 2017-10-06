@@ -3,6 +3,7 @@
 #include "VoidCommandComputerShipList.h"
 #include "VoidCommandComputerPlayers.h"
 #include "VoidCommandComputerCloak.h"
+#include "VoidCommandComputerDockList.h"
 #include "void_util.h"
 #include "OutpostHandle.h"
 #include "PlayerHandle.h"
@@ -12,9 +13,10 @@
 
 VoidCommandComputer::VoidCommandComputer(VoidServerThread *thread):VoidCommandSubCommands(thread)
 {
-    AddSubCommand(new VoidCommandComputerShipList(thread));
-    AddSubCommand(new VoidCommandComputerPlayers(thread));
-    AddSubCommand(new VoidCommandComputerCloak(thread));
+  AddSubCommand(std::make_shared<VoidCommandComputerShipList>(thread));
+  AddSubCommand(std::make_shared<VoidCommandComputerPlayers>(thread));
+  AddSubCommand(std::make_shared<VoidCommandComputerCloak>(thread));
+  AddSubCommand(std::make_shared<VoidCommandComputerDockList>(thread));
 }
 VoidCommandComputer::~VoidCommandComputer()
 {

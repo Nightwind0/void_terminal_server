@@ -210,7 +210,7 @@ void CombatTools::MoveShipRandomly(ShipHandlePtr ship)
     /// @todo get value from config table
     for(int i = 0; i < NUMJUMPS; i++)
     {
-	std::vector<int> adj = Universe::GetAdjacentSectors(cursec);
+	std::vector<Sector> adj = Universe::GetAdjacentSectors(cursec);
 	
 	int r = rand() % adj.size();
 

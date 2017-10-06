@@ -201,7 +201,7 @@ bool VoidServerThread::DoCommand(const std::string &command, const std::string &
 
 void VoidServerThread::OpenDataBaseConnection()
 {
-    m_dbconn = PQsetdbLogin(NULL,NULL,NULL,NULL,"void","void","tiTVPok?");
+  m_dbconn = PQsetdbLogin(NULL,NULL,NULL,NULL,ResourceMaster::GetInstance()->GetDatabaseName().c_str(),"void","tiTVPok?");
 
 
     if(PQstatus(m_dbconn) == CONNECTION_BAD)
@@ -693,7 +693,7 @@ bool VoidServerThread::RegisterNewLogin()
     
 }
 
-ShipHandle* VoidServerThread::CreateNewShip(int shiptype)
+ShipHandlePtr VoidServerThread::CreateNewShip(int shiptype)
 {
     Integer shipti(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY),IntToString(shiptype));
     PrimaryKey stkey(&shipti);
@@ -755,7 +755,7 @@ ShipHandle* VoidServerThread::CreateNewShip(int shiptype)
     Integer shipi(ShipHandle::FieldName(ShipHandle::NKEY),IntToString(shipnum));
     PrimaryKey shipkey(&shipi);
 
-    ShipHandle *ship = new ShipHandle(m_dbconn, shipkey, true);
+    ShipHandlePtr ship = std::make_shared<ShipHandle>(m_dbconn, shipkey, true);
 
     ship->Lock();
     ship->SetNkey(shipnum);
@@ -875,9 +875,7 @@ void VoidServerThread::StartNewPlayer()
     Send(os.str());
     ReceiveLine(); 
 
-    ShipHandle * ship;
-
-    ship = CreateNewShip(0); // Creates the IM&V Explorer
+    ShipHandlePtr ship  = CreateNewShip(0); // Creates the IM&V Explorer
 
     ship->Lock();
     ship->SetSector(0);
@@ -892,10 +890,6 @@ void VoidServerThread::StartNewPlayer()
     Send(Color()->get(BLACK,BG_WHITE) + "Press Enter..." + Color()->get(BLACK) + endr);
     ReceiveLine();
     Send(Color()->get(GREEN) + "With your new spaceship and 1000 credits to your name, you lift off from Earth!" + endr);
-
-
-    delete ship;
-    
 
 }
 
@@ -1199,7 +1193,7 @@ void        VoidServerThread::Service()
 		m_player->SetIsDead(true);
 		m_player->Unlock();
 	    }
-	    ShipHandle * ship = CreateNewShip(0);
+	    ShipHandlePtr ship = CreateNewShip(0);
 	    ship->Lock();
 	    ship->SetSector(0);
 	    ship->Unlock();

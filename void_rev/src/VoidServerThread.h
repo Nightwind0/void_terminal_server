@@ -44,7 +44,7 @@ public:
     std::string ReceiveLine();
 	
     UNIXDatagramSocketPtr GetLocalSocket() const { return m_unixsocket; }
-    ShipHandle * CreateNewShip(int shiptype);	
+    ShipHandlePtr CreateNewShip(int shiptype);	
 
 protected:
 

@@ -140,7 +140,7 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 	
 
 
-	ShipHandle * newship = get_thread()->CreateNewShip(shiptype);
+	ShipHandlePtr newship = get_thread()->CreateNewShip(shiptype);
 
        
 	newship->Lock();

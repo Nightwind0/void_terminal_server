@@ -30,6 +30,7 @@ VoidCommand::~VoidCommand()
 
 bool VoidCommand::isValidPlayer(const std::string& playername)const
 {
+  // TODO: This needs to be either a prepared statement or execParams to make safe...
     std::string query = "select count(0) from player where sname = '" + playername + "';";
 
     PGresult * dbresult = get_thread()->DBExec(query);
@@ -71,12 +72,13 @@ PlayerHandlePtr VoidCommand::get_player() const
 }
 
 
-bool VoidCommand::move_player_to_sector(int sector)
+bool VoidCommand::move_player_to_sector(Sector sector)
 {
 
     ShipHandlePtr pship = create_handle_to_current_ship(get_player());
-
     PlayerHandlePtr player = get_thread()->GetPlayer();
+
+    
 
     // TODO: Broadcast this data to players in the sector ("Player blah blah just left the sector to sector blah")
 
@@ -92,7 +94,7 @@ bool VoidCommand::move_player_to_sector(int sector)
 	ShipTypeHandlePtr shiptype= pship->GetShipTypeHandle();
 	int tps = (int)shiptype->GetTurnsPerSector();
 
-
+	player->AddSectorFlag(eSectorFlags::VISITED, sector);
 
 	Integer tow = pship->GetTow();
 

@@ -49,13 +49,13 @@ bool VoidCommandBeam::HandleCommand(const string &command, const string &argumen
 
 
 
-std::list<int> VoidCommandBeam::GetValidShipList(int cur_sector, int beamrange, int cur_ship)
+std::list<int> VoidCommandBeam::GetValidShipList(Sector cur_sector, int beamrange, int cur_ship)
 {
 
     std::list<int> ships  = GetOwnedShips();
 
     
-    std::list<int> avoids;
+    std::set<Sector> avoids;
     std::list<int> valid_ships;
 
     for(std::list<int>::iterator iter = ships.begin();
@@ -70,10 +70,8 @@ std::list<int> VoidCommandBeam::GetValidShipList(int cur_sector, int beamrange, 
 
 	ShipTypeHandlePtr shiptype = shiph.GetShipTypeHandle();
 
-	int sector = (int)shiph.GetSector();
-
-
-	std::deque<int> path = Universe::GetFlightPath(avoids, cur_sector, sector);
+	Sector sector = static_cast<Sector>((int)shiph.GetSector());
+	std::deque<Sector> path = Universe::GetFlightPath(avoids, cur_sector, sector);
 
 	if(path.size() <= beamrange)
 	{

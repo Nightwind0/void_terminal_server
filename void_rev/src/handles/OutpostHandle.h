@@ -47,9 +47,9 @@ class OutpostHandle : public SerialObject
     void SetLastVisitor(const std::string &visitor);
     void SetDaysToCompletion(const int days);
     void SetLastVisit(const std::string &ts);
-    void SetMetalsPrice(double price);
-    void SetPlasmaPrice(double price);
-    void SetCarbonPrice(double price);
+    void SetMetalsPriceMultiplier(double price);
+    void SetPlasmaPriceMultiplier(double price);
+    void SetCarbonPriceMultiplier(double price);
 
     static double GetBuyRateAfterTime(unsigned int minutes, double current_price);
     static double GetSellRateAfterTime(unsigned int minutes, double current_price);

@@ -39,10 +39,11 @@ bool VoidThreadSpawner::thread_init()
     }
     
     try{
-	unlink("/tmp/void-threadspawner");
-	m_unixsocket = std::make_shared<UNIXDatagramSocket>("/tmp/void-threadspawner",0);
-	m_unixsocket->Create();
-	m_unixsocket->Bind(0,"/tmp/void-threadspawner");
+      const std::string pipe_path = ResourceMaster::GetInstance()->GetThreadSpawnerLocalSocketPath();
+      unlink(pipe_path.c_str());
+      m_unixsocket = std::make_shared<UNIXDatagramSocket>(pipe_path,0);
+      m_unixsocket->Create();
+      m_unixsocket->Bind(0,pipe_path);
     }
     catch(SocketException &exs)
     {

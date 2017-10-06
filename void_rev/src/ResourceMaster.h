@@ -37,6 +37,10 @@ class ResourceMaster
 
     void LoadEdge(int sector);
 
+    void SetInstanceName(const std::string& name);
+    std::string GetInstanceName() const;
+    std::string GetThreadSpawnerLocalSocketPath() const;
+
     void LoadEdges();
     void SetDBConn(PGconn *dbconn);
     void AddSocket(TCPSocketPtr s);
@@ -44,6 +48,9 @@ class ResourceMaster
 
     void AddServerThread(VoidServerThread *t);
     void RemoveServerThread(VoidServerThread *t);
+
+    std::string GetDatabaseName() const;
+    void SetDatabaseName(const std::string& str);
 
 
 //    SerialObject *GetHandle(RESOURCE_TYPE type, const PrimaryKey &key, 
@@ -80,7 +87,7 @@ class ResourceMaster
 
  private:
 
-
+    std::string m_instance_name;
 
     std::map<std::string,const VoidServerThread*> m_playermap;
     std::map<std::string,std::string> m_socketnames;
@@ -100,6 +107,8 @@ class ResourceMaster
     Mutex m_threadmutex;
     Mutex m_edgemutex;
     Mutex m_socketmutex;
+
+    std::string m_dbname;
 
     void LoadSector(int i);
 

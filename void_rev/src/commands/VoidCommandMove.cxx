@@ -71,22 +71,22 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	return true;
     }
 
-    std::vector<int> sectors = Universe::GetAdjacentSectors(ship->GetSector());
+    std::vector<Sector> sectors = Universe::GetAdjacentSectors(ship->GetSector());
     
     
-    std::vector<int>::iterator f = find(sectors.begin(),sectors.end(), sec);
+    std::vector<Sector>::iterator f = find(sectors.begin(),sectors.end(), sec);
     
     if(f == sectors.end())
     {
 
 	get_thread()->Send(Color()->get(GRAY) + "Calculating flight path..." + endr);
 
-	std::list<int> avoids;
-	std::deque<int> path = Universe::GetFlightPath(avoids, ship->GetSector(), sec);
+	std::set<Sector> avoids;
+	std::deque<Sector> path = Universe::GetFlightPath(avoids, ship->GetSector(), sec);
 
 	os << Color()->get(BROWN) << "Flight path:" << endr;
 
-	for(std::deque<int>::iterator i = path.begin();
+	for(std::deque<Sector>::iterator i = path.begin();
 	    i != path.end();
 	    i++)
 	{

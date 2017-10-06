@@ -59,7 +59,7 @@ bool VoidCommandScan::HandleCommand(const string &command, const string &argumen
     return true;
 }
     
-void VoidCommandScan::ScanSector(int sector, int current_sector)
+void VoidCommandScan::ScanSector(Sector sector, Sector current_sector)
 {
 
   ShipHandlePtr ship = create_handle_to_current_ship(get_thread()->GetPlayer());
@@ -96,7 +96,7 @@ void VoidCommandScan::ScanSector(int sector, int current_sector)
     else
     {
 	// Distance scan
-	std::list<int> noavoids;
+	std::set<Sector> noavoids;
 	int distance = Universe::GetFlightPath(noavoids, current_sector,sector).size();
 
 	if(distance > scandistance)

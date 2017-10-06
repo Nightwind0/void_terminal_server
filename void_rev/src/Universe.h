@@ -4,9 +4,12 @@
 #include <vector>
 #include <string>
 #include "libpq-fe.h"
-#include <list>
+#include <set>
 #include <memory>
+#include <vector>
 #include <deque>
+#include "void_util.h"
+
 
 class Universe
 {
@@ -14,10 +17,11 @@ class Universe
     Universe();
     ~Universe();
 
-    static std::vector<int> GetAdjacentSectors(int sector);
+    static std::vector<Sector> GetAdjacentSectors(Sector sector);
     static int GetNumSectors(PGconn *dbconn);
     static std::string GetToday(PGconn *dbconn) ;
-    static std::deque<int> GetFlightPath(std::list<int> avoids, int fromsector, int tosector) ;
+    static std::vector<StardockData> GetStardockData(PGconn * dbconn);
+    static std::deque<Sector> GetFlightPath(const std::set<Sector>& avoids, Sector fromsector, Sector tosector) ;
 
  private:
     struct PathNode

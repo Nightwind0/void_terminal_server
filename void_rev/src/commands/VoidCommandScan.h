@@ -25,7 +25,7 @@ class VoidCommandScan : public VoidCommand
     
  protected:
 
-    void ScanSector(int sector, int current_sector);
+    void ScanSector(Sector sector, Sector current_sector);
     VoidCommandScan();
 
 };

@@ -23,12 +23,12 @@ std::list<int> ShipListBehavior::GetOwnedShips()
     std::string query = "select nkey from ship where kowner = '" + (std::string)player->GetName() + "';";
 
     PGresult *dbresult = get_behavior_thread()->DBExec(query);
+    ResultGuard rg(dbresult);
 
     if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
     {
 	
 	DBException e(std::string("Get Owned Ships: ") +  PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
 	throw e;
     }
 
@@ -40,8 +40,6 @@ std::list<int> ShipListBehavior::GetOwnedShips()
     {
 	ships.push_back( atoi(PQgetvalue(dbresult,i,0)));
     }
-
-    PQclear(dbresult);
 
     return ships;
 }

@@ -14,11 +14,11 @@
 
 VoidCommandDockShipYard::VoidCommandDockShipYard(VoidServerThread *thread):VoidCommandSubCommands(thread)
 {
-    AddSubCommand(new VoidCommandDockShipYardList(thread));
-    AddSubCommand(new VoidCommandDockShipYardBuy(thread));
-    AddSubCommand(new VoidCommandDockShipYardSell(thread));
-    AddSubCommand(new VoidCommandDockShipYardSpec(thread));
-    AddSubCommand(new VoidCommandDockShipYardHolds(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockShipYardList>(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockShipYardBuy>(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockShipYardSell>(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockShipYardSpec>(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockShipYardHolds>(thread));
 
 }
 VoidCommandDockShipYard::~VoidCommandDockShipYard()

@@ -13,9 +13,9 @@
 
 VoidCommandDockArmory::VoidCommandDockArmory(VoidServerThread *thread):VoidCommandSubCommands(thread)
 {
-    AddSubCommand(new VoidCommandDockArmoryMissiles(thread));
-    AddSubCommand(new VoidCommandDockArmoryShields(thread));
-    AddSubCommand(new VoidCommandDockArmorySentinels(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockArmoryMissiles>(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockArmoryShields>(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockArmorySentinels>(thread));
     // AddSubCommand(new VoidCommandDockArmoryBuy(thread));
     // AddSubCommand(new VoidCommandDockArmorySpec(thread));
 }

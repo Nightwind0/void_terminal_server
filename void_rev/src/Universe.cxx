@@ -8,10 +8,10 @@
 
 
 
-std::vector<int> Universe::GetAdjacentSectors(int sector)
+std::vector<Sector> Universe::GetAdjacentSectors(Sector sector)
 {
     
-    std::vector<int> sectors;
+    std::vector<Sector> sectors;
     sectors.reserve(12);
     
     ResourceMaster * RM = ResourceMaster::GetInstance();
@@ -23,9 +23,25 @@ std::vector<int> Universe::GetAdjacentSectors(int sector)
 
 }
 
+std::vector<StardockData> Universe::GetStardockData(PGconn * dbconn)
+{
+  std::vector<StardockData> docks;
+  PGresult *dbresult = PQexec(dbconn, "SELECT nsector, sstardockname FROM Sectors WHERE bstardock = 't';");
+  ResultGuard rg(dbresult);
+
+  for(auto i = 0; i< PQntuples(dbresult); i++) {
+    docks.emplace_back(std::make_tuple(atoi(PQgetvalue(dbresult,i,0)), PQgetvalue(dbresult,i,1)));
+  }
+  return docks;
+}
+
 int Universe::GetNumSectors(PGconn * dbconn)
 {
-    return 5000; // TODO: Get from configuration table
+  PGresult *dbresult = PQexec(dbconn, "SELECT COUNT(0) FROM Sectors;");
+  std::string count = PQgetvalue(dbresult,0,0);
+  PQclear(dbresult);
+
+  return std::stoi(count);
 }
 
 std::string Universe::GetToday(PGconn * dbconn)
@@ -42,10 +58,10 @@ std::string Universe::GetToday(PGconn * dbconn)
     return now;
 }
 
-std::deque<int> Universe::GetFlightPath(std::list<int> avoids, int fromsector, int sec)
+std::deque<Sector> Universe::GetFlightPath(const std::set<Sector>& avoids, Sector fromsector, Sector sec)
 {
-    std::deque<int> path;
-    std::set<int> closed;
+    std::deque<Sector> path;
+    std::set<Sector> closed;
     std::deque<std::shared_ptr<PathNode>> open;
  
     std::shared_ptr<PathNode> startNode = std::make_shared<PathNode>();
@@ -82,10 +98,10 @@ std::deque<int> Universe::GetFlightPath(std::list<int> avoids, int fromsector, i
 	    closed.insert(node->sector);
 		
 	    // add neighbors to the open list
-	    std::vector<int> adj = Universe::GetAdjacentSectors(node->sector);
+	    std::vector<Sector> adj = Universe::GetAdjacentSectors(node->sector);
 
 		
-	    for(std::vector<int>::iterator i= adj.begin();
+	    for(std::vector<Sector>::iterator i= adj.begin();
 		i != adj.end();
 		i++)
 	    {

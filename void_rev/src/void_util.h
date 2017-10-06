@@ -5,6 +5,7 @@
 #include <string>
 #include <cctype>
 #include <vector>
+#include <tuple>
 #include <algorithm>
 #include <libpq-fe.h>
 
@@ -13,6 +14,9 @@ const int VOID_VER_MAJOR = 0;
 const int VOID_VER_MINOR = 0;
 const int VOID_VER_INCR = 1;
 const int VOID_VER_INCRMINOR = 1;
+
+
+using Sector = unsigned int;
 
 enum FGColor{BLACK=0,RED,GREEN,BROWN,BLUE,PURPLE,CYAN,GRAY,DARKGRAY,LIGHTRED,LIGHTGREEN,YELLOW,LIGHTBLUE,LIGHTPURPLE,LIGHTCYAN,WHITE};
 enum BGColor{BG_BLACK=0,BG_RED,BG_GREEN,BG_YELLOW,BG_BLUE,BG_MAGENTA,BG_CYAN,BG_WHITE};
@@ -24,6 +28,8 @@ enum BGColor{BG_BLACK=0,BG_RED,BG_GREEN,BG_YELLOW,BG_BLUE,BG_MAGENTA,BG_CYAN,BG_
 extern const char * endr ; //=  "\n\r";
 
 enum LOG_SEVERITY {EMERGENCY, ERROR, WARNING, DEBUG, DEBUG2, AUDIT};
+
+enum class eSectorFlags : unsigned int {VISITED = 1, AVOID = (1<<1), FAVORITE = (1<<2)}; 
 
 class ColorType
 {
@@ -118,6 +124,8 @@ class ResultGuard {
  private:
   PGresult * m_result;
 };
+
+using StardockData = std::tuple<Sector,std::string>;
 
                                                                                 
 bool CompStrings(std::string s1, std::string s2);

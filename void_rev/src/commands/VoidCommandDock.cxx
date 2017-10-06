@@ -11,8 +11,8 @@
 
 VoidCommandDock::VoidCommandDock(VoidServerThread *thread):VoidCommandSubCommands(thread)
 {
-    AddSubCommand(new VoidCommandDockShipYard(thread));
-    AddSubCommand(new VoidCommandDockArmory(thread));
+  AddSubCommand(std::make_shared<VoidCommandDockShipYard>(VoidCommandDockShipYard(thread)));
+  AddSubCommand(std::make_shared<VoidCommandDockArmory>(VoidCommandDockArmory(thread)));
 }
 VoidCommandDock::~VoidCommandDock()
 {
