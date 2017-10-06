@@ -130,6 +130,7 @@ set(void_SOURCES
   src/commands/computer/VoidCommandComputerCloak.cxx
   src/commands/computer/VoidCommandComputerPlayers.cxx
   src/commands/computer/VoidCommandComputerShipList.cxx
+  src/commands/computer/VoidCommandComputerDockList.cxx
   src/commands/dock/VoidCommandDockArmory.cxx
   src/commands/dock/VoidCommandDockArmoryMissiles.cxx
   src/commands/dock/VoidCommandDockArmorySentinels.cxx
