@@ -1,14 +1,27 @@
+Improving C++
+	  * ResultGuards everywhere
+	  * Wrap database stuff with a DatabaseConnection object that wraps DBConn
+General
+	* Prepare statements, or at least use execParams. Much safer
+	* Get p/w out of source
+
 * Informational messages
 	* People entering/leaving sector
+	* People logging on/ off
+
 * Attack
-
-
+* Mines
+* Trackers
+* In status show if your ship is cloaked or not
+* Enqueue messages and poll them at good times
+* Error for bad commands
 *Sector aliases
 *Avoids
+*Favorite Sectors w/ notes
 *Who list - shows players, points, credits, etc
 *Alliance list
 *Show territory in display sector
-**Configuration table!!!! 
+
 
 5) System Message queue (date, binactive, toplayer). In this way, messages will be queued up and delivered to the player
 	when they are online. In the server thread, before blocking on receive, they should check for and display active messages

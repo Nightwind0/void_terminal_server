@@ -112,7 +112,7 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
       int flags = get_player()->GetSectorFlags(*i);
       FGColor sector_color = WHITE;
       if(!(flags & static_cast<int>(eSectorFlags::VISITED))){
-	sector_color = GRAY;
+	sector_color = DARKGRAY; // Maybe brown?
       }
       if(flags & static_cast<int>(eSectorFlags::FAVORITE)){
 	sector_color = YELLOW;

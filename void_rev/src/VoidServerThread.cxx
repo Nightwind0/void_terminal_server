@@ -210,6 +210,38 @@ void VoidServerThread::OpenDataBaseConnection()
 
 	throw DBException(PQerrorMessage(m_dbconn));
     }
+     
+  PGresult *dbresult = PQprepare(m_dbconn,
+                    "SetSectorFlags",
+		     "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);",
+                    3,
+                    NULL);
+  ResultGuard rg1(dbresult);
+  if(PQresultStatus(dbresult) != PGRES_COMMAND_OK){
+    throw DBException(PQresultErrorMessage(dbresult));
+    }
+  
+  
+  dbresult = PQprepare(m_dbconn,
+                    "ClearSectorFlags",
+		     "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags & ~ CAST($1 AS INTEGER) WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);",
+                    3,
+                    NULL);
+  ResultGuard rg2(dbresult);
+  if(PQresultStatus(dbresult) != PGRES_COMMAND_OK){
+    throw DBException(PQresultErrorMessage(dbresult));
+    }
+
+
+  dbresult = PQprepare(m_dbconn,
+                    "GetSectorFlags",
+		       "SELECT nflags from SectorFlags WHERE ksector = $1 and kplayer = $2;",
+                    2,
+                    NULL);
+  ResultGuard rg3(dbresult);
+    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK){
+    throw DBException(PQresultErrorMessage(dbresult));
+  }
 }
 
 void VoidServerThread::CloseDataBaseConnection()
@@ -222,7 +254,12 @@ bool VoidServerThread::thread_init()
 {
     ResourceMaster::GetInstance()->AddSocket(m_socket);
     ResourceMaster::GetInstance()->AddServerThread(this);
-    OpenDataBaseConnection();
+    try {
+      OpenDataBaseConnection();
+    }catch(const DBException& dbe){
+      ResourceMaster::GetInstance()->Log(EMERGENCY, dbe.GetMessage());
+      throw dbe;
+    }
     OpenLocalSocket();
 
 
