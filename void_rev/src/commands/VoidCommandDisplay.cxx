@@ -7,6 +7,14 @@
 #include <math.h>
 #include <sstream>
 
+
+const std::string kQueryShipsStmt{"displayQueryShips"};
+const std::string kQueryShipsCloakedStmt{"displayQueryShipsCloaked"};
+const std::string kQueryOutpostsStmt{"displayQueryOutposts"};
+const std::string kQueryStardocksStmt{"displayQueryStardocks"};
+const std::string kQuerySentinelsStmt{"displayQuerySentinels"};
+const std::string kQuerySectorStmt{"displayQuerySector"};
+
 VoidCommandDisplay::VoidCommandDisplay(VoidServerThread *thread):VoidCommand(thread)
 {
 }
@@ -125,18 +133,16 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
 std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
 {
     std::ostringstream os;
-    
-    std::string query = "select bstardock,sstardockname from sectors where nsector = '" + IntToString(sector) + "';";
-
-
-    pqxx::result dbresult = get_thread()->DBExec(query);
-
+    get_thread()->EnsurePreparedStatement(kQueryStardocksStmt, "select bstardock,sstardockname from sectors where nsector = $1;");
+    pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
+    pqxx::result dbresult = work.prepared(kQueryStardocksStmt)((int)sector).exec();
+    work.commit();
     Boolean has_stardock("bstardock", dbresult[0][0].as<std::string>("f"), dbresult[0][0].is_null());
 
     if((bool)has_stardock)
     {
       Text stardock("sstardockname",dbresult[0][1].as<std::string>("f"), dbresult[0][1].is_null());
-      os << Color()->get(GREEN) << "Stardock: " << Color()->get(WHITE) << (std::string)stardock << endr;
+      os << Color()->get(GREEN) << "Stardock: " << Color()->get(WHITE, BG_BLUE) << (std::string)stardock << endr;
     }
 
     return os.str();
@@ -147,15 +153,16 @@ std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
 std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cloaked)
 {
     std::ostringstream os;
-    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector =" + IntToString(sector) + " and s.ktype = t.nkey and tm.nkey = t.kmanufacturer ";
-
-    if( !show_cloaked)
-	shipquery +="and (s.bcloaked = false or s.bcloaked is null)";
-
-    shipquery +=" and (p.sname = s.kowner) order by s.nkey;";
-
-
-    pqxx::result dbresult = get_thread()->DBExec(shipquery);
+    pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
+    pqxx::result dbresult ;
+    if(show_cloaked) {
+       get_thread()->EnsurePreparedStatement(kQueryShipsCloakedStmt, "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector = $1 and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (p.sname = s.kowner) order by s.nkey;");
+       dbresult = work.prepared(kQueryShipsCloakedStmt)((int)sector).exec();
+    }else{
+      get_thread()->EnsurePreparedStatement(kQueryShipsStmt, "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector = $1 and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (s.bcloaked = false or s.bcloaked is null) and (p.sname = s.kowner) order by s.nkey;");
+      dbresult = work.prepared(kQueryShipsStmt)((int)sector).exec();
+    }
+    work.commit();
 
     int numships = dbresult.size();
 
@@ -230,7 +237,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 	    os << Color()->get(LIGHTPURPLE);
 	}
 	
-	os << row[9].as<std::string>("");
+	os << row[8].as<std::string>("");
 	
 	if(!row[10].is_null())
 	{
@@ -250,14 +257,14 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 
 std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
 {
+  pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
+  get_thread()->EnsurePreparedStatement(kQueryOutpostsStmt, "select sname, bbuyplasma, bbuymetals, bbuycarbon, fplasmaprice, fmetalsprice,fcarbonprice, floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60) from Outpost where ksector = $1;");
 
-    std::ostringstream os;
-    std::string outpostquery = "select sname, bbuyplasma, bbuymetals, bbuycarbon, fplasmaprice, fmetalsprice,fcarbonprice, floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60) from Outpost where ksector = " + IntToString(sector) + ";";
+  pqxx::result dbresult = work.prepared(kQueryOutpostsStmt)((int)sector).exec();
+  std::ostringstream os;
+  work.commit();
 
-
-    pqxx::result dbresult = get_thread()->DBExec(outpostquery);
-
-    int numoutposts = dbresult.size();
+  int numoutposts = dbresult.size();
 
 
     if(numoutposts == 0 ) return "";
@@ -326,10 +333,11 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
 
 std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
 {
-    std::string query = "select ncount, kplayer, player.kalliance from sentinels, player where sentinels.kplayer = player.sname and sentinels.ksector = '" +
-	IntToString(sector) + "';";
+  pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
+  get_thread()->EnsurePreparedStatement(kQuerySentinelsStmt, "select ncount, kplayer, player.kalliance from sentinels, player where sentinels.kplayer = player.sname and sentinels.ksector = $1;");
 
-    pqxx::result dbresult = get_thread()->DBExec(query);
+  pqxx::result dbresult = work.prepared(kQuerySentinelsStmt)((int)sector).exec();
+  work.commit();
 
     int groups = dbresult.size();
 

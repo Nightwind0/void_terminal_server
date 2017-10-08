@@ -80,7 +80,12 @@ LoginHandlePtr VoidServerThread::GetLogin() const
     return m_login;
 }
 
-
+void VoidServerThread::EnsurePreparedStatement(const std::string& unique_id, const std::string& statement) {
+  if(m_prepared_statements.find(unique_id) == m_prepared_statements.end()) {
+    m_prepared_statements.insert(unique_id);
+    m_dbconn->prepare(unique_id, statement);
+  }
+}
 
 void VoidServerThread::HandleSystemMessage(const Message &msg)
 {
@@ -210,12 +215,12 @@ bool VoidServerThread::DoCommand(const std::string &command, const std::string &
 void VoidServerThread::OpenDataBaseConnection()
 {
   m_dbconn = ResourceMaster::GetInstance()->CreateDatabaseConnection();
-  m_dbconn->prepare(kSetSectorFlagStmt, 
+  EnsurePreparedStatement(kSetSectorFlagStmt, 
 		   "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);");
-  m_dbconn->prepare(kClearSectorFlagStmt, 
+  EnsurePreparedStatement(kClearSectorFlagStmt, 
 		   "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags & ~ CAST($1 AS INTEGER) WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);");
 
-  m_dbconn->prepare(kGetSectorFlagsStmt, 
+  EnsurePreparedStatement(kGetSectorFlagsStmt, 
 		   "SELECT nflags from SectorFlags WHERE ksector = $1 and kplayer = $2;");
 }
 

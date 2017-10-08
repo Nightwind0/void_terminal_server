@@ -26,8 +26,8 @@ void LoginHandle::LoadFromDB()
   m_fields[PASSWORD] = std::make_shared<Text>(FIELD_NAMES[PASSWORD],r[0][1].as<std::string>());
   m_fields[FIRSTLOGIN] = std::make_shared<Timestamp>(FIELD_NAMES[FIRSTLOGIN],r[0][2].as<std::string>(), r[0][2].is_null());
   m_fields[LASTLOGIN] = std::make_shared<Timestamp>(FIELD_NAMES[LASTLOGIN],r[0][3].as<std::string>(),r[0][3].is_null());
-  m_fields[LASTIP] = std::make_shared<Text>(FIELD_NAMES[LASTIP],r[0][4].as<std::string>());
-  m_fields[EMAIL] = std::make_shared<Text>(FIELD_NAMES[EMAIL],r[0][5].as<std::string>());
+  m_fields[LASTIP] = std::make_shared<Text>(FIELD_NAMES[LASTIP],r[0][4].as<std::string>(""), r[0][4].is_null());
+  m_fields[EMAIL] = std::make_shared<Text>(FIELD_NAMES[EMAIL],r[0][5].as<std::string>(""));
   m_fields[DISABLED] = std::make_shared<Boolean>(FIELD_NAMES[DISABLED],r[0][6].as<std::string>());
   m_fields[LOGINS] = std::make_shared<Integer>(FIELD_NAMES[LOGINS],r[0][7].as<std::string>());
   work.commit();

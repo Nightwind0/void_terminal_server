@@ -10,6 +10,7 @@
 #include "PlayerHandle.h"
 #include "ShipHandle.h"
 #include <list>
+#include <set>
 #include "VoidCommand.h"
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -30,6 +31,9 @@ public:
     PlayerHandlePtr GetPlayer()const;
     LoginHandlePtr  GetLogin()const;
     DatabaseConnPtr GetDatabaseConn() const { return m_dbconn; }
+    /* This creates the prepared statement if it doesn't exist, otherwise its a no-op
+     */
+    void EnsurePreparedStatement(const std::string& unique_id, const std::string& statement);
     pqxx::result DBExec(const std::string &sql);
 	
     bool PostCommand(const std::string &command, const std::string &arguments); 
@@ -45,7 +49,7 @@ public:
 
 protected:
     bool DoCommand(const std::string &command, const std::string &arguments, bool frompost);
-
+    std::set<std::string> m_prepared_statements;
     std::vector<std::shared_ptr<VoidCommand>> m_commandlist; 
     void add_command(std::shared_ptr<VoidCommand> pcmd);
     

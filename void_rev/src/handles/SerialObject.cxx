@@ -155,7 +155,8 @@ void SerialObject::Insert()
 {
     if(m_lock && m_new)
     {
-      std::ostringstream stmnt {"insert into " + DBTable() + " ("};
+      std::ostringstream stmnt;
+      stmnt << "insert into " << DBTable() << " (";
       std::ostringstream vls;
 
 	for(std::map<int,FieldPtr>::iterator i = m_fields.begin();i != m_fields.end(); i++)
