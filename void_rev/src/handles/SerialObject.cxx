@@ -1,65 +1,60 @@
 #include "SerialObject.h"
 #include <string>
 #include <sstream>
-#include "libpq-fe.h"
+#include <pqxx/pqxx>
 #include "void_util.h"
 #include "ResourceMaster.h"
 
 using namespace std;
 
+const std::string kSetFieldNullStmt{"setFieldNull"};
+const std::string kUpdateFieldStmt{"updateField"};
+const std::string kCheckForRecordStmt{"checkForRecord"};
 
+void SerialObject::create_prepared_statements() {
+  //    std::string updatestr = "UPDATE " + DBTable() + " SET " + GetFieldName(fieldnum) + " = null " + " WHERE " + CreateWhereClause() + ";";
+    
+}
 
 std::string SerialObject::CreateWhereClause() const
 {
-    string str = "";
+  std::ostringstream os;
+
 
    if(m_key.FieldCount() == 1)
-	str = (*m_key.GetFieldsBegin())->name() + " = \'" + PrepareForSQL((*m_key.GetFieldsBegin())->GetAsString()) + "\'";
+     os << (*m_key.GetFieldsBegin())->name() << " = " << m_dbconn->quote((*m_key.GetFieldsBegin())->GetAsString());
     else
     {
-	for(vector<Field*>::const_iterator i = m_key.GetFieldsBegin();
+	for(vector<FieldPtr>::const_iterator i = m_key.GetFieldsBegin();
 	    i != m_key.GetFieldsEnd();
 		i++)
 	{
-	    vector<Field*>::const_iterator j = i + 1;
-	    str += (*i)->name() + "=\'" +  (*i)->GetAsString() ;
+	    vector<FieldPtr>::const_iterator j = i + 1;
+	    os << (*i)->name() << "=" << m_dbconn->quote((*i)->GetAsString()) ;
 	    if(j== m_key.GetFieldsEnd())
 	    {
-		str += "\';";
+	      os << ";";
 	    }
-	    else str += "\' AND ";
-
-
+	    else os << " AND ";
 	}
     }
 
-   return str;
-
+   return os.str();
 }
 
 void SerialObject::SetFieldNull(int fieldnum)
 {
-
     if(!m_lock) return; // TODO: Throw error
 
     if(m_new) return;
-
-
-
-    PGresult *dbresult;
     
-    std::string str = "UPDATE " + DBTable() + " SET " + GetFieldName(fieldnum) + " = null " + " WHERE " + CreateWhereClause() + ";";
+    std::string updatestr = "UPDATE " + DBTable() + " SET " + GetFieldName(fieldnum) + " = null " + " WHERE " + CreateWhereClause() + ";";
+    
 
-    ResourceMaster::GetInstance()->Log(DEBUG2,str);
-     
-    dbresult = PQexec(m_dbconn, str.c_str());
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-    {
-	throw  DBException(PQresultErrorMessage(dbresult));
-    }
-
-    PQclear(dbresult);
+    ResourceMaster::GetInstance()->Log(AUDIT,updatestr);
+    pqxx::work work{*m_dbconn};
+    pqxx::result result = work.exec(updatestr);
+    work.commit();
 }
 
 void SerialObject::UpdateFieldToDB(int fieldnum)
@@ -69,26 +64,17 @@ void SerialObject::UpdateFieldToDB(int fieldnum)
 
     if(m_new) return;
 
-    Field *field = m_fields[fieldnum];
+    FieldPtr field = m_fields[fieldnum];
 
-    PGresult *dbresult;
     string str;
 
-    str = "UPDATE " + DBTable() + " SET " + field->name() + "=\'" + PrepareForSQL(field->GetAsString()) + "\' WHERE " + CreateWhereClause() + ";";
+    str = "UPDATE " + DBTable() + " SET " + field->name() + " = " + m_dbconn->quote(field->GetAsString()) + " WHERE " + CreateWhereClause() + ";";
 
-    ResourceMaster::GetInstance()->Log(DEBUG2,str);
-     
-    dbresult = PQexec(m_dbconn, str.c_str());
+    ResourceMaster::GetInstance()->Log(AUDIT,str);
 
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-    {
-	throw  DBException(PQresultErrorMessage(dbresult));
-    }
-
-    PQclear(dbresult);
-
-
-
+    pqxx::work work{*m_dbconn};
+    pqxx::result result = work.exec(str);
+    work.commit();
 }
 
 
@@ -96,33 +82,25 @@ bool SerialObject::RecordExistsInDB()const
 {
     string str = "SELECT COUNT(0) FROM " + DBTable() + " WHERE " + CreateWhereClause() + ";";
 
-    PGresult *dbresult;
+    pqxx::read_transaction work{*m_dbconn};
+    pqxx::result r = work.exec(str);
 
-    dbresult = PQexec(m_dbconn,str.c_str());
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	throw DBException(PQresultErrorMessage(dbresult));
-    }
-
-    if(PQntuples(dbresult) != 1)
+    if(r.size() != 1)
     {
 	throw DBException("RecordExistsInDB: no tuples came back for count");
     }
 
-    if(atoi(PQgetvalue(dbresult,0,0)) == 1)
+    int count = r[0][0].as<int>();
+    
+    if(count == 1)
     {
 	return true;
     }
-    else if(atoi(PQgetvalue(dbresult,0,0)) == 0)
+    else if(count == 0)
     {
 	return false;
     }
     else throw new DBException("RecordExistsInDB found more than 1 tuples matching this object in the db");
-
-
-    PQclear(dbresult);
-
 }
 void SerialObject::SetNew()
 {
@@ -156,9 +134,8 @@ void SerialObject::Unlock()
 }
 
 
-SerialObject::SerialObject(PGconn *dbconn, const PrimaryKey &key, bool isnew):m_dbconn(dbconn),m_key(key),m_new(isnew)
+SerialObject::SerialObject(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew):m_dbconn(dbconn),m_key(key),m_new(isnew),m_lock(false)
 {
-    m_lock = false;
 
 }
 
@@ -166,22 +143,10 @@ void SerialObject::CloseDownObject()
 {
     Insert(); // Only happens if we're locked AND new
     Unlock();
-
-    for(std::map<int,Field*>::iterator i = m_fields.begin();
-	i != m_fields.end();
-	i++)
-    {
-	if(i->second != NULL)
-	    delete (i->second);
-    }
 }
 
 SerialObject::~SerialObject()
 {
- 
-
-
-
 
 }
 
@@ -190,36 +155,30 @@ void SerialObject::Insert()
 {
     if(m_lock && m_new)
     {
-	PGresult *dbresult;
-	std::string stmnt = "insert into " + DBTable() + " (";
-	std::string vls;
+      std::ostringstream stmnt {"insert into " + DBTable() + " ("};
+      std::ostringstream vls;
 
-	for(std::map<int,Field*>::iterator i = m_fields.begin();i != m_fields.end(); i++)
+	for(std::map<int,FieldPtr>::iterator i = m_fields.begin();i != m_fields.end(); i++)
 	{
-	    stmnt += i->second->name();
-	    vls += "\'" + PrepareForSQL(i->second->GetAsString()) + "\'";
+	  stmnt << i->second->name();
+	  vls <<  m_dbconn->quote(i->second->GetAsString());
 
 	    i++;
 
 	    if(i != m_fields.end())
-		vls += ',';
+	      vls << ',';
 
 	    if(i != m_fields.end())
-		stmnt += ',';
+	      stmnt << ',';
 
 	    --i;
 	}
-	stmnt += ") VALUES (" + vls + ");";
+	stmnt << ") VALUES (" << vls.str() << ");";
 
-	ResourceMaster::GetInstance()->Log(DEBUG2,stmnt);
-	dbresult = PQexec(m_dbconn,stmnt.c_str());
-	
-	if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-	{
-	    throw DBException(PQresultErrorMessage(dbresult));
-	}
-	PQclear(dbresult);
-
+	ResourceMaster::GetInstance()->Log(AUDIT,stmnt.str());
+	pqxx::work work{*m_dbconn};
+	work.exec(stmnt.str());
+	work.commit();
 	m_new = false;
     }
 }
@@ -228,21 +187,12 @@ void SerialObject::Insert()
 
 void SerialObject::DeleteFromDB()
 {
-
-
     if(!m_lock) return; // TODO: Throw error for trying this crap
     string str = "DELETE FROM " + DBTable() + " WHERE " + CreateWhereClause() + ";";
 
-    PGresult *dbresult = PQexec(m_dbconn, str.c_str());
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-    {
-	throw DBException(PQresultErrorMessage(dbresult));
-    }
-
-    PQclear(dbresult);
-
- 
+    pqxx::work work{*m_dbconn};
+    work.exec(str);
+    work.commit();
 }
 
 
@@ -250,36 +200,27 @@ void SerialObject::DeleteFromDB()
 
 std::string SerialObject::GetField(int field, bool *b)const
 {
-    std::string str;
-    std::string query = "SELECT " ;
-    query += GetFieldName(field) ;
-    query += " FROM " ;
-    query += DBTable() ;
-    query += " WHERE ";
-    query +=  CreateWhereClause() + ";";
+    std::ostringstream query;
+    query << "SELECT ";
+    query << GetFieldName(field) ;
+    query << " FROM " ;
+    query << DBTable() ;
+    query << " WHERE ";
+    query <<  CreateWhereClause() << ";";
 
-	PGresult *dbresult;
+    pqxx::read_transaction work{*m_dbconn};
 
-	ResourceMaster::GetInstance()->Log(DEBUG2, query);
+    ResourceMaster::GetInstance()->Log(AUDIT, query.str());
+    pqxx::result r = work.exec(query.str());
 
 
-	dbresult = PQexec(m_dbconn, query.c_str());
-
-	if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-	{
-	    std::string error = "SerialObject::GetField:" + std::string(PQresultErrorMessage(dbresult));
-	    DBException e(error);
-	    PQclear(dbresult);
-	    throw e;
-	}
-
-	if(PQgetisnull(dbresult,0,0)) *b = true;
-	else *b = false;
-
-	str = PQgetvalue(dbresult,0,0);
-	PQclear(dbresult);
-
-	return std::string(str);
+    if(r[0][0].is_null()) {
+      *b = true;
+      return "";
+    } else {
+      *b = false;
+      return r[0][0].as<std::string>();
+    }
 }
 
 Timestamp SerialObject::GetTimestamp(int field)const
@@ -287,17 +228,17 @@ Timestamp SerialObject::GetTimestamp(int field)const
    if(m_lock && m_fields.count(field))
     {
 	//If we've locked the object we can safely pull from cached values since they cannot have been changed.
-	return *(Timestamp*)m_fields[field];
+      return *dynamic_pointer_cast<Timestamp>(m_fields[field]);
     }
    else
     {
 	bool isnull;
 
-	m_fields[field] = new Timestamp (GetFieldName(field), GetField(field, &isnull));
+	m_fields[field] = std::make_shared<Timestamp> (GetFieldName(field), GetField(field, &isnull));
 
 	if(isnull) m_fields[field]->SetNull();
 
-	return *(Timestamp*)m_fields[field];
+	return *dynamic_pointer_cast<Timestamp>(m_fields[field]);
     }
 }
 
@@ -306,17 +247,17 @@ Integer SerialObject::GetInteger(int field)const
    if(m_lock && m_fields.count(field))
     {
 	//If we've locked the object we can safely pull from cached values since they cannot have been changed.
-	return *(Integer*)m_fields[field];
+      return *dynamic_pointer_cast<Integer>(m_fields[field]);
     }
    else
     {
 	bool isnull;
 
-	m_fields[field] = new Integer (GetFieldName(field), GetField(field, &isnull));
+	m_fields[field] = std::make_shared<Integer> (GetFieldName(field), GetField(field, &isnull));
 
 	if(isnull) m_fields[field]->SetNull();
 
-	return *(Integer*)m_fields[field];
+	return *dynamic_pointer_cast<Integer>(m_fields[field]);
     }
 }
 
@@ -325,17 +266,17 @@ Text SerialObject::GetText(int field)const
    if(m_lock && m_fields.count(field))
     {
 	//If we've locked the object we can safely pull from cached values since they cannot have been changed.
-	return *(Text*)m_fields[field];
+      return *dynamic_pointer_cast<Text>(m_fields[field]);
     }
    else
     {
 	bool isnull;
 
-	m_fields[field] = new Text (GetFieldName(field), GetField(field, &isnull));
+	m_fields[field] = std::make_shared<Text> (GetFieldName(field), GetField(field, &isnull));
 
 	if(isnull) m_fields[field]->SetNull();
 
-	return *(Text*)m_fields[field];
+	return *dynamic_pointer_cast<Text>(m_fields[field]);
     }
 }
 
@@ -344,17 +285,17 @@ Float SerialObject::GetFloat(int field)const
    if(m_lock && m_fields.count(field))
     {
 	//If we've locked the object we can safely pull from cached values since they cannot have been changed.
-	return *(Float*)m_fields[field];
+      return *dynamic_pointer_cast<Float>(m_fields[field]);
     }
    else
     {
 	bool isnull;
 
-	m_fields[field] = new Float (GetFieldName(field), GetField(field, &isnull));
+	m_fields[field] = std::make_shared<Float> (GetFieldName(field), GetField(field, &isnull));
 
 	if(isnull) m_fields[field]->SetNull();
 
-	return *(Float*)m_fields[field];
+	return *dynamic_pointer_cast<Float>(m_fields[field]);
     }
 }
 
@@ -363,17 +304,17 @@ Boolean SerialObject::GetBoolean(int field)const
    if(m_lock && m_fields.count(field))
     {
 	//If we've locked the object we can safely pull from cached values since they cannot have been changed.
-	return *(Boolean*)m_fields[field];
+      return *dynamic_pointer_cast<Boolean>(m_fields[field]);
     }
     else
     {
 	bool isnull;
 
-	m_fields[field] = new Boolean (GetFieldName(field), GetField(field, &isnull));
+	m_fields[field] = std::make_shared<Boolean> (GetFieldName(field), GetField(field, &isnull));
 
 	if(isnull) m_fields[field]->SetNull();
 
-	return *(Boolean*)m_fields[field];
+	return *dynamic_pointer_cast<Boolean>(m_fields[field]);
     }
 }
 
@@ -383,12 +324,10 @@ Boolean SerialObject::GetBoolean(int field)const
 
 
 
-void SerialObject::SetField(int fieldnum, Field *field)
+void SerialObject::SetField(int fieldnum, FieldPtr field)
 {
     if(!m_lock) return;
 
-    if(m_fields.count(fieldnum)) delete m_fields[fieldnum];
-    
     m_fields[fieldnum]= field;
     UpdateFieldToDB(fieldnum);
 }

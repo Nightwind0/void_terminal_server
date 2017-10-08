@@ -4,8 +4,8 @@
 
 
 #include <string>
+#include <memory>
 #include "PrimaryKey.h"
-#include "libpq-fe.h"
 #include "Mutex.h"
 
 
@@ -28,11 +28,7 @@ private:
     int m_refcount;
     ResourceType m_type;
     PrimaryKey m_key;
-
-    
 public:
-
-
     Resource();
     Resource(ResourceType type, const PrimaryKey &key);
     void Lock(){ m_refcount++; m_mutex.lock();}
@@ -47,6 +43,6 @@ public:
 
 
 std::string TypeToString(ResourceType type);
-
+using ResourcePtr = std::shared_ptr<Resource>;
 
 #endif

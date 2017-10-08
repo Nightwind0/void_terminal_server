@@ -2,8 +2,9 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <pqxx/pqxx>
 #include "void_util.h"
-#include "libpq-fe.h"
+
 #include <vector>
 #include "Universe.h"
 #include "PlayerHandle.h"
@@ -11,14 +12,16 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-
+const std::string kGetConfigStmt {"selectConfigValue"};
+const std::string kSendMailStmt {"insertMail"};
+const std::string kInsertLogStmt {"insertLog"};
+const std::string kLoadEdgesStmt {"selectEdges"};
 
 ResourceMaster *ResourceMaster::m_instance;
 
 ResourceMaster::ResourceMaster()
 {
     m_instance = NULL;
-    m_dbconn = NULL;
 }
 
 
@@ -32,12 +35,23 @@ ResourceMaster *ResourceMaster::GetInstance()
     return m_instance;
 }
 
+void ResourceMaster::create_prepared_statements() {
+   m_dbconn->prepare(kGetConfigStmt, "SELECT svalue FROM Config WHERE sname = $1;");
+   m_dbconn->prepare(kSendMailStmt, "INSERT INTO mail values(nextval('mail_id_seq'), now(),$1,NULL,TRUE,$2);");
+   m_dbconn->prepare(kInsertLogStmt, "INSERT INTO Log (dstamp,nseverity,smessage) values (now(), $1, $2);");
+   m_dbconn->prepare(kLoadEdgesStmt, "SELECT nsector2 from edges where nsector = $1 union select nsector from edges where nsector2 = $1;");
+}
 
 std::string ResourceMaster::GetDatabaseName() const
 {
   return m_dbname;
 }
 
+void ResourceMaster::SetDatabaseConnectionString(const std::string& connection_string) {
+  m_dbconn_string = connection_string;
+  m_dbconn = std::make_shared<pqxx::connection>(connection_string);
+  create_prepared_statements();
+}
 void ResourceMaster::SetDatabaseName(const std::string& str)
 {
   m_dbname = str;
@@ -58,35 +72,23 @@ std::string ResourceMaster::GetConfig(const std::string &key)
 {
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
-    std::lock_guard<std::mutex> dblk(m_dbmutex);
-
-    std::string sql = "select svalue from config where sname = '" + PrepareForSQL(key) + "';";
-
-    PGresult *dbresult = PQexec(m_dbconn, sql.c_str());
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK || PQntuples(dbresult) < 1)    
-    {
-	Log(ERROR,">Config for key: " + key + " not found<");
-	PQclear(dbresult);
-	throw MissingConfig(key);
+    pqxx::work work { *m_dbconn }; 
+    pqxx::result r = work.prepared(kGetConfigStmt)(key).exec();
+    if( r.size() != 1){
+      throw DBException("Must have exactly one value for config named " + key);
     }
-    
-    return PQgetvalue(dbresult,0,0);
+    std::string value = r[0][0].as<std::string>();
+    work.commit();
+    return value;
 }
 
 void ResourceMaster::SendSystemMail(const std::string &player, const std::string &msg)
 {
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
-    std::lock_guard<std::mutex> dblk(m_dbmutex);
-    std::string sql = "insert into mail values(nextval('mail_id_seq'), now(),'" + player + "',NULL, TRUE,'" + PrepareForSQL(msg) + "');";
-
-    PGresult *dbresult = PQexec(m_dbconn, sql.c_str());
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
-    {
-    }
-
+    pqxx::work work { *m_dbconn };
+    pqxx::result r = work.prepared(kSendMailStmt)(player)(msg).exec();
+    work.commit();
 }
 
 void ResourceMaster::SendMessageAll(DatagramSocketPtr socket, MessagePtr msg)
@@ -95,7 +97,6 @@ void ResourceMaster::SendMessageAll(DatagramSocketPtr socket, MessagePtr msg)
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
     std::string player;
-
 
     
     for(std::map<std::string,const VoidServerThread*>::iterator iter = m_playermap.begin();
@@ -106,9 +107,6 @@ void ResourceMaster::SendMessageAll(DatagramSocketPtr socket, MessagePtr msg)
 	
 	SendMessage(socket,player,msg);
     }
-
-
-
 }
 
 
@@ -127,7 +125,6 @@ bool ResourceMaster::SendMessage(DatagramSocketPtr socket, const std::string &pl
 
 
 	return true;
-
     }
     else
     {
@@ -157,20 +154,6 @@ void ResourceMaster::RemoveThreadForPlayer(const std::string &player)
 }
 
 
-PGconn* ResourceMaster::GetDBConn()
-{
-    if (m_dbconn != NULL)
-	return m_dbconn;
-    else
-    {
-	throw DBException("No DB Connection for ResourceMaster");
-    }
-}
-
-void ResourceMaster::SetDBConn(PGconn *dbconn)
-{
-    m_dbconn = dbconn;
-}
 
 void ResourceMaster::AddSocket(TCPSocketPtr s)
 {
@@ -182,8 +165,7 @@ void ResourceMaster::AddSocket(TCPSocketPtr s)
 
 void ResourceMaster::AddServerThread(VoidServerThread *t)
 {
-  std::lock_guard<std::mutex> lk(m_threadmutex);
-  
+  std::lock_guard<std::mutex> lk(m_threadmutex);  
   m_threads.push_back(t);
 }
 
@@ -191,17 +173,17 @@ void ResourceMaster::RemoveSocket(const TCPSocketPtr s)
 {
   std::lock_guard<std::mutex> lk(m_socketmutex);
 
-    auto pos = std::find(std::begin(m_sockets),std::end(m_sockets),s);
-
-    if(pos != m_sockets.end()) m_sockets.erase(pos);
-
+  auto pos = std::find(std::begin(m_sockets),std::end(m_sockets),s);
+  
+  if(pos != m_sockets.end()) m_sockets.erase(pos);
+  
 }
 
 void ResourceMaster::RemoveServerThread(VoidServerThread *t)
 {
-      std::lock_guard<std::mutex> lk(m_threadmutex);
-
-    auto pos = find(m_threads.begin(),m_threads.end(),t);
+  std::lock_guard<std::mutex> lk(m_threadmutex);
+  
+  auto pos = find(m_threads.begin(),m_threads.end(),t);
 
     if(pos != m_threads.end()) m_threads.erase(pos);
 
@@ -231,27 +213,24 @@ void ResourceMaster::RegisterResource(ResourceType type, const PrimaryKey &key)
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
 
-    Resource *res= new Resource(type,key);
+    ResourcePtr res = std::make_shared<Resource>(type,key);
 
-    std::map<std::string,Resource*>::iterator i = m_resources.find(res->GenerateID());
+    auto i = m_resources.find(res->GenerateID());
 
-    Log(DEBUG2, ">Registering Resource: " + res->GenerateID() + "<");
+    Log(AUDIT, ">Registering Resource: " + res->GenerateID() + "<");
 
     if(i == m_resources.end())
     {
 	// Need to add
 	res->Lock();
 	m_resources[res->GenerateID()] = res;
-	
     }
     else
     {
-	// Already have it
-	delete res;
+      // Already have it
 	i->second->Lock();
-	
     }
-    Log(DEBUG2, ">Resource: " + res->GenerateID() + " locked.<");
+    Log(AUDIT, ">Resource: " + res->GenerateID() + " locked.<");
 }
 
 void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
@@ -259,15 +238,11 @@ void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
     
-    Resource *res = new Resource(type,key);
+    ResourcePtr res = std::make_shared<Resource>(type,key);
 
-    std::map<std::string,Resource*>::iterator i = m_resources.find(res->GenerateID());
+    std::map<std::string,ResourcePtr>::iterator i = m_resources.find(res->GenerateID());
 
-    Log(DEBUG2, ">Releasing Resource: " + res->GenerateID() + "<");
-
-    delete res;
-
-
+    Log(AUDIT, ">Releasing Resource: " + res->GenerateID() + "<");
 
     if(i == m_resources.end())
     {
@@ -281,15 +256,13 @@ void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
 	// We're done, no other references exist, so dump it.
 	if(i->second->NoCount())
 	{
-	    delete i->second;
 	    m_resources.erase(i);
-	   
 	}
     }
 
 }
 
-void ResourceMaster::Log(LOG_SEVERITY severity, std::string message) 
+void ResourceMaster::Log(LOG_SEVERITY severity, const std::string& message) 
 {
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
@@ -300,32 +273,12 @@ void ResourceMaster::Log(LOG_SEVERITY severity, std::string message)
     {
 	return;
     }
-
-    PGresult *dbresult;
-
-    std::ostringstream os;
-    os << "INSERT INTO Log (dstamp,nseverity,smessage) values (now()," << severity << ",\'" << PrepareForSQL(message) << '\'' << ");";
-
-    {
-      std::lock_guard<std::mutex> lk(m_dbmutex);
-
-    dbresult = PQexec(m_dbconn, os.str().c_str());
-    
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
-    {
-	std::string err = PQresultErrorMessage(dbresult);
-	std::cerr << err << " from " << os.str() << std:: endl;
-	PQclear(dbresult);
-
-	throw DBException(err);
-    }
-
-    PQclear(dbresult);
-    }
-
+    pqxx::work work { *m_dbconn };
+    pqxx::result r = work.prepared(kInsertLogStmt)(static_cast<int>(severity))(message).exec();
+    work.commit();
 }
 
-void ResourceMaster::LoadEdge(int sector)
+void ResourceMaster::LoadEdge(Sector sector)
 {
   std::lock_guard<std::mutex> lk(m_edgemutex);
   if(!m_edges.count(sector))
@@ -333,55 +286,33 @@ void ResourceMaster::LoadEdge(int sector)
 }
 
 
-void ResourceMaster::LoadSector(int i)
+void ResourceMaster::LoadSector(Sector i)
 {
-
+    std::vector<Sector> sectors;
+    pqxx::work work { *m_dbconn };
+    pqxx::result r = work.prepared(kLoadEdgesStmt)(i).exec();
     
-    std::vector<int> sectors;
-    
-    std::string query = "select nsector2 from edges where nsector =" + IntToString(i) + " union select nsector from edges where nsector2 =" +IntToString(i) + ';';
-    
-    std::lock_guard<std::mutex> dblk(m_dbmutex);
-    PGresult *dbresult =  PQexec(m_dbconn, query.c_str());
-    
-    ExecStatusType  status = PQresultStatus(dbresult);
-    
-    if(status != PGRES_TUPLES_OK)
+    for(auto row : r)
     {
-	DBException e("Load sector error:" + std::string(PQerrorMessage(m_dbconn)) + std::string(" Query was: ") + query);
-	PQclear(dbresult);
-	throw e;
+      sectors.push_back(static_cast<Sector>(row[0].as<int>()));
     }
-    
-    int tuples = PQntuples(dbresult);
-    
-    for(int j=0;j<tuples;j++)
-    {
-	sectors.push_back(atoi(PQgetvalue(dbresult,j,0)));
-    }
+    work.commit();
     
     
     m_edges[i] = sectors;
-    
-    PQclear(dbresult);
 }
 
 
 void ResourceMaster::LoadEdges()
 {
   std::lock_guard<std::mutex> lk(m_edgemutex);
-    for(int i=0;i< Universe::GetNumSectors(m_dbconn); i++)
-    {
-
-	if((i % 10) == 0)
-	    std::cout << '.' << std::flush;
-	LoadSector(i);
-	
-    }
+  for(int i=0;i< Universe::GetNumSectors(*m_dbconn); i++){
+      LoadSector(i);
+  }
 }
 
 
-std::vector<int>::iterator ResourceMaster::GetEdgesBegin(int sector)
+std::vector<Sector>::iterator ResourceMaster::GetEdgesBegin(int sector)
 {
     m_edgemutex.lock();
 
@@ -392,7 +323,7 @@ std::vector<int>::iterator ResourceMaster::GetEdgesBegin(int sector)
     return m_edges[sector].begin();
 }
 
-std::vector<int>::iterator ResourceMaster::GetEdgesEnd(int sector)
+std::vector<Sector>::iterator ResourceMaster::GetEdgesEnd(int sector)
 {
     m_edgemutex.lock();
     if(!m_edges.count(sector))
@@ -401,4 +332,8 @@ std::vector<int>::iterator ResourceMaster::GetEdgesEnd(int sector)
     m_edgemutex.unlock();
 
     return m_edges[sector].end();
+}
+
+std::unique_ptr<pqxx::connection_base> ResourceMaster::CreateDatabaseConnection() {
+  return std::make_unique<pqxx::connection>(m_dbconn_string);
 }

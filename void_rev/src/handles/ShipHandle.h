@@ -16,13 +16,12 @@ class ShipHandle : public SerialObject
  private:
     static const char * FIELD_NAMES[];
 
-
  public:
-    ShipHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
-	virtual ~ShipHandle(){CloseDownObject();}
+ ShipHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
+    virtual ~ShipHandle(){CloseDownObject();}
 	
 
-	ResourceType GetType()const{return ResourceType::SHIP;};
+    ResourceType GetType()const{return ResourceType::SHIP;};
 
     enum FIELDS{NKEY,NAME,TYPE,ISALLIANCEOWNED,OWNER,ALLIANCE,ISPERSONAL,SENTINELS,MISSILES,MINES,TRACKERS,SHIELDS,PLASMA,METALS,CARBON,PEOPLE,DEBRIS,EXPLOSIVES,PROBES,HOLDS, ISCLOAKED,SECTOR,TOWSHIP};
 
@@ -87,7 +86,7 @@ class ShipHandle : public SerialObject
   
     virtual std::string DBTable()const { return "Ship";};
 
-    static ShipHandlePtr HandleFromNkey( PGconn *dbconn, const int ship);
+    static ShipHandlePtr HandleFromNkey( DatabaseConnPtr dbconn, const int ship);
 
 };
 

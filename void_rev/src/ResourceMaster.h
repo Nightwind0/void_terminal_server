@@ -6,8 +6,9 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <pqxx/pqxx>
 #include "Resource.h"
-#include "libpq-fe.h"
+
 
 #include "VoidServerThread.h"
 #include "Message.h"
@@ -35,14 +36,13 @@ class ResourceMaster
  public:
     static ResourceMaster * GetInstance();
 
-    void LoadEdge(int sector);
-
+    void LoadEdge(Sector sector);
     void SetInstanceName(const std::string& name);
     std::string GetInstanceName() const;
     std::string GetThreadSpawnerLocalSocketPath() const;
 
     void LoadEdges();
-    void SetDBConn(PGconn *dbconn);
+    void SetDatabaseConnectionString(const std::string& connection_string);
     void AddSocket(TCPSocketPtr s);
     void RemoveSocket(const TCPSocketPtr s);
 
@@ -52,8 +52,8 @@ class ResourceMaster
     std::string GetDatabaseName() const;
     void SetDatabaseName(const std::string& str);
 
+    std::unique_ptr<pqxx::connection_base> CreateDatabaseConnection();
 
-//    SerialObject *GetHandle(RESOURCE_TYPE type, const PrimaryKey &key, 
 
     void RegisterResource(ResourceType type, const PrimaryKey &key);
     void ReleaseResource(ResourceType type, const PrimaryKey &key);
@@ -79,40 +79,35 @@ class ResourceMaster
     std::string GetConfig(const std::string &key);
 
 
-    std::vector<int>::iterator GetEdgesBegin(int sector);
-    std::vector<int>::iterator GetEdgesEnd(int sector);
+    std::vector<Sector>::iterator GetEdgesBegin(int sector);
+    std::vector<Sector>::iterator GetEdgesEnd(int sector);
 
 
-    void Log(LOG_SEVERITY severity, std::string message); // TODO: Would also like to know which thread, player, etc
+    void Log(LOG_SEVERITY severity, const std::string& message); // TODO: Would also like to know which thread, player, etc
 
  private:
-
+    ResourceMaster();
+    static ResourceMaster * m_instance;
+    
+    void create_prepared_statements();
     std::string m_instance_name;
-
+    std::string m_dbconn_string;
     std::map<std::string,const VoidServerThread*> m_playermap;
     std::map<std::string,std::string> m_socketnames;
-    static ResourceMaster * m_instance;
-
-    std::map<int,std::vector<int> > m_edges;
+    std::map<Sector,std::vector<Sector> > m_edges;
     std::vector<TCPSocketPtr> m_sockets;
-
-    std::map<std::string,Resource*> m_resources;
-
+    std::map<std::string,ResourcePtr> m_resources;
     std::vector<VoidServerThread*> m_threads;
-    PGconn * m_dbconn;
-    ResourceMaster();
-    PGconn * GetDBConn();
+    std::shared_ptr<pqxx::connection> m_dbconn;
 
-    Mutex m_dbmutex;
     Mutex m_threadmutex;
     Mutex m_edgemutex;
     Mutex m_socketmutex;
 
     std::string m_dbname;
 
-    void LoadSector(int i);
+    void LoadSector(Sector i);
 
-    
 };
 
 

@@ -11,7 +11,7 @@
 class SentinelTools : public ToolSet
 {
 public:
-    SentinelTools(PGconn * dbconn, DatagramSocketPtr pSocket);
+    SentinelTools(DatabaseConnPtr dbconn, DatagramSocketPtr pSocket);
     virtual ~SentinelTools();
 
 

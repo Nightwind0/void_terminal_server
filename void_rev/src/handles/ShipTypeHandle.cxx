@@ -115,17 +115,14 @@ std::string ShipTypeHandle::GetManufacturerName()
 
     std::string query = "SELECT sname FROM SHIPMANUFACTURER WHERE nkey = '" + GetManufacturer().GetAsString() + "';";
 
-    PGresult *dbresult;
+    pqxx::work work{*m_dbconn};
+    pqxx::result dbresult = work.exec(query);
 
-    dbresult = PQexec(m_dbconn, query.c_str());
+    m_manufacturer = dbresult[0][0].as<std::string>();
 
-    m_manufacturer = PQgetvalue(dbresult,0,0);
-
-    PQclear(dbresult);
+    work.commit();
 
     return m_manufacturer;
-
-    
 }
 
 std::string ShipTypeHandle::GetShipTypeName(std::shared_ptr<ColorType> color)

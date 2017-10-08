@@ -5,10 +5,8 @@
 #include <cmath>
 #include <algorithm>
 
-#define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
 
-
-const char * OutpostHandle::FIELD_NAMES[] = {"sname","ksector","bspecial","bbuyplasma","bbuymetals","bbuycarbon","kdiscoverer","klastvisitor","ndaystocompletion","dlastvisit", "fplasmaprice","fmetalsprice","fcarbonprice"};
+const std::string OutpostHandle::FIELD_NAMES[] = {"sname","ksector","bspecial","bbuyplasma","bbuymetals","bbuycarbon","kdiscoverer","klastvisitor","ndaystocompletion","dlastvisit", "fplasmaprice","fmetalsprice","fcarbonprice"};
 
 
 //  enum FIELDS{NAME,SECTOR,SPECIAL,BUYPLASMA,BUYMETALS,BUYCARBON,BUYRATE,SELLRATE,DISCOVERER,LASTVISITOR,DAYSTOCOMPLETION, LASTVISIT
@@ -82,17 +80,17 @@ Float OutpostHandle::GetCarbonPrice() const
 #if 1 
 void OutpostHandle::SetMetalsPriceMultiplier(double price)
 {
-    SetField(METALSPRICE, new Float(GetFieldName(METALSPRICE),DoubleToString(price)));
+    SetField(METALSPRICE, std::make_shared<Float>(GetFieldName(METALSPRICE),DoubleToString(price)));
 }
 
 void OutpostHandle::SetPlasmaPriceMultiplier(double price)
 {
-    SetField(PLASMAPRICE, new Float(GetFieldName(PLASMAPRICE),DoubleToString(price)));
+    SetField(PLASMAPRICE, std::make_shared<Float>(GetFieldName(PLASMAPRICE),DoubleToString(price)));
 }
 
 void OutpostHandle::SetCarbonPriceMultiplier(double price)
 {
-    SetField(CARBONPRICE, new Float(GetFieldName(CARBONPRICE),DoubleToString(price)));
+    SetField(CARBONPRICE, std::make_shared<Float>(GetFieldName(CARBONPRICE),DoubleToString(price)));
 }
 #endif
 
@@ -104,19 +102,19 @@ Boolean OutpostHandle::IsSpecial()const
 
 void OutpostHandle::SetDiscoverer(const std::string &discoverer)
 {
-        SetField(DISCOVERER, new Text(GetFieldName(DISCOVERER),discoverer));
+        SetField(DISCOVERER, std::make_shared<Text>(GetFieldName(DISCOVERER),discoverer));
 }
 void OutpostHandle::SetLastVisitor(const std::string &visitor)
 {
-    SetField(LASTVISITOR, new Text(GetFieldName(LASTVISITOR),visitor));
+    SetField(LASTVISITOR, std::make_shared<Text>(GetFieldName(LASTVISITOR),visitor));
 }
 void OutpostHandle::SetDaysToCompletion(const int days)
 {
-    SetField(DAYSTOCOMPLETION, new Integer(GetFieldName(DAYSTOCOMPLETION),IntToString(days)));
+    SetField(DAYSTOCOMPLETION, std::make_shared<Integer>(GetFieldName(DAYSTOCOMPLETION),IntToString(days)));
 }
 void OutpostHandle::SetLastVisit(const std::string &ts  )
 {
-    SetField(LASTVISIT, new Timestamp(GetFieldName(LASTVISIT),ts));
+  SetField(LASTVISIT, std::make_shared<Timestamp>(GetFieldName(LASTVISIT),ts));
 }
 
 double OutpostHandle::GetBuyRateAfterTime(unsigned int minutes, double current_price)

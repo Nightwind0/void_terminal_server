@@ -19,7 +19,11 @@ endif()
 set(PostgreSQL_ADDITIONAL_VERSIONS "9.5.8")
 find_package(PostgreSQL REQUIRED)
 
-INCLUDE_DIRECTORIES(${PostgreSQL_INCLUDE_DIRS} src src/commands src/thread src/commands/computer src/commands/dock src/commands/behavior src/tools src/handles src/thread src/socket src/commands/behaviors/)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(PQXX REQUIRED libpqxx)
+
+
+INCLUDE_DIRECTORIES(${PostgreSQL_INCLUDE_DIRS} ${LIBPQXX_INCLUDE_DIRS} src src/commands src/thread src/commands/computer src/commands/dock src/commands/behavior src/tools src/handles src/thread src/socket src/commands/behaviors/)
 
 # Executables
 
@@ -170,5 +174,5 @@ target_include_directories(
     src
 )
 
-target_link_libraries(void PUBLIC ${PostgreSQL_LIBRARIES} pthread)
+target_link_libraries(void PUBLIC ${PostgreSQL_LIBRARIES}  ${PQXX_LIBRARIES} pthread)
 

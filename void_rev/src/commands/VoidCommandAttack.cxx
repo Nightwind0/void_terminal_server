@@ -13,7 +13,7 @@
 using std::min;
 
 
-VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDBConn(), thread->GetLocalSocket()), m_ship_tools(thread->GetDBConn()),m_sentinel_tools(thread->GetDBConn(),thread->GetLocalSocket())
+VoidCommandAttack::VoidCommandAttack(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDatabaseConn(), thread->GetLocalSocket()), m_ship_tools(thread->GetDatabaseConn()),m_sentinel_tools(thread->GetDatabaseConn(),thread->GetLocalSocket())
 {
 }
 VoidCommandAttack::~VoidCommandAttack()
@@ -127,17 +127,14 @@ bool VoidCommandAttack::CommandAttack(int othership)
     bool fedterritory = false;
 
     /// @todo make a GetTerritory(int sector) method somewhere
-    std::string checkterritory = "select kterritory from sectors where nsector = '" + IntToString(cursector) + "';";
+    std::string checkterritory = "select kterritory from sectors where nsector = " + IntToString(cursector) + ";";
 
-    PGresult *checktresult = get_thread()->DBExec(checkterritory);
+    pqxx::result result = get_thread()->DBExec(checkterritory);
 
-    if(!PQgetisnull(checktresult,0,0) && atoi(PQgetvalue(checktresult,0,0)) == 0) ///@todo get from config table
+    if(!result[0][0].is_null() && result[0][0].as<int>() == 0) ///@todo get from config table
     {
 	fedterritory = true;
     }
-
-    PQclear(checktresult);
-
 
     if(fedterritory)
     {
@@ -151,30 +148,20 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
     Send(Color()->get(YELLOW) + "Engaging with ship " + IntToString(othership) + endr);
 
-    std::string shipquery = "select s.nmissiles, s.nshields, t.nmaxattack, t.nkey , t.nmaxshields, s.sname, s.nkey from ship s, shiptype t where t.nkey = s.ktype and  s.nkey = '" + IntToString(ship->GetNkey())
-	+ "';";
+    std::string shipquery = "select s.nmissiles, s.nshields, t.nmaxattack, t.nkey , t.nmaxshields, s.sname, s.nkey from ship s, shiptype t where t.nkey = s.ktype and  s.nkey = " + IntToString(ship->GetNkey())
+	+ ';';
     
-    PGresult *dbresult = get_thread()->DBExec(shipquery);
+    pqxx::result dbresult = get_thread()->DBExec(shipquery);
     
-    int missiles = atoi(PQgetvalue(dbresult,0,0));
-    int shields = atoi(PQgetvalue(dbresult,0,1));
-    int maxattack = atoi(PQgetvalue(dbresult,0,2));
-    int shiptype = atoi(PQgetvalue(dbresult,0,3));
-    int maxshields = atoi(PQgetvalue(dbresult,0,4));
-    std::string shipname = PQgetvalue(dbresult,0,5);
-    int shipn = atoi(PQgetvalue(dbresult,0,6));
+    int missiles = dbresult[0][0].as<int>();
+    int shields = dbresult[0][1].as<int>();
+    int maxattack = dbresult[0][2].as<int>();
+    int shiptype = dbresult[0][3].as<int>();
+    int maxshields = dbresult[0][4].as<int>();
+    std::string shipname = dbresult[0][5].as<std::string>();
+    int shipn = dbresult[0][6].as<int>();
     
     
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    PQclear(dbresult);    
-
     if(missiles < 1)
     {
 	Send(Color()->get(RED) + "You have no more missiles." + endr);
@@ -187,42 +174,31 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	" s.sname from ship s, shiptype t where s.ksector = '" + IntToString(cursector)
 	+ "' and s.nkey = '" + IntToString(othership) + "' and s.ktype = t.nkey;";
     
-    Integer othershipi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(othership));
-    PrimaryKey key(&othershipi);
-    ShipHandlePtr othershiph = std::make_shared<ShipHandle>(get_thread()->GetDBConn(),key);
+    std::shared_ptr<Integer> othershipi = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(othership));
+    PrimaryKey key(othershipi);
+    ShipHandlePtr othershiph = std::make_shared<ShipHandle>(get_thread()->GetDatabaseConn(),key);
 	
     dbresult = get_thread()->DBExec(othershipquery);
-  
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-    
-    if(PQntuples(dbresult) < 1)
+      
+    if(dbresult.size() < 1)
     {
 	Send(Color()->get(RED) + "That ship is not in this sector." + endr);
-	PQclear(dbresult);
 	return true; 
     }
     
-    int omissiles = atoi(PQgetvalue(dbresult,0,0));
-    int omaxattack = atoi(PQgetvalue(dbresult,0,1));
-    int oshields = atoi(PQgetvalue(dbresult,0,2));
-    std::string oplayer = PQgetvalue(dbresult,0,3);
-    int oshiptype = atoi(PQgetvalue(dbresult,0,4));
-    int omaxshields = atoi(PQgetvalue(dbresult,0,5));
-    std::string oshipname = PQgetvalue(dbresult,0,6);
+    int omissiles = dbresult[0][0].as<int>();
+    int omaxattack = dbresult[0][1].as<int>();
+    int oshields = dbresult[0][2].as<int>();
+    std::string oplayer = dbresult[0][3].as<std::string>();
+    int oshiptype = dbresult[0][4].as<int>();
+    int omaxshields = dbresult[0][5].as<int>();
+    std::string oshipname = dbresult[0][6].as<std::string>();
     bool targetdestroyed = false;
     
-    PQclear(dbresult);
-    
-    Text namet(PlayerHandle::FieldName(PlayerHandle::NAME),oplayer);
-    PrimaryKey okey(&namet);
+    std::shared_ptr<Text> namet = std::make_shared<Text>(PlayerHandle::FieldName(PlayerHandle::NAME),oplayer);
+    PrimaryKey okey(namet);
 
-    PlayerHandlePtr otherplayer = std::make_shared<PlayerHandle>(get_thread()->GetDBConn(), okey, true);
+    PlayerHandlePtr otherplayer = std::make_shared<PlayerHandle>(get_thread()->GetDatabaseConn(), okey, true);
  
     bool bplayerinship =  (otherplayer->GetCurrentShip() == othership);
     int nm = PromptNumberOfMissiles(maxattack,missiles);
@@ -423,3 +399,4 @@ bool VoidCommandAttack::CommandAttack(int othership)
     // Send message to player in case they are online, notifying of the kill
     // log event
     
+

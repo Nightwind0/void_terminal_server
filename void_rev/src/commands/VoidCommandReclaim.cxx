@@ -7,7 +7,7 @@
 #include "PlayerHandle.h"
 #include <sstream>
 
-VoidCommandReclaim::VoidCommandReclaim(VoidServerThread *thread):VoidCommand(thread),m_sentinel_tools(thread->GetDBConn(), thread->GetLocalSocket())
+VoidCommandReclaim::VoidCommandReclaim(VoidServerThread *thread):VoidCommand(thread),m_sentinel_tools(thread->GetDatabaseConn(), thread->GetLocalSocket())
 {
 }
 VoidCommandReclaim::~VoidCommandReclaim()

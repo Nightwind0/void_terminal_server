@@ -55,25 +55,14 @@ std::list<int> VoidCommandTow::GetValidShipList(int cur_sector, int cur_ship)
     std::string query = "select nkey from ship where ksector = '" + IntToString(cur_sector)
 	+ "' and kowner = '" + player->GetName().GetAsString() + "' and nkey != '" + IntToString(cur_ship) + "' and (bcloaked != 'T' or bcloaked is null);";
 
-    PGresult * dbresult = get_thread()->DBExec(query);
+    pqxx::result dbresult = get_thread()->DBExec(query);
+    int numships = dbresult.size();
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    for(auto row : dbresult)
     {
-	
-	DBException e(std::string("Get Ships to tow: ") +  PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
-	throw e;
+      valid_ships.push_back(row[0].as<int>());
     }
 
-    int numships = PQntuples(dbresult);
-
-    for(int i=0;i<numships;i++)
-    {
-	valid_ships.push_back( atoi(PQgetvalue(dbresult,i,0)));
-    }
-
-
-    PQclear(dbresult);
 
     return valid_ships;
 
@@ -135,9 +124,9 @@ bool VoidCommandTow::CommandTow(const std::string &arguments)
 
     Send(Color()->get(GREEN) + std::string(endr) + "You are now towing." + endr);
     
-    Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipdestnum));
-    PrimaryKey key(&towship);
-    ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
+    std::shared_ptr<Integer> towship = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipdestnum));
+    PrimaryKey key(towship);
+    ShipHandle towshiphandle(get_thread()->GetDatabaseConn(),key);
     ShipTypeHandlePtr tsthandle= towshiphandle.GetShipTypeHandle();
 
     tps += tsthandle->GetTurnsPerSector();

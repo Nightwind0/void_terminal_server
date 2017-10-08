@@ -1,4 +1,3 @@
-
 #include "EdgeLoadThread.h"
 #include "ResourceMaster.h"
 #include "Universe.h"
@@ -10,52 +9,30 @@
 #include <unistd.h>
 
 
-void EdgeLoadThread::OpenDataBaseConnection()
-{
-    m_dbconn = PQsetdbLogin(NULL,NULL,NULL,NULL,"void","void","tiTVPok?");
-
-
-    if(PQstatus(m_dbconn) == CONNECTION_BAD)
-    {
-	std::cerr << PQerrorMessage(m_dbconn) << std::endl;
-
-	throw DBException(PQerrorMessage(m_dbconn));
-    }
-}
-
-void EdgeLoadThread::CloseDataBaseConnection()
-{
-    PQfinish(m_dbconn);
-}
-
 
 bool EdgeLoadThread::thread_init()
 {
-    OpenDataBaseConnection();
+  std::string sockname = "/tmp/void-edgeloader-" + ResourceMaster::GetInstance()->GetInstanceName();
+  unlink(sockname.c_str());
 
-    std::string sockname = "/tmp/void-edgeloader" ;
-    unlink(sockname.c_str());
+  m_usocket = std::make_shared<UNIXDatagramSocket>(sockname);
+  
+  m_usocket->Create();
+  m_usocket->Bind(0,sockname);
+  
 
-    m_usocket = std::make_shared<UNIXDatagramSocket>(sockname);
-
-    m_usocket->Create();
-    m_usocket->Bind(0,sockname);
-
-
-    return true;
+  return true;
 }
 bool EdgeLoadThread::run()
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
-
-    int sectorcount = Universe::GetNumSectors(m_dbconn);
+    std::unique_ptr<pqxx::connection_base> conn = RM->CreateDatabaseConnection();
+    size_t sectorcount = Universe::GetNumSectors(*conn);
 
     for(int i =0; i < sectorcount; i++)
     {
 	RM->LoadEdge(i);
     }
-
-
 
 
     MessagePtr message = std::make_shared<Message>();
@@ -68,7 +45,5 @@ bool EdgeLoadThread::run()
 }
 void  EdgeLoadThread::thread_destroy()
 {
-    CloseDataBaseConnection();
-
     m_usocket->Close();
 }

@@ -78,23 +78,13 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
 
     std::string query = "select sname from territory,sectors where sectors.kterritory = territory.nkey and sectors.nsector = '" + IntToString(sector) + "';";
 
-    PGresult * dbresult = get_thread()->DBExec(query);
-    ResultGuard rg(dbresult);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	throw e;
-    }
-
-
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
     ResourceMaster::GetInstance()->Log(AUDIT, "^Displaying sector^");
     os << Color()->get(LIGHTGREEN) << endr <<  "Sector " << Color()->get(WHITE) << sector;
-    if(PQntuples(dbresult) && !PQgetisnull(dbresult,0,0))
+    if(dbresult.size() > 0 && !dbresult[0][0].is_null())
     {
-	os << Color()->get(GRAY) << ' ' <<  PQgetvalue(dbresult,0,0);
+      os << Color()->get(GRAY) << ' ' <<  dbresult[0][0].as<std::string>();
     }
 
     os << endr;
@@ -138,30 +128,18 @@ std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
     
     std::string query = "select bstardock,sstardockname from sectors where nsector = '" + IntToString(sector) + "';";
 
-    PGresult *dbresult;
-    dbresult = get_thread()->DBExec(query);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
-	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-
-    Boolean has_stardock("bstardock", PQgetvalue(dbresult,0,0), PQgetisnull(dbresult,0,0));
+    Boolean has_stardock("bstardock", dbresult[0][0].as<std::string>(), dbresult[0][0].is_null());
 
     if((bool)has_stardock)
     {
-	Text stardock("sstardockname",PQgetvalue(dbresult,0,1), PQgetisnull(dbresult,0,1));
-	os << Color()->get(GREEN) << "Stardock: " << Color()->get(WHITE) << (std::string)stardock << endr;
+      Text stardock("sstardockname",dbresult[0][1].as<std::string>(), dbresult[0][1].is_null());
+      os << Color()->get(GREEN) << "Stardock: " << Color()->get(WHITE) << (std::string)stardock << endr;
     }
 
-    PQclear(dbresult);
     return os.str();
-
-
 }
  
 
@@ -177,18 +155,9 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
     shipquery +=" and (p.sname = s.kowner) order by s.nkey;";
 
 
-    PGresult *dbresult = get_thread()->DBExec(shipquery);
+    pqxx::result dbresult = get_thread()->DBExec(shipquery);
 
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    int numships = PQntuples(dbresult);
+    int numships = dbresult.size();
 
 
     if(numships)
@@ -196,23 +165,23 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 	os << Color()->get(GREEN) << "Ships:" << endr;
     }
 
-    for(int i=0;i<numships;i++)
+    for(auto row : dbresult)
     {
 	
-	int ship = atoi(PQgetvalue(dbresult,i,0));
+      int ship = row[0].as<int>();
 
-	int shields = atoi(PQgetvalue(dbresult,i,11));
-	int maxshields = atoi(PQgetvalue(dbresult,i,12));
-	double percent =(double) shields / (double)maxshields;
+      int shields = row[11].as<int>();
+      int maxshields = row[12].as<int>();
+      double percent =(double) shields / (double)maxshields;
  
-	int pc = truncf(percent * 10) * 10;
+      int pc = truncf(percent * 10) * 10;
 
 	
 
 	os << '\t' << Color()->get(GREEN) << '[' << Color()->get(WHITE) << ship << Color()->get(GREEN) << ']';
-	os << ' ' << Color()->get(LIGHTBLUE) << PQgetvalue(dbresult,i,1) << ' ';
-	os << Color()->get((FGColor)atoi(PQgetvalue(dbresult,i,5)),(BGColor)atoi(PQgetvalue(dbresult,i,6))) << PQgetvalue(dbresult,i,2) <<' ' <<  PQgetvalue(dbresult,i,3) << Color()->get(GREEN);
-	os << " w/" << Color()->get(WHITE) << atoi(PQgetvalue(dbresult,i,4)) << Color()->get(GREEN) << " missiles ";
+	os << ' ' << Color()->get(LIGHTBLUE) << row[1].as<std::string>() << ' ';
+	os << Color()->get((FGColor)row[5].as<int>(),(BGColor)row[6].as<int>()) << row[2].as<std::string>() <<' ' <<  row[3].as<std::string>() << Color()->get(GREEN);
+	os << " w/" << Color()->get(WHITE) << row[4].as<int>() << Color()->get(GREEN) << " missiles ";
 	os << Color()->get(LIGHTPURPLE) << '(' << Color()->get(GRAY) << pc << '%' << Color()->get(LIGHTPURPLE) << ')' << Color()->get(GREEN) + " shields " <<  endr;
 
 	PlayerHandlePtr player = create_handle_to_player_in_ship(ship);
@@ -251,7 +220,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 */
 
 
-	if(PQgetisnull(dbresult,i,9) || std::string(PQgetvalue(dbresult,i,9)) != "t")
+	if(row[9].is_null() || row[9].as<std::string>() != "t")
 	{
 	    os << Color()->get(LIGHTCYAN);
 	}
@@ -261,19 +230,17 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 	    os << Color()->get(LIGHTPURPLE);
 	}
 	
-	os << PQgetvalue(dbresult,i,8);
+	os << row[9].as<std::string>();
 	
-	if(!PQgetisnull(dbresult,i,10))
+	if(!row[10].is_null())
 	{
-	    os << Color()->get(GRAY) << " {" << Color()->get(RED) <<  PQgetvalue(dbresult,i,10) << Color()->get(GRAY) << '}';
+	  os << Color()->get(GRAY) << " {" << Color()->get(RED) <<  row[10].as<std::string>() << Color()->get(GRAY) << '}';
 	}
 	os << endr;
 	
 	    
     }
-    
-    
-    PQclear(dbresult);
+
        
     os << endr;
 
@@ -286,94 +253,77 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
 
     std::ostringstream os;
     std::string outpostquery = "select sname, bbuyplasma, bbuymetals, bbuycarbon, fplasmaprice, fmetalsprice,fcarbonprice, floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60) from Outpost where ksector = " + IntToString(sector) + ";";
-    PGresult *dbresult;
 
-    dbresult = get_thread()->DBExec(outpostquery);
-    ResultGuard rg(dbresult);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	DBException e("Display outpost error: " + std::string(PQresultErrorMessage(dbresult)));
-	throw e;
-    }
+    pqxx::result dbresult = get_thread()->DBExec(outpostquery);
 
-    int numoutposts = PQntuples(dbresult);
+    int numoutposts = dbresult.size();
 
 
     if(numoutposts == 0 ) return "";
 
     os << Color()->get(GREEN) << "Outposts:" << endr;
 
-    for(int i=0; i < numoutposts; i++)
+    for(auto row : dbresult)
     {
-	os << '\t' << Color()->get(LIGHTPURPLE) << PQgetvalue(dbresult,i,0);
-	os << Color()->get(WHITE) << " (";
+      os << '\t' << Color()->get(LIGHTPURPLE) << row[0].as<std::string>();
+      os << Color()->get(WHITE) << " (";
 
-	int minutes = atoi(PQgetvalue(dbresult,i,7));
-
-
-
-	Boolean buyplasma("bbuyplasma", PQgetvalue(dbresult,i,1), PQgetisnull(dbresult,i,1));
-	Boolean buymetals("bbuymetals", PQgetvalue(dbresult,i,2), PQgetisnull(dbresult,i,2));
-	Boolean buycarbon("bbuycarbon", PQgetvalue(dbresult,i,3), PQgetisnull(dbresult,i,3));
-
-	const double plasmapricemult = atof(PQgetvalue(dbresult,i,4));
-	const double metalspricemult = atof(PQgetvalue(dbresult,i,5));
-	const double carbonpricemult = atof(PQgetvalue(dbresult,i,6));
-
-	const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
-	const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
-	const int base_carbon_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_carbon_price"));
-	const double plasmaprice = double(base_plasma_price) * plasmapricemult;
-	const double metalsprice = double(base_metals_price) * metalspricemult;
-	const double carbonprice = double(base_carbon_price) * carbonpricemult;
+      int minutes = row[7].as<int>();
 
 
-	if(buyplasma.GetValue())
-	{
-	    os << Color()->get(LIGHTBLUE) << 'B' ;
-	    os << (int) round( OutpostHandle::GetBuyRateAfterTime(minutes,plasmaprice));
-	    os << ',';
-	}
-	else 
-	{
-	    os << Color()->get(LIGHTCYAN) << 'S' ;
-	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,plasmaprice));
-	    os << ',';
-	}
+
+      Boolean buyplasma("bbuyplasma", row[1].as<std::string>(), row[1].is_null());
+      Boolean buymetals("bbuymetals", row[2].as<std::string>(), row[2].is_null());
+      Boolean buycarbon("bbuycarbon", row[3].as<std::string>(), row[3].is_null());
+
+      const double plasmapricemult = row[4].as<double>();
+      const double metalspricemult = row[5].as<double>();
+      const double carbonpricemult = row[6].as<double>();
+
+      const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
+      const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
+      const int base_carbon_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_carbon_price"));
+      const double plasmaprice = double(base_plasma_price) * plasmapricemult;
+      const double metalsprice = double(base_metals_price) * metalspricemult;
+      const double carbonprice = double(base_carbon_price) * carbonpricemult;
+      
+
+      if(buyplasma.GetValue()) {
+	  os << Color()->get(LIGHTBLUE) << 'B' ;
+	  os << (int) round( OutpostHandle::GetBuyRateAfterTime(minutes,plasmaprice));
+	  os << ',';
+      } else {
+	os << Color()->get(LIGHTCYAN) << 'S' ;
+	os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,plasmaprice));
+	os << ',';
+      }
+      
+      
+      if(buymetals.GetValue()) {
+	os << Color()->get(LIGHTBLUE) << 'B';
+	os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,metalsprice));
+	os << ',';
+      } else {
+	os << Color()->get(LIGHTCYAN) << 'S' ;
+	os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,metalsprice));
+	os << ',';
+      }
 
 
-	if(buymetals.GetValue())
-	{
-	    os << Color()->get(LIGHTBLUE) << 'B';
-	    os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,metalsprice));
-	    os << ',';
-	}
-	else
-	{
-	    os << Color()->get(LIGHTCYAN) << 'S' ;
-	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,metalsprice));
-	    os << ',';
-	}
-
-
-	if(buycarbon.GetValue())
-	{
-	    os << Color()->get(LIGHTBLUE) << 'B';
-	    os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,carbonprice));
-	}
-	else 
-	{
-	    os << Color()->get(LIGHTCYAN) << 'S';
-	    os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,carbonprice));
-	}
-	
-	os << Color()->get(WHITE) << ')' << endr;
-
+      if(buycarbon.GetValue()) {
+	os << Color()->get(LIGHTBLUE) << 'B';
+	os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,carbonprice));
+      } else {
+	os << Color()->get(LIGHTCYAN) << 'S';
+	os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,carbonprice));
+      }
+      
+      os << Color()->get(WHITE) << ')' << endr;
+      
     }
 
     return os.str();
-
 }
 
 std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
@@ -381,17 +331,9 @@ std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
     std::string query = "select ncount, kplayer, player.kalliance from sentinels, player where sentinels.kplayer = player.sname and sentinels.ksector = '" +
 	IntToString(sector) + "';";
 
-    PGresult *dbresult =get_thread()->DBExec(query);
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Display sentinels error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    int groups = PQntuples(dbresult);
+    int groups = dbresult.size();
 
     if(groups == 0) return "";
 
@@ -399,29 +341,26 @@ std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
 
     os << Color()->get(GREEN) << "Sentinels:" << endr;
 
-    for(int i = 0; i < groups; i++)
+    for(auto row : dbresult)
     {
-	std::string count  = PQgetvalue(dbresult,i,0);
-	std::string player = PQgetvalue(dbresult,i,1);
+      std::string count  = row[0].as<std::string>();
+      std::string player = row[1].as<std::string>();
+      
+      os << '\t' << Color()->get(WHITE) << count << Color()->get(BROWN) << " sentinel(s) owned by " <<
+	Color()->get(LIGHTCYAN) << player;
+      
+      if(row[2].is_null()){
 	
-	os << '\t' << Color()->get(WHITE) << count << Color()->get(BROWN) << " sentinel(s) owned by " <<
-	    Color()->get(LIGHTCYAN) << player;
+	os << endr;
+      }	else {
 	
-	if(PQgetisnull(dbresult,i,2))
-	{
-	    os << endr;
-	}
-	else
-	{
-	    os << Color()->get(WHITE) << " {" << Color()->get(RED) << PQgetvalue(dbresult,i,2) << 
-		Color()->get(WHITE) << "} " << endr;
-	}
+	os << Color()->get(WHITE) << " {" << Color()->get(RED) << row[2].as<std::string>() << 
+	  Color()->get(WHITE) << "} " << endr;
+      }
 
 	     
     }
 
     return os.str();
 
-
-    
 }

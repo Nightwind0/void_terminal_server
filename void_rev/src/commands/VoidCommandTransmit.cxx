@@ -57,21 +57,12 @@ std::list<std::string> VoidCommandTransmit::get_players_in_sector(int sector)
     std::string query = "select player.sname from player,ship where (bmob = 'F' or bmob is null) and ship.ksector = '" + IntToString(sector)
 	+  "' and player.kcurrentship = ship.nkey;";
 
-    PGresult *dbresult = get_thread()->DBExec(query);
-    ResultGuard rg(dbresult);
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
+    int numplayers = dbresult.size();
 
-	DBException e("Get players in sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	throw e;
-    }
-
-    int numplayers = PQntuples(dbresult);
-
-    for(int i=0;i<numplayers;i++)
-    {
-	playerlist.push_back(PQgetvalue(dbresult,i,0));
+    for(auto row : dbresult) {
+	playerlist.push_back(row[0].as<std::string>());
     }
 
 

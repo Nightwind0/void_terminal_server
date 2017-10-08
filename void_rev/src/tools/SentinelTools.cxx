@@ -1,7 +1,7 @@
 #include "SentinelTools.h"
 #include "ResourceMaster.h"
 
-SentinelTools::SentinelTools(PGconn *dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_comm_tools(dbconn,pSocket)
+SentinelTools::SentinelTools(DatabaseConnPtr dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_comm_tools(dbconn,pSocket)
 {
 }
 
@@ -13,18 +13,7 @@ void SentinelTools::ClearZeroedSentinels()
 {
     std::string delete_stmt = "delete from sentinels where ncount = 0;";
     
-    PGresult *dbresult = DBExec(delete_stmt);
-    
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
-    {
-	DBException e("DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-    
-    PQclear(dbresult );
-
-
+    DBExec(delete_stmt);
 }
 
 void SentinelTools::ReclaimAndReloadSentinels( int num, PlayerHandlePtr player, ShipHandlePtr pShip, int cursector )
@@ -33,17 +22,7 @@ void SentinelTools::ReclaimAndReloadSentinels( int num, PlayerHandlePtr player, 
     std::string stmt = "update sentinels set ncount = ncount - " + IntToString(num) + " where ksector = '" + IntToString(cursector)+ 
 	"' and kplayer = '" + (std::string)player->GetName() + "';";
 
-    PGresult * dbresult = DBExec(stmt);
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
-    {
-	DBException e("DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    PQclear(dbresult);
-
+    DBExec(stmt);
     ClearZeroedSentinels();
 
     pShip->Lock();
@@ -60,23 +39,16 @@ int SentinelTools::SentinelCapacity ( int sector )
 
     std::string sql = "select sum(ncount) from sentinels where ksector = '" + IntToString(sector) + "';";
 
-    PGresult * dbresult = DBExec(sql);
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK )
-    {
-	DBException e("DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result r = DBExec(sql);
 
     int present=0; 
 
-    if(PQntuples(dbresult) >0)
+    if(r.size() >0)
     {
 	// There already are some here.
-	present = atoi(PQgetvalue(dbresult,0,0));	
+      present = r[0][0].as<int>();
     }
 
-    PQclear(dbresult);
 
     return maximum - present;
 }
@@ -86,45 +58,26 @@ void SentinelTools::DeploySentinelsAndUnload(int num, PlayerHandlePtr pPlayer, S
     // At this level, "num" should be verified as acceptable
     std::string player = pPlayer->GetName();
 
-    std::string sql = "select ncount from sentinels where ksector = '" + IntToString ( sector )  + "' and kplayer = '" + PrepareForSQL(player) + "\';";
+    std::string sql = "select ncount from sentinels where ksector = '" + IntToString ( sector )  + "' and kplayer = " + GetDBConn()->quote(player) + ";";
 
-    PGresult * dbresult = DBExec(sql);
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK )
-    {
-	DBException e("DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
+    pqxx::result dbresult = DBExec(sql);
     std::string stmt = "";
 
-    if(PQntuples(dbresult) >0)
+    if(dbresult.size() >0)
     {
 	// There already are some here. Therefore, theres an entry to update.
-	int numsentinels = atoi(PQgetvalue(dbresult,0,0));	
+      int numsentinels = dbresult[0][0].as<int>();
 	
-    	numsentinels += num;
+      numsentinels += num;
 
-	stmt = "update sentinels set ncount = " + IntToString(numsentinels) + " where ksector = " + IntToString(sector) + " and kplayer = '" + player + "';";
+      stmt = "update sentinels set ncount = " + IntToString(numsentinels) + " where ksector = " + IntToString(sector) + " and kplayer = " + GetDBConn()->quote(player) + ";";
     }
     else
     {
 	// No entry exists. Create it.
-	stmt = "insert into sentinels (ksector,kplayer,ncount) values (" + IntToString(sector) + ",'" + player + "','" +  IntToString(num) + "');";
+      stmt = "insert into sentinels (ksector,kplayer,ncount) values (" + IntToString(sector) + "," + GetDBConn()->quote(player) + "," +  IntToString(num) + ");";
     }
     
-    // Clear last usage
-    PQclear(dbresult);
-    
-    dbresult = DBExec(stmt);
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK )
-    {
-	DBException e("DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    PQclear(dbresult);
     
     pFrom->Lock();
     int shipsentinels = pFrom->GetSentinels();
@@ -135,56 +88,37 @@ void SentinelTools::DeploySentinelsAndUnload(int num, PlayerHandlePtr pPlayer, S
 
 int SentinelTools::GetPersonalSentinelCount(const std::string &player, int cursector)
 {
-    std::string sentquery = "select sum(ncount) from sentinels where ksector = '" + IntToString(cursector) + "' and kplayer = '" + player 
-	+ "';";
+  std::string sentquery = "select sum(ncount) from sentinels where ksector = '" + IntToString(cursector) + "' and kplayer = " + GetDBConn()->quote(player) 
+	+ ";";
     
-    PGresult * dbresult = DBExec(sentquery);
-        
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	    
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-    
-    int numsentinels = 0;
-    
-    if(PQntuples(dbresult) >0)
-    {
-	numsentinels = atoi(PQgetvalue(dbresult,0,0));
-    }
-    
-    PQclear(dbresult);
+  pqxx::result dbresult = DBExec(sentquery);
 
-    return numsentinels;
+    
+  int numsentinels = 0;
+    
+  if(dbresult.size() >0){
+    numsentinels = dbresult[0][0].as<int>();
+  }
+  
+
+  return numsentinels;
 }
 
 
 int SentinelTools::GetApplicableSentinelCount(const std::string &target,int maxattack, int cursector)
 {
-    std::string sentquery = "select ncount from sentinels,player where ksector = '" + IntToString(cursector) + "' and (kplayer = '" + target 
-	+ "' or player.kalliance = (select kalliance from player where sname = '" + target + "'));";
+  std::string sentquery = "select ncount from sentinels,player where ksector = " + IntToString(cursector) + " and (kplayer = " + GetDBConn()->quote(target) 
+    + " or player.kalliance = (select kalliance from player where sname = " + GetDBConn()->quote(target) + "));";
     
-    PGresult * dbresult = DBExec(sentquery);
-        
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	    
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-    
-    int numsentinels = 0;
-    
-    if(PQntuples(dbresult) >0)
-    {
-	numsentinels = atoi(PQgetvalue(dbresult,0,0));
-    }
-    
-    PQclear(dbresult);
+  pqxx::result dbresult = DBExec(sentquery);
 
+    
+  int numsentinels = 0;
+  
+    if(dbresult.size() >0) {
+      numsentinels = dbresult[0][0].as<int>();
+    }
+    
     return std::min(numsentinels,maxattack);
 }
 void SentinelTools::LogSentinelDamage(const std::string &shipname, const std::string &attacker, int cursector)
@@ -214,53 +148,33 @@ int SentinelTools::InflictSentinelDamage(int numsentinels, ShipHandlePtr pTarget
 void SentinelTools::RemoveSentinels(int num, const std::string &player, int sector)
 {
     
-    std::string sentquery = "select ncount,sname from sentinels,player where ksector = '" + IntToString(sector) + "' and (player.sname = '" + player +
-	"' or player.kalliance = (select kalliance from player where sname = '"+player+"'));";
+  std::string sentquery = "select ncount,sname from sentinels,player where ksector = " + IntToString(sector) + " and (player.sname = " + GetDBConn()->quote(player) +
+    " or player.kalliance = (select kalliance from player where sname = "+GetDBConn()->quote(player)+"));";
     
     
-    PGresult * dbresult = DBExec(sentquery);
+  pqxx::result dbresult = DBExec(sentquery);
         
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	DBException e("Attack DB error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+  int entries = dbresult.size();
 
-    int entries = PQntuples(dbresult);
+  for(auto row: dbresult) {
+      std::string owner = row[1].as<std::string>();
+      int sentinels = row[0].as<int>();
 
-    for(int i = 0; i < entries; i++)
-    {
-	std::string owner = PQgetvalue(dbresult,i,1);
-	int sentinels = atoi(PQgetvalue(dbresult,i,0));
+      sentinels = std::min(sentinels,num);
 
-	sentinels = std::min(sentinels,num);
-
-	// Subtract from this one
-	std::string update = "update sentinels set ncount = ncount - " + IntToString(sentinels)
-	    + " where kplayer = '" + owner + "' and ksector = '"  + IntToString(sector) + "';";
+      // Subtract from this one
+      std::string update = "update sentinels set ncount = ncount - " + IntToString(sentinels)
+	+ " where kplayer = " + GetDBConn()->quote(owner) + " and ksector = "  + IntToString(sector) + ";";
 	
-	PGresult * updateresult = DBExec(update);
-	
-	if(PQresultStatus(updateresult) != PGRES_COMMAND_OK)
-	{
-		DBException e("DB error: " + std::string(PQresultErrorMessage(updateresult)));
-		PQclear(updateresult);
-		throw e;
-	}
+      pqxx::result updateresult = DBExec(update);
 
-	PQclear(updateresult);
-
-	num -= sentinels;
+      num -= sentinels;
 	
-	if(num == 0)
-	    break;
+      if(num == 0)
+	break;
        
-	
+      
     }
-
-    PQclear(dbresult);
 
     ClearZeroedSentinels();
-
 }

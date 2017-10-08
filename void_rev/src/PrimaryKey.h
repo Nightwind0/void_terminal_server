@@ -12,19 +12,19 @@
 class PrimaryKey
 {
  protected:
-    std::vector<Field*> m_fields;
+    std::vector<FieldPtr> m_fields;
     
 
  public:
     PrimaryKey();
-    PrimaryKey(Field *field);
-    PrimaryKey(Field *field1,Field *field2);
-    PrimaryKey(Field *field1, Field *field2, Field *field3);
+    PrimaryKey(FieldPtr field);
+    PrimaryKey(FieldPtr field1, FieldPtr field2);
+    PrimaryKey(FieldPtr field1, FieldPtr field2, FieldPtr field3);
     ~PrimaryKey();
     
-    void SetFields(const std::vector<Field*> &fields);
-    std::vector<Field*>::const_iterator GetFieldsBegin() const;
-    std::vector<Field*>::const_iterator GetFieldsEnd() const;
+    void SetFields(const std::vector<FieldPtr> &fields);
+    std::vector<FieldPtr>::const_iterator GetFieldsBegin() const;
+    std::vector<FieldPtr>::const_iterator GetFieldsEnd() const;
     int FieldCount()const;
    
     

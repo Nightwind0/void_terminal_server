@@ -13,7 +13,7 @@ using MessagePtr = std::shared_ptr<Message>;
 class CommTools : public ToolSet
 {
 public:
-    CommTools(PGconn *dbconn, DatagramSocketPtr pLocalSocket);
+    CommTools(DatabaseConnPtr dbconn, DatagramSocketPtr pLocalSocket);
     virtual ~CommTools();
     void SendMsgToSector( const std::string &str, int sec, const std::string &exceptplayer);
     std::list<std::string> get_players_in_sector(int sector);

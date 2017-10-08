@@ -2,7 +2,6 @@
 #define VOID_SHIPTYPE_HANDLE_H
 
 #include "SerialObject.h"
-#include <libpq-fe.h>
 #include "Resource.h"
 #include "PrimaryKey.h"
 #include <memory>
@@ -16,7 +15,7 @@ class ShipTypeHandle : public SerialObject
     std::string m_manufacturer;
 
  public:
-    ShipTypeHandle(PGconn *dbconn, const PrimaryKey &key):SerialObject(dbconn,key,false){}
+ ShipTypeHandle(DatabaseConnPtr dbconn, const PrimaryKey &key):SerialObject(dbconn,key,false){}
     ~ShipTypeHandle(){CloseDownObject();}
 
 
@@ -55,12 +54,7 @@ class ShipTypeHandle : public SerialObject
     std::string GetManufacturerName();
     std::string GetShipTypeName(std::shared_ptr<ColorType>  color);
     
-
-
     virtual std::string DBTable()const { return "ShipType";};
-
-
-
 };
 
 

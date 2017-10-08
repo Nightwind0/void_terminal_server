@@ -61,20 +61,9 @@ bool VoidCommandDock::HandleCommand(const string &command, const string &argumen
 
     std::string query = "select bstardock from sectors where nsector = '" + IntToString(sector) + "';";
 
-    PGresult *dbresult;
-    dbresult = get_thread()->DBExec(query);
+    pqxx::result dbresult = get_thread()->DBExec(query);
+    Boolean stardock("bstardock",dbresult[0][0].as<std::string>(), dbresult[0][0].is_null());
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    Boolean stardock("bstardock",PQgetvalue(dbresult,0,0), PQgetisnull(dbresult,0,0));
-
-    PQclear(dbresult);
 
     if(!(bool)stardock)
     {
@@ -139,18 +128,10 @@ void VoidCommandDock::DisplayIntro()const
 
     std::string query = "select sstardockname from sectors where nsector = '" + IntToString(sector) + "';";
 
-    PGresult *dbresult;
-    dbresult = get_thread()->DBExec(query);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
-	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    Text stardock("sstardockname",PQgetvalue(dbresult,0,0), PQgetisnull(dbresult,0,0));
+    Text stardock("sstardockname",dbresult[0][0].as<std::string>(), dbresult[0][0].is_null());
 
 
     get_thread()->SendClearScreen();
@@ -168,7 +149,7 @@ void VoidCommandDock::DisplayIntro()const
 
 
     //                ................................................................................
-    PQclear(dbresult);
+
     
 }
 

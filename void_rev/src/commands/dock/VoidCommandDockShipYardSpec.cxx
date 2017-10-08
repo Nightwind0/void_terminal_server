@@ -60,46 +60,40 @@ bool VoidCommandDockShipYardSpec::DockShipYardSpec(const string &arguments)
     
     std::string query = "select shiptype.nkey,shiptype.sname, nmaxmissiles,nmaxshields,nmaxattack,nmaxholds,ninitholds,nmaxsentinels,nmaxtrackers,nmaxmines,nmaxpeople,nmaxprobes,nturnspersector,bwarpdrive,bcloakable,banalyzer,nscandistance,ncost,  shipmanufacturer.sname, nforecolor, nbackcolor, ntransrange from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey and shiptype.nkey = '" + IntToString(shiptype) + "' order by shiptype.nkey;";
 
-    PGresult *dbresult= get_thread()->DBExec(query);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Spec ship error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
 
-    if(PQntuples(dbresult) != 1 || (shiptype == 0 && arguments != "0"))
+    if(dbresult.size() != 1 || (shiptype == 0 && arguments != "0"))
     {
 	Send(Color()->get(RED) + "Sorry, that is not a vaild ship number." + endr);
 	return false;
     }
+
+    auto shipinfo = dbresult[0];
         
-    std::string nkey = PQgetvalue(dbresult,0,0);
-    std::string name = PQgetvalue(dbresult,0,1);
-    int maxmissiles = atoi(PQgetvalue(dbresult,0,2));
-    int maxshields = atoi(PQgetvalue(dbresult,0,3));
-    int maxattack = atoi(PQgetvalue(dbresult,0,4));
-    int maxholds = atoi(PQgetvalue(dbresult,0,5));
-    int initholds = atoi(PQgetvalue(dbresult,0,6));
-    int maxsentinels = atoi(PQgetvalue(dbresult,0,7));
-    int maxtrackers = atoi(PQgetvalue(dbresult,0,8));
-    int maxmines = atoi(PQgetvalue(dbresult,0,9));
-    int maxpeople = atoi(PQgetvalue(dbresult,0,10));
-    int maxprobes = atoi(PQgetvalue(dbresult,0,11));
-    int tps = atoi(PQgetvalue(dbresult,0,12));
-    bool warpdrive = std::string(PQgetvalue(dbresult,0,13)) == "t";
-    bool cloakable = std::string(PQgetvalue(dbresult,0,14)) == "t";
-    bool analyzer = std::string(PQgetvalue(dbresult,0,15)) == "t";
-    int scandistance = atoi(PQgetvalue(dbresult,0,16));
-    int cost = atoi(PQgetvalue(dbresult,0,17));
-    std::string manufacturer = PQgetvalue(dbresult,0,18);
+    std::string nkey = shipinfo[0].as<std::string>();
+    std::string name = shipinfo[1].as<std::string>();
+    int maxmissiles = shipinfo[2].as<int>();
+    int maxshields = shipinfo[3].as<int>();
+    int maxattack = shipinfo[4].as<int>();
+    int maxholds = shipinfo[5].as<int>();
+    int initholds = shipinfo[6].as<int>();
+    int maxsentinels = shipinfo[7].as<int>();
+    int maxtrackers = shipinfo[8].as<int>();
+    int maxmines = shipinfo[9].as<int>();
+    int maxpeople = shipinfo[10].as<int>();
+    int maxprobes = shipinfo[11].as<int>();
+    int tps = shipinfo[12].as<int>();
+    bool warpdrive = shipinfo[13].as<std::string>() == "t";
+    bool cloakable = shipinfo[14].as<std::string>() == "t";
+    bool analyzer = shipinfo[15].as<std::string>() == "t";
+    int scandistance = shipinfo[16].as<int>();
+    int cost = shipinfo[17].as<int>();
+    std::string manufacturer = shipinfo[18].as<std::string>();
     
-    FGColor fgcolor = (FGColor)atoi(PQgetvalue(dbresult,0,19));
-    BGColor bgcolor = (BGColor)atoi(PQgetvalue(dbresult,0,20));
-    int transrange = atoi(PQgetvalue(dbresult,0,21));
+    FGColor fgcolor = (FGColor)shipinfo[19].as<int>();
+    BGColor bgcolor = (BGColor)shipinfo[20].as<int>();
+    int transrange = shipinfo[21].as<int>();
 
     Send(Color()->get(fgcolor,bgcolor) + 
 	 "                    " + manufacturer + ' ' + name + "                    " + Color()->blackout() + endr);
@@ -213,7 +207,7 @@ bool VoidCommandDockShipYardSpec::DockShipYardSpec(const string &arguments)
     Send(os.str());
     os.str("");
 
-    PQclear(dbresult);
+
 
     return true;
     

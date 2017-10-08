@@ -3,7 +3,7 @@
 
 
 #include "thread.h"
-#include "libpq-fe.h"
+#include <pqxx/pqxx>
 #include <vector>
 #include <string>
 #include "LoginHandle.h"
@@ -26,13 +26,11 @@ public:
     VoidServerThread(TCPSocketPtr socket);
     ~VoidServerThread();
 
-
-    PGconn * GetDBConn() const { return m_dbconn; }
 	
     PlayerHandlePtr GetPlayer()const;
     LoginHandlePtr  GetLogin()const;
-	
-    PGresult *DBExec(const std::string &sql);
+    DatabaseConnPtr GetDatabaseConn() const { return m_dbconn; }
+    pqxx::result DBExec(const std::string &sql);
 	
     bool PostCommand(const std::string &command, const std::string &arguments); 
 	
@@ -40,7 +38,6 @@ public:
     void SendClearScreen();
     void SendWordWrapped(const std::string &str, int screen_width);
     std::shared_ptr<ColorType> Color()const{ return m_pColor; }
-    //std::string Receive(bool block);
     std::string ReceiveLine();
 	
     UNIXDatagramSocketPtr GetLocalSocket() const { return m_unixsocket; }
@@ -55,7 +52,7 @@ protected:
     std::vector<std::shared_ptr<VoidCommand>> m_commandlist; 
     void add_command(std::shared_ptr<VoidCommand> pcmd);
     
-    PGconn *m_dbconn;
+    std::shared_ptr<pqxx::connection_base> m_dbconn;
     TCPSocketPtr m_socket;
     UNIXDatagramSocketPtr  m_unixsocket;
 

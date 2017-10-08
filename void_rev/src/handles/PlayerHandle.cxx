@@ -3,13 +3,11 @@
 #include "void_util.h"
 
 
-#define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
-//    enum FIELDS{NAME, LOGIN, ISMOB, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY}
 
 const char * PlayerHandle::FIELD_NAMES[] = {"sname","klogin","bmob","kmob","ncredits","nturnsleft","npoints","kalliance","kcurrentship", "dfirstplay", "dlastplay", "bdead"};
 
 
-PlayerHandle::PlayerHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew):SerialObject(dbconn,key,isnew)
+PlayerHandle::PlayerHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew):SerialObject(dbconn,key,isnew)
 {
  
   
@@ -23,29 +21,29 @@ std::string PlayerHandle::GetFieldName(int fieldnum)const
 void PlayerHandle::LoadFromDB()
 {
 
-    PGresult *dbresult;
-    std::string query = "select sname,klogin,bmob,kmob,ncredits,nturnsleft,npoints,kalliance,kcurrentship,dfirstplay,dlastplay from player where " + CreateWhereClause() + ";";
 
-    dbresult  = PQexec(m_dbconn,query.c_str());
+    std::string query = "select sname,klogin,bmob,kmob,ncredits,nturnsleft,npoints,kalliance,kcurrentship,dfirstplay,dlastplay from player where " + CreateWhereClause() + ";";
+    pqxx::work work{*m_dbconn};
+    pqxx::result r = work.exec(query);
     
-    if(PQntuples(dbresult) != 1)
+    if(r.size() != 1)
     {
 	throw DBException("PlayerHandle::LoadFromDB: ntuples != 1");
     }
 
 
-    m_fields[NAME] = new Text(FIELD_NAMES[NAME],PQgetvalue(dbresult,0,0),PQgetisnull(dbresult,0,0)?true:false);
-    m_fields[LOGIN] = new Text(FIELD_NAMES[LOGIN],PQgetvalue(dbresult,0,1),PQgetisnull(dbresult,0,1)?true:false);
-    m_fields[ISMOB] = new Boolean(FIELD_NAMES[ISMOB],PGV(dbresult,0,2));
-    m_fields[MOB] = new Text(FIELD_NAMES[MOB],PGV(dbresult,0,3));
-    m_fields[CREDITS] = new Integer(FIELD_NAMES[CREDITS],PGV(dbresult,0,4));
-    m_fields[TURNSLEFT] = new Integer(FIELD_NAMES[TURNSLEFT],PGV(dbresult,0,5));
-    m_fields[POINTS] = new Integer(FIELD_NAMES[POINTS],PGV(dbresult,0,6));
-    m_fields[ALLIANCE] = new Text(FIELD_NAMES[ALLIANCE],PGV(dbresult,0,7));
-    m_fields[CURRENTSHIP] = new Integer(FIELD_NAMES[CURRENTSHIP],PGV(dbresult,0,8));
-    m_fields[FIRSTPLAY] = new Timestamp(FIELD_NAMES[FIRSTPLAY],PGV(dbresult,0,9));
-    m_fields[LASTPLAY] = new Timestamp(FIELD_NAMES[LASTPLAY],PGV(dbresult,0,10));
-
+    m_fields[NAME] = std::make_shared<Text>(FIELD_NAMES[NAME],r[0][0].as<std::string>(), r[0][0].is_null());
+    m_fields[LOGIN] = std::make_shared<Text>(FIELD_NAMES[LOGIN],r[0][1].as<std::string>(), r[0][1].is_null());
+    m_fields[ISMOB] = std::make_shared<Boolean>(FIELD_NAMES[ISMOB],r[0][2].as<std::string>(), r[0][2].is_null());
+    m_fields[MOB] = std::make_shared<Text>(FIELD_NAMES[MOB],r[0][3].as<std::string>(), r[0][3].is_null());
+    m_fields[CREDITS] = std::make_shared<Integer>(FIELD_NAMES[CREDITS],r[0][4].as<std::string>(), r[0][4].is_null());
+    m_fields[TURNSLEFT] = std::make_shared<Integer>(FIELD_NAMES[TURNSLEFT],r[0][5].as<std::string>(), r[0][5].is_null());
+    m_fields[POINTS] = std::make_shared<Integer>(FIELD_NAMES[POINTS],r[0][6].as<std::string>(), r[0][6].is_null());
+    m_fields[ALLIANCE] = std::make_shared<Text>(FIELD_NAMES[ALLIANCE],r[0][7].as<std::string>(), r[0][7].is_null());
+    m_fields[CURRENTSHIP] = std::make_shared<Integer>(FIELD_NAMES[CURRENTSHIP],r[0][8].as<std::string>(), r[0][8].is_null());
+    m_fields[FIRSTPLAY] = std::make_shared<Timestamp>(FIELD_NAMES[FIRSTPLAY],r[0][9].as<std::string>(), r[0][9].is_null());
+    m_fields[LASTPLAY] = std::make_shared<Timestamp>(FIELD_NAMES[LASTPLAY],r[0][10].as<std::string>(), r[0][10].is_null());
+    work.commit();
 }
 
 Text PlayerHandle::GetName()const
@@ -105,107 +103,85 @@ Text PlayerHandle::GetAlliance()const
 
 void PlayerHandle::SetName(const std::string &name)
 {
-        SetField(NAME, new Text(GetFieldName(NAME),name));
+        SetField(NAME, std::make_shared<Text>(GetFieldName(NAME),name));
 }
 void PlayerHandle::SetLogin(const std::string &login)
 {
-    SetField(LOGIN, new Text(GetFieldName(LOGIN),login));
+    SetField(LOGIN, std::make_shared<Text>(GetFieldName(LOGIN),login));
 }
 void PlayerHandle::SetFirstPlay(const std::string &date)
 {
-    SetField(FIRSTPLAY, new Timestamp(GetFieldName(FIRSTPLAY),date));
+  SetField(FIRSTPLAY, std::make_shared<Timestamp>(GetFieldName(FIRSTPLAY),date));
 }
 void PlayerHandle::SetLastPlay(const std::string &date)
 {
-    SetField(LASTPLAY, new Timestamp(GetFieldName(LASTPLAY),date));
+  SetField(LASTPLAY, std::make_shared<Timestamp>(GetFieldName(LASTPLAY),date));
 }
 
 void PlayerHandle::SetMob(const std::string &mob)
 {
-    SetField(MOB, new Text(GetFieldName(MOB), mob));
+    SetField(MOB, std::make_shared<Text>(GetFieldName(MOB), mob));
 }
 
 void PlayerHandle::SetIsMob(const bool &ismob)
 {
-    SetField(ISMOB, new Boolean(GetFieldName(ISMOB),BooleanToString(ismob)));
+  SetField(ISMOB, std::make_shared<Boolean>(GetFieldName(ISMOB),BooleanToString(ismob)));
 }
 
 void PlayerHandle::SetIsDead(const bool &isdead)
 {
-    SetField(ISDEAD, new Boolean(GetFieldName(ISDEAD),BooleanToString(isdead)));
+  SetField(ISDEAD, std::make_shared<Boolean>(GetFieldName(ISDEAD),BooleanToString(isdead)));
 }
 
 
 void PlayerHandle::SetCredits(const int &credits)
 {
-    SetField(CREDITS, new Integer(GetFieldName(CREDITS), IntToString(credits)));
+    SetField(CREDITS, std::make_shared<Integer>(GetFieldName(CREDITS), IntToString(credits)));
 }
 
 void PlayerHandle::SetPoints(const int &points)
 {
-    SetField(POINTS, new Integer(GetFieldName(POINTS),IntToString(points)));
+    SetField(POINTS, std::make_shared<Integer>(GetFieldName(POINTS),IntToString(points)));
 }
 void PlayerHandle::SetTurnsLeft(const int &turns)
 {
-    SetField(TURNSLEFT, new Integer(GetFieldName(TURNSLEFT),IntToString(turns)));
+    SetField(TURNSLEFT, std::make_shared<Integer>(GetFieldName(TURNSLEFT),IntToString(turns)));
 }
 
 void PlayerHandle::SetAlliance(const std::string &alliance)
 {
-    SetField(ALLIANCE, new Text(GetFieldName(ALLIANCE),alliance));
+    SetField(ALLIANCE, std::make_shared<Text>(GetFieldName(ALLIANCE),alliance));
 }
 
 void PlayerHandle::SetCurrentShip(const int &ship)
 {
-    SetField(CURRENTSHIP, new Integer(GetFieldName(CURRENTSHIP), IntToString(ship)));
+    SetField(CURRENTSHIP, std::make_shared<Integer>(GetFieldName(CURRENTSHIP), IntToString(ship)));
 }
 
 
 void PlayerHandle::AddSectorFlag(const eSectorFlags &flag, Sector sector)
 {
-  const std::string flags = std::to_string((unsigned int)flag);
-  const std::string sectors = std::to_string((unsigned int)sector);
-  const std::string name = GetName();
-  char *paramValues[3];
-  paramValues[0] = const_cast<char*>(flags.c_str());
-  paramValues[1] = const_cast<char*>(sectors.c_str());
-  paramValues[2] = const_cast<char*>(name.c_str());
-  const int lengths[] = {flags.size(), sectors.size(), name.size() };
-  PGresult *res = PQexecPrepared(m_dbconn, "SetSectorFlags", 3, paramValues, lengths, NULL, 0);
-  
-  PQclear(res);
+  pqxx::work work{*m_dbconn};
+  std::string name = GetName();
+  work.prepared("setSectorFlag")(static_cast<int>(flag))(static_cast<int>(sector))(name).exec();
+  work.commit();
 }
 
 void PlayerHandle::ClearSectorFlag(const eSectorFlags &flag, Sector sector)
 {
-  //  const char *stm = "UPDATE SectorFlags SET nflags = nflags & ~$1 WHERE ksector = $2;";
-  // fancy postgres upsert stuff.
-  const char *stm = "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 RETURNING *) INSERT INTO SectorFlags (nflags, ksector) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM upsert);";
-  const std::string flags = std::to_string((unsigned int)flag);
-  const std::string sectors = std::to_string((unsigned int)sector);
-  const std::string name = GetName();
-  char *paramValues[3];
-  paramValues[0] = const_cast<char*>(flags.c_str());
-  paramValues[1] = const_cast<char*>(sectors.c_str());
-  paramValues[2] = const_cast<char*>(name.c_str());
-  const int lengths[] = {flags.size(), sectors.size(), name.size() };
-  PGresult *res = PQexecPrepared(m_dbconn, "ClearSectorFlags", 3, paramValues, lengths, NULL, 0);
-  PQclear(res);
+  pqxx::work work{*m_dbconn};
+  work.prepared("clearSectorFlag")(static_cast<int>(flag))(static_cast<int>(sector))((std::string)GetName()).exec();
+  work.commit();
 }
 
 unsigned int PlayerHandle::GetSectorFlags(Sector sector)
 {
-  const std::string sectors = std::to_string((unsigned int)sector);
-  const std::string name = GetName();
-  char* paramValues[2];
-  paramValues[0] = const_cast<char*>(sectors.c_str());
-  paramValues[1] = const_cast<char*>(name.c_str());
-  const int  lengths[] = {sectors.size(), name.size()};
-  PGresult *res = PQexecPrepared(m_dbconn, "GetSectorFlags", 2, paramValues, lengths, NULL, 0);
-  ResultGuard rg(res);
-  if(PQntuples(res) < 1){
+  pqxx::work work{*m_dbconn};
+  pqxx::result r = work.prepared("getSectorFlags")(static_cast<int>(sector))((std::string)GetName()).exec();
+  work.commit();
+  if(r.size() < 1){
     return 0;
   } else {
-    return atoi(PQgetvalue(res,0,0));
+    return r[0][0].as<int>();
   }
 }

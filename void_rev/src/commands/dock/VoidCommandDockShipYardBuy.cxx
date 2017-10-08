@@ -53,18 +53,10 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
     
     std::string query = "select shiptype.nkey,shiptype.sname, shipmanufacturer.sname, nforecolor, nbackcolor, ncost from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey and shiptype.nkey = '" + IntToString(shiptype) + "';";
 
-    PGresult *dbresult= get_thread()->DBExec(query);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Buy ship error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result dbresult= get_thread()->DBExec(query);
 
 
-    if(PQntuples(dbresult) != 1 || (shiptype == 0 && arguments != "0"))
+    if(dbresult.size() != 1 || (shiptype == 0 && arguments != "0"))
     {
 	Send(Color()->get(RED) + "Sorry, that is not a vaild ship number." + endr);
 	return false;
@@ -72,16 +64,15 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
     
     
     
-    std::string nkey = PQgetvalue(dbresult,0,0);
-    std::string name = PQgetvalue(dbresult,0,1);
-    std::string manufacturer = PQgetvalue(dbresult,0,2);
+    std::string nkey = dbresult[0][0].as<std::string>();
+    std::string name = dbresult[0][1].as<std::string>();
+    std::string manufacturer = dbresult[0][2].as<std::string>();
     
-    FGColor fgcolor = (FGColor)atoi(PQgetvalue(dbresult,0,3));
-    BGColor bgcolor = (BGColor)atoi(PQgetvalue(dbresult,0,4));
+    FGColor fgcolor = (FGColor)dbresult[0][3].as<int>();
+    BGColor bgcolor = (BGColor)dbresult[0][4].as<int>();
     
-    int cost = atoi(PQgetvalue(dbresult,0,05));
+    int cost = dbresult[0][5].as<int>();
 
-    PQclear(dbresult);
 
     Send(Color()->get(GREEN) + "The " + Color()->get(fgcolor,bgcolor) + manufacturer + ' ' + name + Color()->get(GREEN) +
 	 " costs " + Color()->get(WHITE) + IntToString(cost) + Color()->get(GREEN) + " credits. ");
@@ -95,9 +86,9 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
     {
 	ShipHandlePtr oldship = create_handle_to_current_ship(get_thread()->GetPlayer());
 
-	Integer shiptypei(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY), oldship->GetTypeKey().GetAsString());
-	PrimaryKey key(&shiptypei);
-	ShipTypeHandle shiptypeh(get_thread()->GetDBConn(), key);
+	std::shared_ptr<Integer> shiptypei = std::make_shared<Integer>(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY), oldship->GetTypeKey().GetAsString());
+	PrimaryKey key(shiptypei);
+	ShipTypeHandle shiptypeh(get_thread()->GetDatabaseConn(), key);
 
 	int refund = EvaluateShip(oldship->GetNkey());
 
@@ -156,20 +147,7 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 	    
 	    std::string deletestmt = "delete from ship where nkey = '" + oldship->GetNkey().GetAsString() + "';";
 	    
-	    PGresult *delresult = get_thread()->DBExec(deletestmt);
-
-
-	    if(PQresultStatus(delresult) != PGRES_COMMAND_OK)
-	    {
-		
-		DBException e("Delete ship error: " + std::string(PQresultErrorMessage(delresult)));
-		PQclear(delresult);
-		throw e;
-	    }
-
-	    PQclear(delresult);
-    
-    
+	    get_thread()->DBExec(deletestmt);
 	}
 	else // Keeping old ship
 	{
@@ -203,9 +181,6 @@ bool VoidCommandDockShipYardBuy::DockShipYardBuy(const string &arguments)
 	Send(Color()->get(GREEN) + "No? Okay then. Good day." + endr);
 	return true;
     }
-    
-    
-
     
 }
 

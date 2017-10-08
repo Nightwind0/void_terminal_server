@@ -22,23 +22,14 @@ std::list<int> ShipListBehavior::GetOwnedShips()
 
     std::string query = "select nkey from ship where kowner = '" + (std::string)player->GetName() + "';";
 
-    PGresult *dbresult = get_behavior_thread()->DBExec(query);
-    ResultGuard rg(dbresult);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	
-	DBException e(std::string("Get Owned Ships: ") +  PQresultErrorMessage(dbresult));
-	throw e;
-    }
-
-    int numships = PQntuples(dbresult);
+    pqxx::result dbresult = get_behavior_thread()->DBExec(query);
+    int numships = dbresult.size();
 
     std::list<int> ships;
 
-    for(int i=0;i< numships; i++)
+    for(auto row : dbresult)
     {
-	ships.push_back( atoi(PQgetvalue(dbresult,i,0)));
+      ships.push_back(row[0].as<int>());
     }
 
     return ships;
@@ -72,9 +63,9 @@ void ShipListBehavior::ShowShipList(const std::list<int> &ships)
 	iter++)
     {
 
-	Integer nkey(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(*iter));
-	PrimaryKey key(&nkey);
-	ShipHandle shiph(get_behavior_thread()->GetDBConn(), key);
+      std::shared_ptr<Integer> nkey = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(*iter));
+	PrimaryKey key(nkey);
+	ShipHandle shiph(get_behavior_thread()->GetDatabaseConn(), key);
 
 	ShipTypeHandlePtr shiptype = shiph.GetShipTypeHandle();
 

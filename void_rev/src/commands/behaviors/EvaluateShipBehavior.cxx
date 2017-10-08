@@ -21,37 +21,25 @@ EvaluateShipBehavior::~EvaluateShipBehavior()
 
 int EvaluateShipBehavior::EvaluateShip(int shipnum)
 {
-
-    
-
-
     std::string sql = "select nmissiles, nshields, nholds - ninitholds, nsentinels, nmines, ncost from ship,shiptype where ship.ktype = shiptype.nkey and ship.nkey = '" + IntToString(shipnum) + "';";
 
-    PGresult *dbresult = get_behavior_thread()->DBExec(sql);
+    pqxx::result dbresult = get_behavior_thread()->DBExec(sql);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	DBException e("Evaluate ship error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    if(PQntuples(dbresult) != 1)
+    if(dbresult.size() != 1)
     {
 	DBException e("Evaluate ship didnt return a row.");
-	PQclear(dbresult);
 	throw e;
     }
 
 
-    int cost = atoi(PQgetvalue(dbresult,0,5));
+    int cost = dbresult[0][5].as<int>();
     int value = cost /2;
 
-    int missiles = atoi(PQgetvalue(dbresult,0,0));
-    int shields = atoi(PQgetvalue(dbresult,0,1));
-    int holds = atoi(PQgetvalue(dbresult,0,2));
-    int sentinels = atoi(PQgetvalue(dbresult,0,3));
-    int mines = atoi(PQgetvalue(dbresult,0,4));
+    int missiles = dbresult[0][0].as<int>();
+    int shields = dbresult[0][1].as<int>();
+    int holds = dbresult[0][2].as<int>();
+    int sentinels = dbresult[0][3].as<int>();
+    int mines = dbresult[0][4].as<int>();
 
     value += missiles * 100; /// @todo get real missile cost from config
     value += shields * 100; 

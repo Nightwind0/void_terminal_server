@@ -71,27 +71,15 @@ bool VoidCommandMail::SendMail(const std::string &to)
     
     std::ostringstream insert ;
     insert << "insert into mail values(nextval('mail_id_seq'),now(),";
-    insert << '\'' << to << "','" << get_thread()->GetPlayer()->GetName().GetAsString() ;
-    insert << "',FALSE,'" << PrepareForSQL(message) << "');";
+    insert << '\'' << to << "'," << get_thread()->GetDatabaseConn()->quote(get_thread()->GetPlayer()->GetName().GetAsString());
+    insert << ",FALSE," << get_thread()->GetDatabaseConn()->quote(message) << ");";
 
-    PGresult *dbresult =get_thread()->DBExec(insert.str());
+    get_thread()->DBExec(insert.str());
 
-
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-    {
-
-	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
-	throw e;
-    }
-
-    PQclear(dbresult);
     
     //TODO: Send a system message to player if online, indicating new mail
 
     Send(Color()->get(GREEN) + endr + "Message sent." + endr);
-
-    
 
     return true;
 

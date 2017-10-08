@@ -6,6 +6,7 @@
 
 #include "Resource.h"
 #include <iostream>
+#include <sstream>
 
 
 static const char * RESOURCE_TYPE_STRINGS[] = {"LOGIN","PLAYER","SPACESHIP","PLANET","OUTPOST","SECTOR"};
@@ -24,35 +25,30 @@ Resource::Resource(ResourceType type, const PrimaryKey &key):m_type(type),m_key(
 
 std::string Resource::GenerateID() const
 {
-   
-    std::string heinous = "";
-
+    std::ostringstream heinous;
 
 //Only calculate this crap once. I mean geeze.
    
 
-    std::vector<Field*> vFields;
+    std::vector<FieldPtr> vFields;
 
     vFields.reserve(m_key.FieldCount());
   
-
-    heinous.reserve(100); // Otherwise it may have to resize a bunch which is costly
-//    std::cerr <<(int) m_type << std::endl;
-    heinous += TypeToString(m_type);
+    heinous << TypeToString(m_type);
 
     copy(m_key.GetFieldsBegin(),m_key.GetFieldsEnd(),back_inserter(vFields));
     sort(vFields.begin(),vFields.end());
 
 
-    for(std::vector<Field*>::const_iterator i = vFields.begin();
+    for(std::vector<FieldPtr>::const_iterator i = vFields.begin();
 	i != vFields.end();
 	i++)
     {
-	heinous += (*i)->GetAsString();
-	heinous += '.';
+      heinous << (*i)->GetAsString();
+      heinous << '.';
     }
 
-    return heinous;
+    return heinous.str();
 }
 
 bool Resource::operator==(const Resource &other) const

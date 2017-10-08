@@ -64,9 +64,9 @@ std::list<int> VoidCommandBeam::GetValidShipList(Sector cur_sector, int beamrang
     {
 	if(*iter == cur_ship) continue;
 	
-	Integer nkey(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(*iter));
-	PrimaryKey key(&nkey);
-	ShipHandle shiph(get_thread()->GetDBConn(), key);
+	std::shared_ptr<Integer> nkey = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(*iter));
+	PrimaryKey key(nkey);
+	ShipHandle shiph(get_thread()->GetDatabaseConn(), key);
 
 	ShipTypeHandlePtr shiptype = shiph.GetShipTypeHandle();
 

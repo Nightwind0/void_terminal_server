@@ -43,16 +43,14 @@ bool VoidCommandStatus::HandleCommand(const string &command, const string &argum
     return true;
 }
 
-std::string VoidCommandStatus::PrettyValue(PGresult *dbresult, int row, int column, bool usedash)
+std::string VoidCommandStatus::PrettyValue(const pqxx::result& dbresult, int row, int column, bool usedash)
 {
-    if(PQgetisnull(dbresult,row,column))
-    {
-	return usedash?"-":"0";
-    }
-    else
-    {
-	return PQgetvalue(dbresult,row,column);
-    }
+  if(dbresult[row][column].is_null()){
+    return usedash?"-":"0";
+  }
+  else {
+    return dbresult[row][column].as<std::string>();
+  }
 }
 
 std::string VoidCommandStatus::SendValue(const std::string &name, const std::string &value)
@@ -120,31 +118,31 @@ void VoidCommandStatus::ShowStatus()
 
     ResourceMaster::GetInstance()->Log(DEBUG2, query.str());
 
-    PGresult *dbresult = get_thread()->DBExec(query.str());
+    pqxx::result dbresult = get_thread()->DBExec(query.str());
 
-
-    os << Color()->get(CYAN,BG_WHITE) << "        Status        " +  Color()->blackout() +endr;
-    os << SendValue("Player Name:",PQgetvalue(dbresult,0,0)) << endr;
-    os << SendValue("Credits:",PQgetvalue(dbresult,0,1)) << endr;
-    os << SendRow("Turns:",PQgetvalue(dbresult,0,2), CONFIG_STRING(ResourceMaster::GetInstance(),"turns_per_day")) << endr; // TODO: Get actual turns per day value
-
-
-    int tps = atoi(PQgetvalue(dbresult,0,33));
     
-    if(!PQgetisnull(dbresult,0,22))
+    os << Color()->get(CYAN,BG_WHITE) << "        Status        " +  Color()->blackout() +endr;
+    os << SendValue("Player Name:",dbresult[0][0].as<std::string>()) << endr;
+    os << SendValue("Credits:",dbresult[0][1].as<std::string>()) << endr;
+    os << SendRow("Turns:",dbresult[0][2].as<std::string>(), CONFIG_STRING(ResourceMaster::GetInstance(),"turns_per_day")) << endr; // TODO: Get actual turns per day value
+    
+    
+    int tps = dbresult[0][33].as<int>();
+    
+    if(!dbresult[0][22].is_null())
     {
-	Integer towship(ShipHandle::FieldName(ShipHandle::NKEY), PQgetvalue(dbresult,0,22));
-	PrimaryKey key(&towship);
-	ShipHandle towshiphandle(get_thread()->GetDBConn(),key);
-	ShipTypeHandlePtr tsthandle= towshiphandle.GetShipTypeHandle();
-	
-	
-	tps += tsthandle->GetTurnsPerSector();
+      std::shared_ptr<Integer> towship = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), dbresult[0][22].as<std::string>());
+      PrimaryKey key(towship);
+      ShipHandle towshiphandle(get_thread()->GetDatabaseConn(),key);
+      ShipTypeHandlePtr tsthandle= towshiphandle.GetShipTypeHandle();
+      
+      
+      tps += tsthandle->GetTurnsPerSector();
     }
 
     os << SendValue("Turns/Sector", IntToString(tps)) << endr;
-    os << SendValue("Points:",PQgetvalue(dbresult,0,3)) << endr;
-    os << SendValue("Alliance:",PQgetvalue(dbresult,0,4)) << endr;
+    os << SendValue("Points:",dbresult[0][3].as<std::string>()) << endr;
+    os << SendValue("Alliance:",dbresult[0][4].as<std::string>()) << endr;
     // os << SendRow("Ship:",PQgetvalue(dbresult,0,5), PQgetvalue(dbresult,0,6)) << endr;
     os << Color()->get(GREEN);
     os.width(20);
@@ -152,16 +150,16 @@ void VoidCommandStatus::ShowStatus()
     os << Color()->get(LIGHTBLUE);
     os << "    ";
     os.width(20 + sizeof(Color()->get(LIGHTBLUE)));
-    os << std::left <<  PQgetvalue(dbresult,0,6) << endr;
-    os << SendValue("Ship Number:", PQgetvalue(dbresult,0,5)) << endr;
-    os << SendValue("Ship Type:", PQgetvalue(dbresult,0,23)) << endr;
+    os << std::left <<  dbresult[0][6].as<std::string>() << endr;
+    os << SendValue("Ship Number:", dbresult[0][5].as<std::string>()) << endr;
+    os << SendValue("Ship Type:", dbresult[0][23].as<std::string>()) << endr;
     os << SendRow("Sentinels:",PrettyValue(dbresult,0,9), PrettyValue(dbresult,0,28)) << endr;
     os << SendRow("Missiles:",PrettyValue(dbresult,0,10), PrettyValue(dbresult,0,24)) << endr;
     os << SendRow("Mines:", PrettyValue(dbresult,0,11), PrettyValue(dbresult,0,30)) << endr;
     os << SendRow("Trackers:",PrettyValue(dbresult,0,12), PrettyValue(dbresult,0,29)) << endr;
     os << SendRow("Shields:",PrettyValue(dbresult,0,13), PrettyValue(dbresult,0,25)) << endr;
-    os << SendRow("Holds:", IntToString(atoi(PQgetvalue(dbresult,0,14)) + atoi(PQgetvalue(dbresult,0,15))
-					+ atoi(PQgetvalue(dbresult,0,16))), PQgetvalue(dbresult,0,20)) << endr;
+    os << SendRow("Holds:", IntToString(dbresult[0][14].as<int>() + dbresult[0][15].as<int>() 
+					+ dbresult[0][16].as<int>()), dbresult[0][20].as<std::string>()) << endr;
     os << SendValue("Plasma:",PrettyValue(dbresult,0,14)) << endr;
     os << SendValue("Metals:",PrettyValue(dbresult,0,15)) << endr;
     os << SendValue("Carbon:",PrettyValue(dbresult,0,16)) << endr;
@@ -170,9 +168,9 @@ void VoidCommandStatus::ShowStatus()
     os << SendValue("Tow:", PrettyValue(dbresult,0,22,true)) << endr;
     os << SendValue("Beam Range:", PrettyValue(dbresult,0,39)) << endr;
     os << SendValue("Scan:", PrettyValue(dbresult,0,37,true)) << endr;
-    os << SendValue("Warp Drive:", ToBool(PQgetvalue(dbresult,0,34))) << endr;
-    os << SendValue("Cloak:",ToBool(PQgetvalue(dbresult,0,35))) << endr;
-    os << SendValue("Analyzer:", ToBool(PQgetvalue(dbresult,0,36))) << endr;
+    os << SendValue("Warp Drive:", dbresult[0][36].as<std::string>()) << endr;
+    os << SendValue("Cloak:",ToBool(dbresult[0][35].as<std::string>())) << endr;
+    os << SendValue("Analyzer:", ToBool(dbresult[0][36].as<std::string>())) << endr;
 
 
     Send(os.str());

@@ -3,7 +3,7 @@
 #include "ResourceMaster.h"
 
 
-CommTools::CommTools(PGconn * dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_pLocalSocket(pSocket)
+CommTools::CommTools(DatabaseConnPtr dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_pLocalSocket(pSocket)
 {
 }
 
@@ -17,21 +17,11 @@ std::list<std::string> CommTools::get_players_in_sector(int sector)
     std::string query = "select player.sname from player,ship where ship.ksector = '" + IntToString(sector)
 	+  "' and player.kcurrentship = ship.nkey;";
 
-    PGresult *dbresult = DBExec(query);
-    ResultGuard g(dbresult);
+    pqxx::result dbresult = DBExec(query);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    for(auto row : dbresult)
     {
-
-	DBException e("Get players in sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	throw e;
-    }
-
-    int numplayers = PQntuples(dbresult);
-
-    for(int i=0;i<numplayers;i++)
-    {
-	playerlist.push_back(PQgetvalue(dbresult,i,0));
+      playerlist.push_back(row[0].as<std::string>());
     }
 
     return playerlist;

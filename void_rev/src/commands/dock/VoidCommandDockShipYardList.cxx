@@ -57,57 +57,47 @@ void VoidCommandDockShipYardList::DockShipYardList()
     
     std::string query = "select shiptype.nkey,shiptype.sname, shipmanufacturer.sname, nforecolor, nbackcolor, ncost from shiptype,shipmanufacturer where bforsale = TRUE and shiptype.kmanufacturer = shipmanufacturer.nkey order by shiptype.nkey;";
 
-    PGresult *dbresult= get_thread()->DBExec(query);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("Display sector error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
 
     ostringstream os;
 
-    int numships = PQntuples(dbresult);
+    int numships = dbresult.size();
 
 
     Send(Color()->get(RED, BG_WHITE) + "        Ship List        " + Color()->blackout() + endr);
 
 
-    for(int i=0;i< numships;i++)
+    for(auto row : dbresult)
     {
 
-	std::string nkey = PQgetvalue(dbresult,i,0);
-	std::string name = PQgetvalue(dbresult,i,1);
-	std::string manufacturer = PQgetvalue(dbresult,i,2);
-	std::string cost = PQgetvalue(dbresult,i,5);
+      std::string nkey = row[0].as<std::string>();
+      std::string name = row[1].as<std::string>();
+      std::string manufacturer = row[2].as<std::string>();
+      std::string cost = row[5].as<std::string>();
 
-	FGColor fgcolor = (FGColor)atoi(PQgetvalue(dbresult,i,3));
-	BGColor bgcolor = (BGColor)atoi(PQgetvalue(dbresult,i,4));
+      FGColor fgcolor = (FGColor)row[3].as<int>();
+      BGColor bgcolor = (BGColor)row[4].as<int>();
 
-	os << Color()->get(LIGHTCYAN) ;
-	os.width(2);
-	os << left << nkey ;
-	os << Color()->get(GRAY) << ") ";
-	os << Color()->get(fgcolor,bgcolor);
-	os.width(7);
-	os << left << manufacturer << ' ';
-	os.width(15);
-	os << left << name << ' ';
-	os << Color()->get(WHITE);
-	os.width(10);
-	os << right << cost;
-	os << endr;
-
-
-	Send(os.str());
-	os.str("");
+      os << Color()->get(LIGHTCYAN) ;
+      os.width(2);
+      os << left << nkey ;
+      os << Color()->get(GRAY) << ") ";
+      os << Color()->get(fgcolor,bgcolor);
+      os.width(7);
+      os << left << manufacturer << ' ';
+      os.width(15);
+      os << left << name << ' ';
+      os << Color()->get(WHITE);
+      os.width(10);
+      os << right << cost;
+      os << endr;
+      
+      
+      Send(os.str());
+      os.str("");
     }
 
-
-    PQclear(dbresult);
     
 }
 

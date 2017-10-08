@@ -41,9 +41,13 @@
 #include "VoidCommandDeploy.h"
 #include "VoidCommandReclaim.h"
 #include "VoidCommandScan.h"
+#include <pqxx/pqxx>
 
 using namespace std;
 
+const std::string kSetSectorFlagStmt {"setSectorFlag"};
+const std::string kClearSectorFlagStmt {"clearSectorFlagStmt"};
+const std::string kGetSectorFlagsStmt {"getSectorFlagsStmt"};
 
 void sigpipeHandler(int x)
 {
@@ -56,10 +60,14 @@ void VoidServerThread::add_command(std::shared_ptr<VoidCommand>  cmd)
     m_commandlist.push_back(cmd);
 }
 
-PGresult * VoidServerThread::DBExec(const std::string &query)
+pqxx::result VoidServerThread::DBExec(const std::string &query)
 {
-    ResourceMaster::GetInstance()->Log(DEBUG2, "<DBExec: " + PrepareForSQL(query) + ">");
-    return PQexec(m_dbconn, query.c_str());
+  pqxx::work work{*m_dbconn};
+  ResourceMaster::GetInstance()->Log(DEBUG2, "<DBExec: " + work.quote(query) + ">");
+  
+  pqxx::result r = work.exec(query);
+  work.commit();
+  return r;
 }
 
 PlayerHandlePtr VoidServerThread::GetPlayer() const
@@ -201,52 +209,19 @@ bool VoidServerThread::DoCommand(const std::string &command, const std::string &
 
 void VoidServerThread::OpenDataBaseConnection()
 {
-  m_dbconn = PQsetdbLogin(NULL,NULL,NULL,NULL,ResourceMaster::GetInstance()->GetDatabaseName().c_str(),"void","tiTVPok?");
+  m_dbconn = ResourceMaster::GetInstance()->CreateDatabaseConnection();
+  m_dbconn->prepare(kSetSectorFlagStmt, 
+		   "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);");
+  m_dbconn->prepare(kClearSectorFlagStmt, 
+		   "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags & ~ CAST($1 AS INTEGER) WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);");
 
-
-    if(PQstatus(m_dbconn) == CONNECTION_BAD)
-    {
-	std::cerr << PQerrorMessage(m_dbconn) << std::endl;
-
-	throw DBException(PQerrorMessage(m_dbconn));
-    }
-     
-  PGresult *dbresult = PQprepare(m_dbconn,
-                    "SetSectorFlags",
-		     "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags | $1 WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);",
-                    3,
-                    NULL);
-  ResultGuard rg1(dbresult);
-  if(PQresultStatus(dbresult) != PGRES_COMMAND_OK){
-    throw DBException(PQresultErrorMessage(dbresult));
-    }
-  
-  
-  dbresult = PQprepare(m_dbconn,
-                    "ClearSectorFlags",
-		     "WITH upsert AS (UPDATE SectorFlags SET nflags = nflags & ~ CAST($1 AS INTEGER) WHERE ksector = $2 and kplayer = $3 RETURNING *) INSERT INTO SectorFlags (nflags, ksector, kplayer) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM upsert);",
-                    3,
-                    NULL);
-  ResultGuard rg2(dbresult);
-  if(PQresultStatus(dbresult) != PGRES_COMMAND_OK){
-    throw DBException(PQresultErrorMessage(dbresult));
-    }
-
-
-  dbresult = PQprepare(m_dbconn,
-                    "GetSectorFlags",
-		       "SELECT nflags from SectorFlags WHERE ksector = $1 and kplayer = $2;",
-                    2,
-                    NULL);
-  ResultGuard rg3(dbresult);
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK){
-    throw DBException(PQresultErrorMessage(dbresult));
-  }
+  m_dbconn->prepare(kGetSectorFlagsStmt, 
+		   "SELECT nflags from SectorFlags WHERE ksector = $1 and kplayer = $2;");
 }
 
 void VoidServerThread::CloseDataBaseConnection()
 {
-    PQfinish(m_dbconn);
+  
 }
 
 
@@ -256,12 +231,12 @@ bool VoidServerThread::thread_init()
     ResourceMaster::GetInstance()->AddServerThread(this);
     try {
       OpenDataBaseConnection();
-    }catch(const DBException& dbe){
-      ResourceMaster::GetInstance()->Log(EMERGENCY, dbe.GetMessage());
+    }catch(const pqxx::sql_error& dbe){
+      ResourceMaster::GetInstance()->Log(EMERGENCY, dbe.what());
       throw dbe;
     }
+    
     OpenLocalSocket();
-
 
     return true;
 }
@@ -280,7 +255,7 @@ void VoidServerThread::thread_destroy()
 	std::cout << "Caught socket exception." << std::endl;
 	ResourceMaster::GetInstance()->Log(ERROR,"<thread_destroy SocketException>");
     }
-    catch(DBException db)
+    catch( pqxx::sql_error db)
     {
 	std::cout << "Caught DB exception" << std::endl;
 	ResourceMaster::GetInstance()->Log(ERROR,"<thread_destroy DBException>");
@@ -300,17 +275,17 @@ bool     VoidServerThread::run()
     {
 	   
     }
+    catch(const std::exception &e){
+      ResourceMaster::GetInstance()->Log(ERROR, "Execute: " + std::string(e.what()));
+    }
     catch(DBException &ex)
     {
 	// TODO: Print exception reason to stderr or log
-	ResourceMaster::GetInstance()->Log(EMERGENCY, "Execute: " + ex.GetMessage());
-	std::cerr << "DB ERROR!!!" << std::endl;
-
+	ResourceMaster::GetInstance()->Log(ERROR, "Execute: " + ex.GetMessage());
     }
     catch(MissingConfig& exmc)
     {
 	ResourceMaster::GetInstance()->Log(EMERGENCY, "Missing Config: " + exmc.getKey());
-	std::cerr << "Missing config: " << exmc.getKey() << std::endl;
     }
     catch(ShutdownException &exp)
     {
@@ -337,34 +312,20 @@ void VoidServerThread::SendClearScreen()
 std::string VoidServerThread::DisplayNews()
 {
     std::ostringstream os;
-    PGresult *dbresult;
-    int rows=0;
     os << endr << Color()->get(RED,BG_WHITE) << "    NEWS    " << endr;
     std::string query = "SELECT DPOSTED,SMESSAGE,BURGENT FROM news WHERE BINACTIVE=FALSE order by nkey asc;";
+    pqxx::work work{*m_dbconn};
+    pqxx::result r = work.exec(query);
     
-    dbresult = PQexec(m_dbconn, query.c_str());
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    for(auto row : r)
     {
-	PQclear(dbresult);
-	os << Color()->get(BLACK, BG_RED) << "DB Error while reading news" << endr;
-	return os.str();
+      os  << endr << Color()->get(LIGHTPURPLE) << row[0].as<std::string>() << endr
+	  << Color()->get(WHITE) << row[1].as<std::string>() << endr;
     }
 
-    rows = PQntuples(dbresult);
+    work.commit();
 
-    for(int i=0;i<rows;i++)
-    {
-	os  << endr << Color()->get(LIGHTPURPLE) << PQgetvalue(dbresult,i,0) << endr
-	    << Color()->get(WHITE) << PQgetvalue(dbresult,i,1) << endr;
-    }
-
-    PQclear(dbresult);
     return os.str();
-    
-    
-
-
 }
 
 
@@ -506,14 +467,11 @@ std::string VoidServerThread::ReceiveLine()
 
 bool VoidServerThread::Login()
 {
-  
     std::string loginid;
     std::string password;
     std::string query;
 
     std::ostringstream os("");
-    PGresult *dbresult;
-
        
     Send(Color()->get(BLUE, BG_WHITE) + "Please Login:" + Color()->get(LIGHTBLUE) + ' ');
 
@@ -525,34 +483,28 @@ bool VoidServerThread::Login()
 
     password = ReceiveLine();
 
-
-    os << "SELECT COUNT(*) FROM LOGIN WHERE SLOGIN = '";
-    os << PrepareForSQL(loginid);
-    os << "' and SPASSWORD = MD5('";
-    os << PrepareForSQL(password);
-    os << "');";
-
-//    ResourceMaster::GetInstance()->Log(AUDIT,os.str());
-
-    dbresult = PQexec(m_dbconn,os.str().c_str());
-    ResultGuard rg(dbresult);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+    pqxx::work work{*m_dbconn};
+    os << "SELECT COUNT(*) FROM LOGIN WHERE SLOGIN = ";
+    os << work.quote(loginid);
+    os << " and SPASSWORD = MD5(";
+    os << work.quote(password);
+    os << ");";
+    
+    ResourceMaster::GetInstance()->Log(AUDIT, os.str());
+    pqxx::result login_result = work.exec(os.str());
+    work.commit();
+    if(login_result.size() < 1 || login_result[0][0].as<int>() != 1)
     {
-
-	DBException e(PQresultErrorMessage(dbresult));
-	throw e;
+      ResourceMaster::GetInstance()->Log(DEBUG, loginid + " failed to log in.");
+      return false;
     }
 
-    if(atoi(PQgetvalue(dbresult,0,0)) != 1)
-    {
-	return false;
-    }
+    std::shared_ptr<Text> logint = std::make_shared<Text>(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
+    PrimaryKey key(logint);
 
-    Text logint(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
-    PrimaryKey key(&logint); 
+    ResourceMaster::GetInstance()->Log(DEBUG2, loginid + " successful authentication.");
 
-
+    // Kill other logins from this account if any
     for(std::vector<VoidServerThread*>::iterator i = ResourceMaster::GetInstance()->GetServerThreadsBegin();
 	i != ResourceMaster::GetInstance()->GetServerThreadsEnd();
 	i++)
@@ -565,7 +517,7 @@ bool VoidServerThread::Login()
 	    
 	    Text login_name = (*i)->GetLogin()->GetLogin();
 	    
-	    if (login_name == logint)
+	    if (login_name == *logint)
 	    {
 		// This login is already in use on the system.
 		// Kill the other login so that we can proceed
@@ -583,20 +535,20 @@ bool VoidServerThread::Login()
     }
 
     m_login = std::make_shared<LoginHandle>(m_dbconn, key, false);
-    std::string ip = m_login->GetLastIP().GetAsString();
+    ResourceMaster::GetInstance()->Log(DEBUG2, loginid + " created login handle, getting last ip...");
+    std::string ip = m_login->GetLastIP();
 
     ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN: " + loginid + " Logged In. Last IP = " + ip + ">");
 
     m_login->Lock();
+    const int logins = m_login->GetLogins() + 1;
     m_login->SetLastIP(std::string(m_socket->GetAddress()));
-    m_login->SetLastLogin(Universe::GetToday(m_dbconn));
-    m_login->SetLogins(m_login->GetLogins() + 1);
+    m_login->SetLastLogin(Universe::GetToday(*m_dbconn));
+    m_login->SetLogins(logins);
     m_login->Unlock();
 
 
     return true;
-
-    
 }
 
 bool VoidServerThread::RegisterNewLogin()
@@ -611,7 +563,6 @@ bool VoidServerThread::RegisterNewLogin()
     std::string loginid;
     std::string password, password2;
     std::string encpassword;
-    PGresult *dbresult;
     
     while(!done)
     {
@@ -634,19 +585,13 @@ bool VoidServerThread::RegisterNewLogin()
 	    Send(Color()->get(LIGHTRED) + "Please enter a login with fewer than 19 characters." + endr);
 	    continue;
 	}
+	pqxx::work work{*m_dbconn};
+	std::string query = "select count(*) from login where slogin = " + work.quote(loginid) + ";";
+	
+	pqxx::result logintable_result = work.exec(query);
+	
 
-	std::string query = "select count(*) from login where slogin = '" + PrepareForSQL(loginid) + "';";
-
-	dbresult = PQexec(m_dbconn, query.c_str());
-
-	if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-	{
-	    DBException e("Error checking for existing login: " + std::string(PQresultErrorMessage(dbresult)));
-	    PQclear(dbresult);
-	    throw e;
-	}
-
-	if(atoi(PQgetvalue(dbresult,0,0)) == 1)
+	if(logintable_result[0][0].as<int>() == 1)
 	{
 	    Send(Color()->get(LIGHTRED) + endr + "Sorry, that login is in use. Try again, or answer 'quit' to give up." + endr);
 	}
@@ -654,9 +599,7 @@ bool VoidServerThread::RegisterNewLogin()
 	{
 	    done = true;
 	}
-
-	PQclear(dbresult);
-	
+	work.commit();
     }
 
 
@@ -689,25 +632,23 @@ bool VoidServerThread::RegisterNewLogin()
 
 	
     }
+    pqxx::work work{*m_dbconn};
+    std::string query = "select md5(" + work.quote(password) + ");";
 
-    std::string query = "select md5('" + PrepareForSQL(password) + "');";
+    pqxx::result epresult = work.exec(query);
 
-    dbresult= PQexec(m_dbconn, query.c_str());
-
-    encpassword = PQgetvalue(dbresult,0,0);
-    PQclear( dbresult);
-
-
+    encpassword = epresult[0][0].as<std::string>();
+    work.commit();
 
     SendWordWrapped(Color()->get(GREEN) + "Please enter a VALID e-mail address. The administrator of this game will" + endr + "be contacting you by this address and verifying it's validity. It will NOT be given out.",80);
 
     Send(endr + Color()->get(WHITE) + "E-mail address: " + Color()->get(LIGHTBLUE));
     std::string email = ReceiveLine();
-
+   
         
-    Text logint(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
+    std::shared_ptr<Text> logint = std::make_shared<Text>(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
 
-    PrimaryKey key((Field*)&logint); 
+    PrimaryKey key(logint); 
     m_login= std::make_shared<LoginHandle>(m_dbconn, key, true);
 
 
@@ -718,7 +659,7 @@ bool VoidServerThread::RegisterNewLogin()
     m_login->SetPassword(encpassword);
     m_login->SetLogins(0);
     m_login->SetEmail(email);
-    m_login->SetFirstLogin(Universe::GetToday(m_dbconn));
+    m_login->SetFirstLogin(Universe::GetToday(*m_dbconn));
 
     m_login->Insert();
     m_login->Unlock();
@@ -732,12 +673,10 @@ bool VoidServerThread::RegisterNewLogin()
 
 ShipHandlePtr VoidServerThread::CreateNewShip(int shiptype)
 {
-    Integer shipti(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY),IntToString(shiptype));
-    PrimaryKey stkey(&shipti);
+  std::shared_ptr<Integer> shipti = std::make_shared<Integer>(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY),IntToString(shiptype));
+    PrimaryKey stkey(shipti);
 
     ShipTypeHandle shiptypeh(m_dbconn, stkey);
-
-//    std::string shiptypename = Color()->get((FGColor)shiptypeh.GetForeColor().GetValue(),(BGColor)shiptypeh.GetBackColor().GetValue()) + shiptypeh.GetManufacturerName() + " " +(std::string)shiptypeh.GetName();
 
     std::string shiptypename = shiptypeh.GetShipTypeName(Color());
 
@@ -771,26 +710,15 @@ ShipHandlePtr VoidServerThread::CreateNewShip(int shiptype)
 	else done = false;
     }
 
-    PGresult *dbresult;
-
+    pqxx::work work{*m_dbconn};
     std::string query = "SELECT nextval('ship_nkey_seq');";
-
-    dbresult = PQexec(m_dbconn, query.c_str());
+    pqxx::result ship_result = work.exec(query);
     
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
-	
-	throw e;
-    }
+    int shipnum = ship_result[0][0].as<int>();
+    work.commit();
 
-
-    int shipnum = atoi(PQgetvalue(dbresult,0,0));
-
-
-    Integer shipi(ShipHandle::FieldName(ShipHandle::NKEY),IntToString(shipnum));
-    PrimaryKey shipkey(&shipi);
+    std::shared_ptr<Integer> shipi = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY),IntToString(shipnum));
+    PrimaryKey shipkey(shipi);
 
     ShipHandlePtr ship = std::make_shared<ShipHandle>(m_dbconn, shipkey, true);
 
@@ -806,8 +734,6 @@ ShipHandlePtr VoidServerThread::CreateNewShip(int shiptype)
     ship->Unlock();
 
 
-    PQclear(dbresult);
-
     std::ostringstream os;
 
     os <<Color()->get(GREEN) << "Your ship has been christened " << Color()->get(LIGHTBLUE) << shipname << endr;
@@ -815,10 +741,7 @@ ShipHandlePtr VoidServerThread::CreateNewShip(int shiptype)
 
     Send(os.str());
     
-
-    
     return ship;
-
 }
 
 
@@ -846,23 +769,12 @@ void VoidServerThread::StartNewPlayer()
 	    continue;
 	}
 
+	pqxx::work work{*m_dbconn};
+	std::string query = "SELECT COUNT(*) FROM Player WHERE " + work.quote(PlayerHandle::FieldName(PlayerHandle::NAME)) + "=" + work.quote(name) + ';';
 
+	pqxx::result playerresult = work.exec(query);
 
-
-	PGresult *dbresult;
-	std::string query = "SELECT COUNT(*) FROM Player WHERE " + PlayerHandle::FieldName(PlayerHandle::NAME) + "='" + PrepareForSQL(name) + "';";
-
-	dbresult  = PQexec(m_dbconn, query.c_str());
-	
-	if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-	{
-	    DBException e(PQresultErrorMessage(dbresult));
-	    PQclear(dbresult);
-
-	    throw e;
-	}
-
-	if(atoi(PQgetvalue(dbresult,0,0)) != 0)
+	if(playerresult[0][0].as<int>() != 0)
 	{
 	    done = false;
 
@@ -870,8 +782,6 @@ void VoidServerThread::StartNewPlayer()
 	}
 	else
 	{
-	
-
 
 	    Send(Color()->get(GREEN) + "You want to be called "+ Color()->get(LIGHTBLUE) + name + Color()->get(GREEN) + " (Y/n)?");
 	
@@ -883,14 +793,12 @@ void VoidServerThread::StartNewPlayer()
 	    }
 	    else done = false;
 	}
-
-	PQclear(dbresult);
-
+	work.commit();
     }
 
 
-    Text namet(PlayerHandle::FieldName(PlayerHandle::NAME),name);
-    PrimaryKey key(&namet);
+    std::shared_ptr<Text> namet = std::make_shared<Text>(PlayerHandle::FieldName(PlayerHandle::NAME),name);
+    PrimaryKey key(namet);
 
     m_player = std::make_shared<PlayerHandle>(m_dbconn, key, true);
 
@@ -933,42 +841,29 @@ void VoidServerThread::StartNewPlayer()
 
 void VoidServerThread::ChoosePlayer()
 {
-    
-    std::string query = "SELECT SNAME FROM Player WHERE klogin = '" + PrepareForSQL(m_login->GetLogin()) + "';";
-    PGresult *dbresult;
+  std::string login = m_login->GetLogin();
+  pqxx::work work{*m_dbconn};
+  std::string query = "SELECT SNAME FROM Player WHERE klogin = " + work.quote(login) + ";";
+  ResourceMaster::GetInstance()->Log(AUDIT, query);
+  pqxx::result r = work.exec(query);
+  work.commit();
 
-    dbresult = PQexec(m_dbconn, query.c_str());
-    ResultGuard rg(dbresult);
+  int num_players = r.size();
 
+  if(num_players == 0){
+    StartNewPlayer();
+    return;
+  }
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e(PQresultErrorMessage(dbresult));
-	throw e;
-    }
-
-    int num_players = PQntuples(dbresult);
-
-    if(num_players == 0)
-    {
-	StartNewPlayer();
-	return;
-    }
-
-    if(num_players == 1)
-    {
-	std::string playername = PQgetvalue(dbresult,0,0);
-	Text logint(PlayerHandle::FieldName(PlayerHandle::NAME), playername);
-	PrimaryKey key(&logint);
+  if(num_players == 1) {
+    std::string playername = r[0][0].as<std::string>();
+    std::shared_ptr<Text> logint = std::make_shared<Text>(PlayerHandle::FieldName(PlayerHandle::NAME), playername);
+    PrimaryKey key(logint);
 	
-	m_player = std::make_shared<PlayerHandle>(m_dbconn, key, false);
+    m_player = std::make_shared<PlayerHandle>(m_dbconn, key, false);
 
-	ResourceMaster::GetInstance()->Log(DEBUG, "Player: " + PrepareForSQL(m_player->GetName()) + " joins realm.");
-
-
+    ResourceMaster::GetInstance()->Log(DEBUG, "Player: " + (std::string)m_player->GetName() + " joins realm.");
 	return;
-	
     }				 
     else
     {
@@ -1022,13 +917,10 @@ std::string VoidServerThread::CommandPrompt()
     Integer ship = m_player->GetCurrentShip();
 
  
-    Integer shipkey(ShipHandle::FieldName(ShipHandle::NKEY), ship.GetAsString());
-    PrimaryKey key(&shipkey);
+    std::shared_ptr<Integer> shipkey = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), ship.GetAsString());
+    PrimaryKey key(shipkey);
     ShipHandle shiphandle(m_dbconn, key);
 
- 
-
-    
     std::string sector = shiphandle.GetSector().GetAsString();
     Send(Color()->get(RED) + "[" + Color()->get(WHITE) + sector +  Color()->get(RED) + "] "  +
 	 Color()->get(PURPLE) + "(" +GetPlayer()->GetTurnsLeft().GetAsString() + ")"+
@@ -1043,44 +935,38 @@ std::string VoidServerThread::CommandPrompt()
 
 void VoidServerThread::SetTurnsLeft()
 {
-    std::string sql = "select extract( doy from dlastplay), extract (year from dlastplay), extract(doy from now()), extract(year from now()) from player where sname = '" + GetPlayer()->GetName().GetAsString() 
-	+ "';";
+  ResourceMaster * RM = ResourceMaster::GetInstance();
+  RM->Log(DEBUG2, "Setting turns for player");
+  std::string player = GetPlayer()->GetName();
+  
+  std::string sql = "select extract( doy from dlastplay), extract (year from dlastplay), extract(doy from now()), extract(year from now()) from player where sname = " + m_dbconn->quote(player) +  ";";
+  
+  pqxx::work work{*m_dbconn};
 
-    ResourceMaster * RM = ResourceMaster::GetInstance();
+  int turns_per_day = atoi(RM->GetConfig("turns_per_day").c_str());
 
-    int turns_per_day = atoi(RM->GetConfig("turns_per_day").c_str());
+  bool fill_turns = false;
 
-    bool fill_turns = false;
-
-    PGresult *dbresult = DBExec(sql);
-    ResultGuard rg(dbresult);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e(PQresultErrorMessage(dbresult));
-	throw e;
-    }
+  RM->Log(AUDIT, sql);
+  pqxx::result r = work.exec(sql);
 
 
-    int play_doy = atoi(PQgetvalue(dbresult,0,0));
-    int play_year = atoi(PQgetvalue(dbresult,0,1));
-    int cur_doy = atoi(PQgetvalue(dbresult,0,2));
-    int cur_year = atoi(PQgetvalue(dbresult,0,3));
+  int play_doy = r[0][0].as<int>();
+  int play_year = r[0][1].as<int>();
+  int cur_doy = r[0][2].as<int>();
+  int cur_year = r[0][3].as<int>();
+  
+  work.commit();
 
-//    ResourceMaster::GetInstance()->Log(DEBUG, "PlayDOY: " + IntToString(play_doy) + " CurDOY: " + IntToString(cur_doy));
+  if(cur_year > play_year || cur_doy > play_doy)
+      fill_turns = true;
 
-    if(cur_year > play_year || cur_doy > play_doy)
-	fill_turns = true;
-
-    if(fill_turns)
-    {
-	Send(Color()->get(GREEN) + "Your turns are refreshed." + endr);
-	GetPlayer()->Lock();
-	GetPlayer()->SetTurnsLeft(turns_per_day); 
-	GetPlayer()->Unlock();
-    }
-		   
+  if(fill_turns) {
+    Send(Color()->get(GREEN) + "Your turns are refreshed." + endr);
+    GetPlayer()->Lock();
+    GetPlayer()->SetTurnsLeft(turns_per_day); 
+    GetPlayer()->Unlock();
+  }
 }
 
 class LoginGuard {
@@ -1094,7 +980,7 @@ private:
 };
 
 
-void        VoidServerThread::Service()
+void VoidServerThread::Service()
 {
     std::string line;
     std::ostringstream os;
@@ -1113,9 +999,7 @@ void        VoidServerThread::Service()
 	std::string instring;
 	std::string input_buffer;
 
-	int tries =0;
-
-
+	int tries = 0;
 
 	SendClearScreen();
   
@@ -1131,7 +1015,7 @@ void        VoidServerThread::Service()
 	os << Color()->get(GRAY) << "Press Enter." << endr;
 	
 	
-	Send( os.str());
+	Send(os.str());
 	
 	std::string enter = ReceiveLine();
 	
@@ -1163,17 +1047,22 @@ void        VoidServerThread::Service()
 	
 
 	ChoosePlayer();
-	
     }
-    catch(const DBException &e) {
-	std::string err = "<DB Error during login: " + PrepareForSQL(e.GetMessage()) + ">";
-	ResourceMaster::GetInstance()->Log(EMERGENCY, err);
+    catch(pqxx::sql_error &er) {
+      ResourceMaster::GetInstance()->Log(ERROR, er.what() + er.query());
+      return;
+    }catch(const DBException &e) {
+	std::string err = "<DB Error during login: " + e.GetMessage() + ">";
+	ResourceMaster::GetInstance()->Log(ERROR, err);
 	return;
     }
     catch(SocketException &e)
     {
 	ResourceMaster::GetInstance()->Log(ERROR, "Socket Error #" + IntToString(e.GetType()));
 	return;
+    }catch(std::exception &e){
+      ResourceMaster::GetInstance()->Log(ERROR, "Exception caught in service: " + std::string(e.what()));
+      return;
     }
 
 	
@@ -1184,7 +1073,6 @@ void        VoidServerThread::Service()
     bool done = false;
 
     try {
-
 	SetTurnsLeft();
 
 	Send(Color()->get(YELLOW) + "Check your mail? (Y/n) :");
@@ -1195,63 +1083,64 @@ void        VoidServerThread::Service()
 	{
 	    PostCommand("checkmail","");
 	}
+    }catch(pqxx::sql_error& se){
+      ResourceMaster::GetInstance()->Log(ERROR, "Post-login SQL Error #" + std::string(se.what()));
+      return;
     }catch(SocketException &e) {
-	ResourceMaster::GetInstance()->Log(ERROR, "Socket Error #" + IntToString(e.GetType()));
-	return;
+      ResourceMaster::GetInstance()->Log(ERROR, "Socket Error #" + IntToString(e.GetType()));
+      return;
     }
 	
     if(m_player->GetIsDead())
     {
-	std::string checkdeadtime = "select extract(day from age(now(),dlastplay)) from player where sname = '" + m_player->GetName().GetAsString() + "';";
+      std::string playername = m_player->GetName();
+      Log(DEBUG, "Player name is " + playername);
+      pqxx::work work{*m_dbconn};
+      std::string checkdeadtime = "select extract(day from age(now(),dlastplay)) from player where sname = " + work.quote(playername) + ";";
 	    
-	PGresult *dbresult= DBExec(checkdeadtime);
-	ResultGuard rg(dbresult);
+      pqxx::result r = work.exec(checkdeadtime);
+      work.commit();
 	    
-	int days = atoi(PQgetvalue(dbresult,0,0));
+      int days = r[0][0].as<int>();
 	    
 	    
-	if(days < 1)
-	{
-	    Send(Color()->get(RED) + "Sorry, you are still dead. You will remain dead until 24 hours have passed since your death." + endr);
-	    done = true;
+      if(days < 1) {
+	  Send(Color()->get(RED) + "Sorry, you are still dead. You will remain dead until 24 hours have passed since your death." + endr);
+	  done = true;
+      }
+      else{
+	m_player->Lock();
+	m_player->SetIsDead(false);
+	m_player->Unlock();
+	try{
+	    Send(Color()->get(LIGHTGREEN) + "You have come back from the dead! You start with a new ship!" + endr);
 	}
-	else
-	{
-	    m_player->Lock();
-	    m_player->SetIsDead(false);
-	    m_player->Unlock();
-	    try{
-		Send(Color()->get(LIGHTGREEN) + "You have come back from the dead! You start with a new ship!" + endr);
-	    }
-	    catch(SocketException e)
-	    {
-		// An exception here means they dont get their new ship, so we have to set them as dead again
-		m_player->Lock();
-		m_player->SetIsDead(true);
-		m_player->Unlock();
-	    }
-	    ShipHandlePtr ship = CreateNewShip(0);
-	    ship->Lock();
-	    ship->SetSector(0);
-	    ship->Unlock();
-		
-	    m_player->Lock();
-	    m_player->SetCurrentShip(ship->GetNkey());
-	    m_player->Unlock();
-		
+	catch(SocketException e) {
+	  // An exception here means they dont get their new ship, so we have to set them as dead again
+	  m_player->Lock();
+	  m_player->SetIsDead(true);
+	  m_player->Unlock();
 	}
-	    
+	ShipHandlePtr ship = CreateNewShip(0);
+	ship->Lock();
+	ship->SetSector(0);
+	ship->Unlock();
+	
+	m_player->Lock();
+	m_player->SetCurrentShip(ship->GetNkey());
+	m_player->Unlock();
+	
+      }
+      
     }
     
 
     // not an else, because it could have changed since the if
     if(!m_player->GetIsDead())
     {
-	
 	m_player->Lock();
-	m_player->SetLastPlay(Universe::GetToday(m_dbconn));
+	m_player->SetLastPlay(Universe::GetToday(*m_dbconn));
 	m_player->Unlock();
-    
     }
     
 
@@ -1271,22 +1160,23 @@ void        VoidServerThread::Service()
 		gotinput = true;
 		ResourceMaster::GetInstance()->Log(AUDIT, "<Got command: " + line + ">");
 	    }
-	    catch(DBException dbe)
+	    catch(pqxx::sql_error &se) {
+	      ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + std::string(se.what()) );
+	    }catch(DBException dbe)
 	    {
-		ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + PrepareForSQL(dbe.GetMessage()) + ">");
+		ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + dbe.GetMessage() + ">");
 		std::cerr << "DB Exception: " << dbe.GetMessage() << std::endl;
 		done = true;
 		break;
 	    }
 	    catch(SocketException e)
 	    {
-		ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(e.GetType())) + ">");
+		ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + IntToString(e.GetType()) + ">");
 		done = true;
 		gotinput = true;
 		break;
 
 	    }
-
 	    catch(exception ex)
 	    {
 		done = true;
@@ -1343,12 +1233,7 @@ void        VoidServerThread::Service()
 		command = "move";
 	    }
 
-
-
-
 	    claimed = DoCommand(command, arguments, false);
-
-
 
 	    if(!claimed)
 	    {
@@ -1363,26 +1248,16 @@ void        VoidServerThread::Service()
 		}
 		else if(command == "bye"  || command == "quit" || command == "exit")
 		{
-
-
-			
 		    os <<  "\e8Goodbye!!" << endr;
-
 		    done = true;
 		}
 	    }
 
-	       
-
 	    Send(os.str());
-
-
         }
         catch (SocketException &excep)
         {
-
-
-	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + PrepareForSQL(IntToString(excep.GetType())) + ">");
+	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + IntToString(excep.GetType()) + ">");
 	    m_socket->Close();
             if (excep.GetType() != NOTCONN)
             {
@@ -1400,9 +1275,12 @@ void        VoidServerThread::Service()
 	    m_socket->Close();
 	    done = true;
 	}
+	catch(pqxx::sql_error &se) {
+	  ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + std::string(se.what()) + ':' + se.query());
+	}
 	catch(DBException e)
 	{
-	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + PrepareForSQL(e.GetMessage()) + ">");
+	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + e.GetMessage() + ">");
 	    std::cerr << "DB Exception: " << e.GetMessage() << std::endl;
 	    done = true;
 	    break;
@@ -1420,9 +1298,9 @@ void        VoidServerThread::Service()
 
 
     if(m_login)
-	ResourceMaster::GetInstance()->Log(DEBUG,"<LOGOUT: " + PrepareForSQL(m_login->GetLogin().GetAsString()) + ">");
+	ResourceMaster::GetInstance()->Log(DEBUG,"<LOGOUT: " + m_login->GetLogin().GetAsString() + ">");
 
-    ResourceMaster::GetInstance()->Log(DEBUG,"<Done servicing:" + PrepareForSQL(std::string(m_socket->GetAddress())) +  ">");
+    ResourceMaster::GetInstance()->Log(DEBUG,"<Done servicing:" + std::string(m_socket->GetAddress()) +  ">");
 
 }
 

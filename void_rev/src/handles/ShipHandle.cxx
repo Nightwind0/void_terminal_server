@@ -6,12 +6,8 @@
 #include "void_util.h"
 
 
-#define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
-
 
 const char * ShipHandle::FIELD_NAMES[] = {"nkey","sname","ktype", "ballianceowned","kowner","kalliance","bpersonal","nsentinels", "nmissiles","nmines","ntrackers","nshields","nplasma","nmetals","ncarbon","npeople","ndebris","nexplosives","nprobes","nholds","bcloaked","ksector", "ktowship"};
-
-//    enum FIELDS{NKEY,NAME,TYPE,ISALLIANCEOWNED,OWNER,ALLIANCE,ISPERSONAL,SENTINELS,MISSILES,MINES,TRACKERS,SHIELDS,PLASMA,METAL,CARBON,PEOPLE,DEBRIS,EXPLOSIVES,PROBES,HOLDS, ISCLOAKED,SECTOR};
 
 std::string ShipHandle::GetFieldName(int fieldnum)const { return FIELD_NAMES[fieldnum];}
 
@@ -22,25 +18,22 @@ void ShipHandle::LoadFromDB()
 
 ShipTypeHandlePtr  ShipHandle::GetShipTypeHandle()const
 {
-    Integer shiptypenum(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY), GetTypeKey().GetAsString());
-    PrimaryKey key(&shiptypenum);
+  std::shared_ptr<Integer> shiptypenum = std::make_shared<Integer>(ShipTypeHandle::FieldName(ShipTypeHandle::NKEY), GetTypeKey().GetAsString());
+    PrimaryKey key(shiptypenum);
 
     ShipTypeHandlePtr handle= std::make_shared<ShipTypeHandle>(m_dbconn, key);
 
     return handle;
 }
 
-ShipHandlePtr ShipHandle::HandleFromNkey(PGconn *dbconn, const int ship)
+ShipHandlePtr ShipHandle::HandleFromNkey(DatabaseConnPtr dbconn, const int ship)
 {
-    Integer shipi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(ship));
+  std::shared_ptr<Integer> shipi = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(ship));
 
-    PrimaryKey key(&shipi);
+    PrimaryKey key(shipi);
 
     return std::make_shared<ShipHandle>(dbconn, key);
 }
-
-
-
 
 
 Integer ShipHandle::GetNkey()const
@@ -138,101 +131,101 @@ Integer ShipHandle::GetSector()const
 
 void ShipHandle::SetNkey(const int &nkey)
 {
-    SetField(NKEY,new Integer(GetFieldName(NKEY),IntToString(nkey)));
+  SetField(NKEY, std::make_shared<Integer>(GetFieldName(NKEY),IntToString(nkey)));
 }
 void ShipHandle::SetName(const std::string &name)
 {
-    SetField(NAME, new Text(GetFieldName(NAME),name));
+  SetField(NAME, std::make_shared<Text>(GetFieldName(NAME),name));
 }
 void ShipHandle::SetTypeKey(const int &type)
 {
-    SetField(TYPE, new Integer(GetFieldName(TYPE),IntToString(type)));
+  SetField(TYPE, std::make_shared<Integer>(GetFieldName(TYPE),IntToString(type)));
 }
 void ShipHandle::SetIsAllianceOwned(const bool &b)
 {
-    SetField(ISALLIANCEOWNED, new Boolean(GetFieldName(ISALLIANCEOWNED),BooleanToString(b)));
+  SetField(ISALLIANCEOWNED, std::make_shared<Boolean>(GetFieldName(ISALLIANCEOWNED),BooleanToString(b)));
 }
 void ShipHandle::SetOwner(const std::string &name)
 {
-    SetField(OWNER, new Text(GetFieldName(OWNER),name));
+  SetField(OWNER, std::make_shared<Text>(GetFieldName(OWNER),name));
 }
 void ShipHandle::SetAlliance(const std::string &alliance)
 {
-    SetField(ALLIANCE, new Text(GetFieldName(ALLIANCE), alliance));
+    SetField(ALLIANCE, std::make_shared<Text>(GetFieldName(ALLIANCE), alliance));
 }
 
 void ShipHandle::SetIsPersonal(const bool &b)
 {
-    SetField(ISPERSONAL, new Boolean(GetFieldName(ISPERSONAL),BooleanToString(b)));
+  SetField(ISPERSONAL, std::make_shared<Boolean>(GetFieldName(ISPERSONAL),BooleanToString(b)));
 }
 void ShipHandle::SetSentinels(const int &sentinels)
 {
-    SetField(SENTINELS, new Integer(GetFieldName(SENTINELS), IntToString(sentinels)));
+    SetField(SENTINELS, std::make_shared<Integer>(GetFieldName(SENTINELS), IntToString(sentinels)));
 }
 void ShipHandle::SetMissiles(const int &missiles)
 {
-    SetField(MISSILES, new Integer(GetFieldName(MISSILES), IntToString(missiles)));
+    SetField(MISSILES, std::make_shared<Integer>(GetFieldName(MISSILES), IntToString(missiles)));
 }
 void ShipHandle::SetMines(const int &mines)
 {
-    SetField(MINES, new Integer(GetFieldName(MINES), IntToString(mines)));
+    SetField(MINES, std::make_shared<Integer>(GetFieldName(MINES), IntToString(mines)));
 }
 void ShipHandle::SetTrackers(const int &trackers)
 {
-    SetField(TRACKERS, new Integer(GetFieldName(TRACKERS), IntToString(trackers)));
+    SetField(TRACKERS, std::make_shared<Integer>(GetFieldName(TRACKERS), IntToString(trackers)));
 }
 void ShipHandle::SetTow(const int &trackers)
 {
-    SetField(TOWSHIP, new Integer(GetFieldName(TOWSHIP), IntToString(trackers)));
+    SetField(TOWSHIP, std::make_shared<Integer>(GetFieldName(TOWSHIP), IntToString(trackers)));
 }
 void ShipHandle::BreakTow()
 {
-//    SetField(TOWSHIP, new Integer(GetFieldName(TRACKERS), "",true));
+//    SetField(TOWSHIP, std::make_shared<Integer>(GetFieldName(TRACKERS), "",true));
     SetFieldNull(TOWSHIP);
     
 }
 
 void ShipHandle::SetShields(const int &shields)
 {
-    SetField(SHIELDS, new Integer(GetFieldName(SHIELDS), IntToString(shields)));
+    SetField(SHIELDS, std::make_shared<Integer>(GetFieldName(SHIELDS), IntToString(shields)));
 }
 void ShipHandle::SetPlasma(const int &plasma)
 {
-    SetField(PLASMA, new Integer(GetFieldName(PLASMA), IntToString(plasma)));
+    SetField(PLASMA, std::make_shared<Integer>(GetFieldName(PLASMA), IntToString(plasma)));
 }
 void ShipHandle::SetMetals(const int &metal)
 {
-    SetField(METALS, new Integer(GetFieldName(METALS), IntToString(metal)));
+    SetField(METALS, std::make_shared<Integer>(GetFieldName(METALS), IntToString(metal)));
 }
 void ShipHandle::SetCarbon(const int &carbon)
 {
-    SetField(CARBON, new Integer(GetFieldName(CARBON), IntToString(carbon)));
+    SetField(CARBON, std::make_shared<Integer>(GetFieldName(CARBON), IntToString(carbon)));
 }
 void ShipHandle::SetPeople(const int &people)
 {
-    SetField(PEOPLE, new Integer(GetFieldName(PEOPLE), IntToString(people)));
+    SetField(PEOPLE, std::make_shared<Integer>(GetFieldName(PEOPLE), IntToString(people)));
 }
 void ShipHandle::SetDebris(const int &debris)
 {
-    SetField(DEBRIS, new Integer(GetFieldName(DEBRIS), IntToString(debris)));
+    SetField(DEBRIS, std::make_shared<Integer>(GetFieldName(DEBRIS), IntToString(debris)));
 }
 void ShipHandle::SetExplosives(const int &explosives)
 {
-    SetField(EXPLOSIVES, new Integer(GetFieldName(EXPLOSIVES), IntToString(explosives)));
+    SetField(EXPLOSIVES, std::make_shared<Integer>(GetFieldName(EXPLOSIVES), IntToString(explosives)));
 }
 void ShipHandle::SetProbes(const int &probes)
 {
-    SetField(PROBES, new Integer(GetFieldName(PROBES), IntToString(probes)));
+    SetField(PROBES, std::make_shared<Integer>(GetFieldName(PROBES), IntToString(probes)));
 }
 void ShipHandle::SetHolds(const int &holds)
 {
-    SetField(HOLDS, new Integer(GetFieldName(HOLDS), IntToString(holds)));
+    SetField(HOLDS, std::make_shared<Integer>(GetFieldName(HOLDS), IntToString(holds)));
 }
 void ShipHandle::SetIsCloaked(const bool &b)
 {
-    SetField(ISCLOAKED, new Boolean(GetFieldName(ISCLOAKED), BooleanToString(b)));
+  SetField(ISCLOAKED, std::make_shared<Boolean>(GetFieldName(ISCLOAKED), BooleanToString(b)));
 }
 void ShipHandle::SetSector(const int &sector)
 {
-    SetField(SECTOR, new Integer(GetFieldName(SECTOR), IntToString(sector)));
+    SetField(SECTOR, std::make_shared<Integer>(GetFieldName(SECTOR), IntToString(sector)));
 }

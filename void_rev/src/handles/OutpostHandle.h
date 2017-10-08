@@ -11,11 +11,10 @@
 class OutpostHandle : public SerialObject
 {
  private:
-    static const char * FIELD_NAMES[];
-
-
+  static const std::string FIELD_NAMES[];
+  
  public:
-    OutpostHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
+ OutpostHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
     ~OutpostHandle(){CloseDownObject();}
 
 

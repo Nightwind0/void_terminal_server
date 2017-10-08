@@ -6,12 +6,12 @@
 #include "CommTools.h"
 #include <list>
 #include <string>
-#include <libpq-fe.h>
+
 
 class CombatTools : public ToolSet
 {
 public:
-    CombatTools(PGconn * dbconn, DatagramSocketPtr  pSocket);
+    CombatTools(DatabaseConnPtr dbconn, DatagramSocketPtr  pSocket);
     virtual ~CombatTools();
     
     void DestroyShip(ShipHandlePtr pShip, PlayerHandlePtr pPlayer, PlayerHandlePtr pTarget, int cursector);

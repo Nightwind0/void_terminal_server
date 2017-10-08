@@ -9,11 +9,11 @@
 class LoginHandle : public SerialObject
 {
  private:
-    static const char * FIELD_NAMES[];
+  static const std::string FIELD_NAMES[];
 
 
  public:
-    LoginHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
+ LoginHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
     ~LoginHandle(){CloseDownObject();}
 
 

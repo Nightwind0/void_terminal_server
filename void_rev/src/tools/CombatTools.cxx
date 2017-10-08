@@ -6,7 +6,7 @@
 #include "ResourceMaster.h"
 #include "Universe.h"
 
-CombatTools::CombatTools(PGconn *dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_comm_tools(dbconn, pSocket)
+CombatTools::CombatTools(DatabaseConnPtr dbconn, DatagramSocketPtr pSocket):ToolSet(dbconn),m_comm_tools(dbconn, pSocket)
 {
 }
 
@@ -18,7 +18,7 @@ CombatTools::~CombatTools()
 void CombatTools::SendShipDestroyed(const std::string &target)
 {
   MessagePtr explodemsg = std::make_shared<Message>(Message::SYSTEM, "SHIPEXPLODE");
-    m_comm_tools.SendMessage(target, explodemsg);
+  m_comm_tools.SendMessage(target, explodemsg);
 
 }
 
@@ -153,44 +153,22 @@ ShipHandlePtr CombatTools::CreateEscapePodForPlayer(const std::string &player, i
 
     std::string nextvalsql = "select nextval('ship_nkey_seq');";
     
-    PGresult *dbresult = DBExec(nextvalsql);
+    pqxx::result dbresult = DBExec(nextvalsql);
 
+    int shipnum = dbresult[0][0].as<int>();
 
-    std::string nextval = PQgetvalue(dbresult,0,0);
-    PQclear(dbresult);
-
-    int shipnum = atoi(nextval.c_str());
-
-
-    std::string stmt = "insert into ship (nkey, sname, kowner, ktype) values(" + nextval + ",'*POD*','" + player + "',10);";
+    std::string stmt = "insert into ship (nkey, sname, kowner, ktype) values(" + std::to_string(shipnum) + ",'*POD*','" + player + "',10);";
     // TODO: Get escape pode type from config table
 
-    {
-      dbresult = DBExec(stmt);
-      ResultGuard g(dbresult);
 
-      if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-      {
-	DBException e("Escape pod create error: " + std::string(PQresultErrorMessage(dbresult)));
-	throw e;
-      }
-    }
+    dbresult = DBExec(stmt);
 
-    std::string sit = "update player set kcurrentship = '" + nextval + "' where sname = '" + player + "';";
-    {
-      dbresult = DBExec(sit);
-      ResultGuard g(dbresult);
 
-      if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-	{
-	  DBException e("Escape pod create error: " + std::string(PQresultErrorMessage(dbresult)));
-	  throw e;
-	}
-    }
-
-    
-    Integer epi(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipnum));
-    PrimaryKey key(&epi);
+    std::string sit = "update player set kcurrentship = '" + std::to_string(shipnum) + "' where sname = '" + player + "';";
+    dbresult = DBExec(sit);
+        
+    std::shared_ptr<Integer> epi = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), IntToString(shipnum));
+    PrimaryKey key(epi);
     
     ShipHandlePtr escapepod = std::make_shared<ShipHandle>(GetDBConn(), key);
     escapepod->Lock();

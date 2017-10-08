@@ -4,9 +4,9 @@
 #include <set>
 #include <deque>
 #include <memory>
-#include "libpq-fe.h"
+#include <pqxx/pqxx>
 
-
+int Universe::m_numsectors = -1;
 
 std::vector<Sector> Universe::GetAdjacentSectors(Sector sector)
 {
@@ -20,42 +20,44 @@ std::vector<Sector> Universe::GetAdjacentSectors(Sector sector)
     
     
     return sectors;
-
 }
 
-std::vector<StardockData> Universe::GetStardockData(PGconn * dbconn)
+std::vector<StardockData> Universe::GetStardockData(pqxx::connection_base& conn)
 {
   std::vector<StardockData> docks;
-  PGresult *dbresult = PQexec(dbconn, "SELECT nsector, sstardockname FROM Sectors WHERE bstardock = 't';");
-  ResultGuard rg(dbresult);
-
-  for(auto i = 0; i< PQntuples(dbresult); i++) {
-    docks.emplace_back(std::make_tuple(atoi(PQgetvalue(dbresult,i,0)), PQgetvalue(dbresult,i,1)));
+  pqxx::work txn{conn};
+  
+  pqxx::result r = txn.exec("SELECT nsector, sstardockname FROM Sectors WHERE bstardock = 't';");
+  
+  for(auto row : r) {
+    docks.emplace_back(std::make_tuple(static_cast<Sector>(row[0].as<int>()), row[1].as<std::string>()));
   }
+  txn.commit();
   return docks;
 }
 
-int Universe::GetNumSectors(PGconn * dbconn)
+int Universe::GetNumSectors(pqxx::connection_base& conn)
 {
-  PGresult *dbresult = PQexec(dbconn, "SELECT COUNT(0) FROM Sectors;");
-  std::string count = PQgetvalue(dbresult,0,0);
-  PQclear(dbresult);
-
-  return std::stoi(count);
+  if(m_numsectors < 0){
+    pqxx::work txn{conn};
+    pqxx::result r = txn.exec("SELECT count(0) FROM Sectors;");
+    m_numsectors = r[0][0].as<int>();
+    txn.commit();
+  }
+  else {
+    return m_numsectors;
+  }
 }
 
-std::string Universe::GetToday(PGconn * dbconn)
+std::string Universe::GetToday(pqxx::connection_base& conn)
 {
-    std::string now;
-    PGresult *dbresult;
+    pqxx::work txn{conn};
+    pqxx::result r = txn.exec("SELECT NOW();");
 
-    dbresult = PQexec(dbconn, "SELECT now();");
 
-    now = PQgetvalue(dbresult,0,0);
-
-    PQclear(dbresult);
-
-    return now;
+    std::string s = r[0][0].as<std::string>();
+    txn.commit();
+    return s;
 }
 
 std::deque<Sector> Universe::GetFlightPath(const std::set<Sector>& avoids, Sector fromsector, Sector sec)

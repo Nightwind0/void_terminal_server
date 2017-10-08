@@ -10,7 +10,7 @@
 using std::string;
 
 
-VoidCommandDockShipYardSell::VoidCommandDockShipYardSell(VoidServerThread *thread):VoidCommand(thread),EvaluateShipBehavior(thread),m_ship_tools(thread->GetDBConn())
+VoidCommandDockShipYardSell::VoidCommandDockShipYardSell(VoidServerThread *thread):VoidCommand(thread),EvaluateShipBehavior(thread),m_ship_tools(thread->GetDatabaseConn())
 {
 }
 VoidCommandDockShipYardSell::~VoidCommandDockShipYardSell()
@@ -52,24 +52,14 @@ std::list<int> VoidCommandDockShipYardSell::GetOwnedEmptyShipsInSector(const std
 
     std::string query = "select nkey from ship where ksector = '" + IntToString(sector) + "' and kowner = '" + player + "' and nkey not in (select kcurrentship from player where sname = '" + player + "');";
 
-    PGresult *dbresult = get_thread()->DBExec(query);
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+
+    for(auto row : dbresult)
     {
-
-	DBException e("Sell ship error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
+      ships.push_back(row[0].as<int>());
     }
 
-    int numships = PQntuples(dbresult);
-
-    for(int i=0;i<numships;i++)
-    {
-	ships.push_back( atoi(PQgetvalue(dbresult,i,0)));
-    }
-
-    PQclear(dbresult);
     
     return ships;
 }    

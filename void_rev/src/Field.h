@@ -3,9 +3,12 @@
 
 
 #include <string>
-#include <libpq-fe.h>
+#include <pqxx/pqxx>
+#include <memory>
 
 enum FIELD_TYPE{INTEGER,TEXT,FLOAT, TIMESTAMP, BOOLEAN};
+class Field;
+using FieldPtr = std::shared_ptr<Field>;
 
 class Field
 {
@@ -18,21 +21,17 @@ class Field
     Field(const std::string &dbname);
     Field(const std::string &dbname, const std::string &value, bool isnull=false){ m_name = dbname; m_isnull = isnull; SetFromString(value);}
     virtual ~Field(){}
-//    Field(const std::string &dbname, PGresult *dbresult, int row, int col);
+
     void SetFromString(const std::string &str){m_data = str;};
     std::string GetAsString()const{ return m_data;}
     bool IsNull()const { return m_isnull;};
     void SetNull(){ m_isnull = true;}
-    virtual Field * clone()const=0;
+    virtual FieldPtr clone()const=0;
 
-
-//    FIELD_TYPE type()const;
 
     std::string name()const { return m_name; }
     virtual FIELD_TYPE GetType()const =0;
 
-//    virtual bool operator=(const Field &other) const =0;
-//    bool operator!=(const Field &other) const;
     
     bool operator<(const Field &other) const
 	    {
@@ -75,7 +74,7 @@ class Timestamp : public Field
     int GetMinute()const;
     int GetHour()const;
     int GetSecond()const;
-    virtual Field * clone()const{ return new Timestamp(m_name,m_data,m_isnull);}
+    virtual FieldPtr clone()const{ return std::make_shared<Timestamp>(m_name,m_data,m_isnull);}
     operator std::string(){ return GetAsString(); }
 
 
@@ -92,9 +91,9 @@ class Text: public Field
     Text(const std::string &dbname, const std::string &value, bool isnull):Field(dbname,value,isnull){}
     ~Text(){}
     FIELD_TYPE GetType()const{ return TEXT;}
-    virtual Field * clone()const{ return new Text(m_name,m_data,m_isnull);}
+    virtual FieldPtr clone()const{ return std::make_shared<Text>(m_name,m_data,m_isnull);}
     //  virtual std::string GetAsString() const;
-       operator std::string(){ return GetAsString(); }
+    operator std::string() const { return GetAsString(); } 
 
 };
 
@@ -109,7 +108,7 @@ class Integer: public Field
 	Integer(const std::string &dbname, const std::string &value, bool isnull):Field(dbname,value,isnull){}
 
 	FIELD_TYPE GetType()const{ return INTEGER;}
-	virtual Field * clone()const{ return new Integer(m_name,m_data,m_isnull);}
+	virtual FieldPtr  clone()const{ return std::make_shared<Integer>(m_name,m_data,m_isnull);}
 //	virtual std::string GetAsString() const;
 
 	
@@ -129,7 +128,7 @@ class Boolean: public Field
 	Boolean(const std::string &dbname, const std::string &value, bool isnull):Field(dbname,value,isnull){}
 	FIELD_TYPE GetType()const{ return BOOLEAN;}
 //	virtual std::string GetAsString() const;
-	virtual Field * clone()const{ return new Boolean(m_name,m_data,m_isnull);}
+	virtual FieldPtr clone()const{ return std::make_shared<Boolean>(m_name,m_data,m_isnull);}
 
 	bool GetValue(){return (m_data == "t");}
 	operator bool(){ return GetValue(); }
@@ -146,11 +145,12 @@ class Float: public Field
 	Float(const std::string &dbname, const std::string &value, bool isnull):Field(dbname,value,isnull){}
 	FIELD_TYPE GetType()const{ return FLOAT;}
 //	virtual std::string GetAsString() const;
-	virtual Field * clone()const{ return new Float(m_name,m_data,m_isnull);}
+	virtual FieldPtr clone()const{ return std::make_shared<Float>(m_name,m_data,m_isnull);}
 
 	double GetValue(){return atof(m_data.c_str());}
 	operator double(){ return GetValue();}
 };
+
 
 
 

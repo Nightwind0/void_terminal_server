@@ -8,7 +8,7 @@
 class ShipTools : public ToolSet
 {
 public:
-    ShipTools(PGconn *dbconn);
+    ShipTools(DatabaseConnPtr conn);
     virtual ~ShipTools();
 
     void DeleteShip(int shipnum);

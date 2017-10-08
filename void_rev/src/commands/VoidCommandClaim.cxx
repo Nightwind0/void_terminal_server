@@ -11,7 +11,7 @@ using std::ostringstream;
 using std::left;
 using std::right;
 
-VoidCommandClaim::VoidCommandClaim(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDBConn(),thread->GetLocalSocket()),m_ship_tools(thread->GetDBConn()),m_comm_tools(thread->GetDBConn(),thread->GetLocalSocket())
+VoidCommandClaim::VoidCommandClaim(VoidServerThread *thread):VoidCommand(thread),m_combat_tools(thread->GetDatabaseConn(),thread->GetLocalSocket()),m_ship_tools(thread->GetDatabaseConn()),m_comm_tools(thread->GetDatabaseConn(),thread->GetLocalSocket())
 {
 }
 VoidCommandClaim::~VoidCommandClaim()
@@ -65,24 +65,14 @@ std::list<int> VoidCommandClaim::GetValidShipList(int cur_sector,  const std::st
     query << "or (p.kalliance = s.kalliance and s.ballianceowned = TRUE and s.nkey not in (select kcurrentship from player where kcurrentship = s.nkey )));";
 
 
-    PGresult * dbresult = get_thread()->DBExec(query.str());
+    pqxx::result dbresult = get_thread()->DBExec(query.str());
 
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
+
+    for(auto row : dbresult)
     {
-
-	DBException e("Get valid claim ship list error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
+      valid_ships.push_back(row[0].as<int>());
     }
 
-    int numships = PQntuples(dbresult);
-
-    for(int i = 0; i < numships; i++)
-    {
-	valid_ships.push_back( atoi(PQgetvalue(dbresult,i,0)));
-    }
-
-    PQclear(dbresult);
 
     return valid_ships;
 
@@ -137,25 +127,15 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
     bool occupied = false;
     std::string occupation = "select sname from player where kcurrentship = '" + IntToString(shipdestnum) + "';";
 
-    PGresult *dbresult = get_thread()->DBExec(occupation);
-
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e("claim error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result dbresult = get_thread()->DBExec(occupation);
 
     std::string oplayer;
-    if(PQntuples(dbresult) >0)
+    
+    if(dbresult.size() >0)
     {
 	occupied = true;
-	oplayer = PQgetvalue(dbresult,0,0);	
+	oplayer = dbresult[0][0].as<std::string>();
     }
-
-    PQclear(dbresult);
 
 
     Send(Color()->get(LIGHTBLUE) + "You board the ship." + endr);
@@ -165,13 +145,10 @@ bool VoidCommandClaim::CommandClaim(const std::string &arguments)
 	ShipHandlePtr shiph = m_combat_tools.CreateEscapePodForPlayer(oplayer,sector);
 
 	m_combat_tools.MoveShipRandomly(shiph);
-
     }
 
 
-
-
-    ShipHandlePtr oshiph = ShipHandle::HandleFromNkey(get_thread()->GetDBConn(),shipdestnum);
+    ShipHandlePtr oshiph = ShipHandle::HandleFromNkey(get_thread()->GetDatabaseConn(),shipdestnum);
 
     
 

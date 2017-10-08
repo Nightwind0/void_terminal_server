@@ -5,7 +5,7 @@
 #include "ResourceMaster.h"
 #include <cmath>
 
-ToolSet::ToolSet(PGconn * dbconn):m_dbconn(dbconn)
+ToolSet::ToolSet(DatabaseConnPtr dbconn):m_dbconn(dbconn)
 {
 }
 
@@ -55,24 +55,23 @@ double ToolSet::g_rand() const
 
 void ToolSet::LogEvent(const Event &event )
 {
-    std::ostringstream stmt;
-    stmt <<  "insert into eventlog values(now(), '" << event.GetActor() << "','" << event.GetSubject() << "','"
-	 << (int)event.GetType() << "','" << PrepareForSQL(event.GetMessage()) << "','"
-	 << event.GetShipType() <<"','" << PrepareForSQL(event.GetShipName()) << "');";
-    
-    PGresult * dbresult = DBExec(stmt.str());
-    
-    if(PQresultStatus(dbresult) != PGRES_COMMAND_OK)
-    {
-	PQclear(dbresult);
-	throw DBException(PQerrorMessage(m_dbconn));
-    }
+  pqxx::work work{*m_dbconn};
+
+  std::ostringstream stmt;
+  stmt <<  "insert into eventlog values(now(), " << work.quote(event.GetActor()) << "," << work.quote(event.GetSubject()) << ","
+       << (int)event.GetType() << ',' << work.quote(event.GetMessage()) << ","
+       << event.GetShipType() <<"," << work.quote(event.GetShipName()) << ");";
+  
+  work.exec(stmt.str());
+  work.commit();
 }
 
-PGresult * ToolSet::DBExec(const std::string &stmt)
+pqxx::result ToolSet::DBExec(const std::string &stmt)
 {
-    ResourceMaster::GetInstance()->Log(DEBUG2, "~DBExec: " + PrepareForSQL(stmt) + "~");
-
-    return PQexec(m_dbconn, stmt.c_str());
+    pqxx::work work{*m_dbconn};
+    ResourceMaster::GetInstance()->Log(AUDIT, "~DBExec: " + work.esc(stmt) + "~");
+    pqxx::result r = work.exec(stmt);
+    work.commit();
+    return r;
 }
     

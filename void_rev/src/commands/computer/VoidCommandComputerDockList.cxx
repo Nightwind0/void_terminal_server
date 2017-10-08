@@ -43,7 +43,7 @@ bool VoidCommandComputerDockList::ClaimCommand(const string &command)
 bool VoidCommandComputerDockList::HandleCommand(const string &command, const string &arguments, bool bFromPost)
 {
   std::ostringstream os;
-  std::vector<StardockData> stardocks = Universe::GetStardockData(get_thread()->GetDBConn());
+  std::vector<StardockData> stardocks = Universe::GetStardockData(*get_thread()->GetDatabaseConn());
   for(const auto& it : stardocks) {
     Sector sector;
     std::string name;

@@ -7,21 +7,7 @@ using namespace std;
 
 PrimaryKey::~PrimaryKey()
 {
-    if(!m_fields.size()) return;
 
-    for(std::vector<Field*>::iterator i = m_fields.begin();
-	i != m_fields.end();
-	i++)
-    {
-	if(*i != 0)
-	{
-//	    ResourceMaster::GetInstance()->Log(AUDIT,"~PrimaryKey: deleteing " + (*i)->name() + ";" + (*i)->GetAsString());
-	 
-	    Field *field = *i;
-	    delete field;
-//	    m_fields.erase(i);
-	}
-    }
 }
 
 PrimaryKey::PrimaryKey()
@@ -29,23 +15,23 @@ PrimaryKey::PrimaryKey()
 }
 
 
-PrimaryKey::PrimaryKey(Field *field)
+PrimaryKey::PrimaryKey(FieldPtr field)
 {
-    m_fields.push_back(field->clone());
+    m_fields.push_back(field);
 }
 
-PrimaryKey::PrimaryKey(Field *field1, Field *field2)
+PrimaryKey::PrimaryKey(FieldPtr field1, FieldPtr field2)
 {
-    m_fields.push_back(field1->clone());
-    m_fields.push_back(field2->clone());
+    m_fields.push_back(field1);
+    m_fields.push_back(field2);
 
 }
 
-PrimaryKey::PrimaryKey(Field *field1, Field *field2, Field *field3)
+PrimaryKey::PrimaryKey(FieldPtr field1, FieldPtr field2, FieldPtr field3)
 {
-    m_fields.push_back(field1->clone());
-    m_fields.push_back(field2->clone());
-    m_fields.push_back(field3->clone());
+    m_fields.push_back(field1);
+    m_fields.push_back(field2);
+    m_fields.push_back(field3);
 }
 
 
@@ -57,12 +43,12 @@ const PrimaryKey & PrimaryKey::operator=(const PrimaryKey &key)
 
     m_fields.clear();
 
-    for(std::vector<Field*>::const_iterator i = key.GetFieldsBegin();
+    for(std::vector<FieldPtr>::const_iterator i = key.GetFieldsBegin();
 	i != key.GetFieldsEnd();
 	i++)
     {
 
-	m_fields.push_back((*i)->clone());
+	m_fields.push_back(*i);
     }    
 
     return *this;
@@ -71,28 +57,28 @@ const PrimaryKey & PrimaryKey::operator=(const PrimaryKey &key)
 PrimaryKey::PrimaryKey(const PrimaryKey &key)
 {
 
-    for(std::vector<Field*>::const_iterator i = key.GetFieldsBegin();
+    for(std::vector<FieldPtr>::const_iterator i = key.GetFieldsBegin();
 	i != key.GetFieldsEnd();
 	i++)
     {
 
-	m_fields.push_back((*i)->clone());
+	m_fields.push_back(*i);
     }    
 }
 
 
     
-void PrimaryKey::SetFields(const vector<Field*> &fields)
+void PrimaryKey::SetFields(const vector<FieldPtr> &fields)
 {
     m_fields = fields;
 }
 
-std::vector<Field*>::const_iterator PrimaryKey::GetFieldsBegin() const
+std::vector<FieldPtr>::const_iterator PrimaryKey::GetFieldsBegin() const
 {
     return m_fields.begin();
 }
 
-std::vector<Field*>::const_iterator PrimaryKey::GetFieldsEnd() const
+std::vector<FieldPtr>::const_iterator PrimaryKey::GetFieldsEnd() const
 {
     return m_fields.end();
 }
@@ -111,8 +97,8 @@ bool PrimaryKey::operator==(PrimaryKey &other) const
 	return false;
 
 
-    std::vector<Field*>::const_iterator j = other.GetFieldsBegin();
-    for(std::vector<Field*>::const_iterator i = m_fields.begin();
+    std::vector<FieldPtr>::const_iterator j = other.GetFieldsBegin();
+    for(std::vector<FieldPtr>::const_iterator i = m_fields.begin();
 	i != m_fields.end() && j != other.GetFieldsEnd();
 	i++, j++)
     {

@@ -7,7 +7,7 @@
 #include "PlayerHandle.h"
 #include <sstream>
 
-VoidCommandDeploy::VoidCommandDeploy(VoidServerThread *thread):VoidCommand(thread),m_sentinel_tools(thread->GetDBConn(), thread->GetLocalSocket())
+VoidCommandDeploy::VoidCommandDeploy(VoidServerThread *thread):VoidCommand(thread),m_sentinel_tools(thread->GetDatabaseConn(), thread->GetLocalSocket())
 {
 }
 VoidCommandDeploy::~VoidCommandDeploy()

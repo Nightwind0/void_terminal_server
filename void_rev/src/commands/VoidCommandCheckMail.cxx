@@ -53,62 +53,49 @@ bool VoidCommandCheckMail::ReadMail()
 	"kfromplayer, bfromsystem, smessage, nmailid from mail where ktoplayer = '" + get_thread()->GetPlayer()->GetName().GetAsString() + "'; ";
 
 
-    PGresult *dbresult = get_thread()->DBExec(sql);
-    
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
+    pqxx::result dbresult = get_thread()->DBExec(sql);
 
-	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
-	throw e;
-    }
+    int num_mail = dbresult.size();
 
-    int num_mail = PQntuples(dbresult);
-
-    if(num_mail < 1)
-    {
-	PQclear(dbresult);
+    if(num_mail < 1) {
 	return true;
     }
 
     std::ostringstream mail;
+    int i = 0;
+    for(auto row : dbresult) {
+      mail << Color()->get(BLACK,BG_WHITE) << "Message From " << Color()->get(RED,BG_WHITE) << row[5].as<std::string>();
+      mail << Color()->get(BLACK,BG_WHITE) << " On " << Color()->get(RED,BG_WHITE) 
+	   << row[1].as<std::string>() << '/' << row[0].as<std::string>() << '/' << row[2].as<std::string>()
+	   << ' ' << row[3].as<std::string>() << ':' << row[4].as<std::string>() << Color()->blackout() << endr;
 
-    for(int i=0;i<num_mail;i++)
-    {
-	mail << Color()->get(BLACK,BG_WHITE) << "Message From " << Color()->get(RED,BG_WHITE) << PQgetvalue(dbresult,i,5);
-	mail << Color()->get(BLACK,BG_WHITE) << " On " << Color()->get(RED,BG_WHITE) 
-	     << PQgetvalue(dbresult,i,1) << '/' << PQgetvalue(dbresult,i,0) << '/' << PQgetvalue(dbresult,i,2) 
-	     << ' ' << PQgetvalue(dbresult,i,3) << ':' << PQgetvalue(dbresult,i,4) << Color()->blackout() << endr;
-
-	if((std::string)PQgetvalue(dbresult,i,6) != "t")
-	    mail << Color()->get(LIGHTCYAN,BG_BLACK);
-	else mail << Color()->get(LIGHTGREEN, BG_BLACK);
+      if(row[6].as<std::string>() != "t")
+	mail << Color()->get(LIGHTCYAN,BG_BLACK);
+      else mail << Color()->get(LIGHTGREEN, BG_BLACK);
 	
-	Send(mail.str());
+      Send(mail.str());
 
-	mail.str("");
+      mail.str("");
 
-	get_thread()->SendWordWrapped((std::string)PQgetvalue(dbresult,i,7)+ endr,80);
+      get_thread()->SendWordWrapped(row[7].as<std::string>() + endr,80);
 
-	std::string markread = (std::string)"delete from mail where nmailid ='" + PQgetvalue(dbresult,i,8) + "';";
-	get_thread()->DBExec(markread); // TODO Check for error
+      std::string markread = (std::string)"delete from mail where nmailid =" + row[8].as<std::string>() + ";";
+      get_thread()->DBExec(markread); // TODO Check for error
 	
-	if(i + 1 !=  num_mail)
-	{
-	    Send(Color()->get(GREEN) + "Read Next Mail? (Y/n):");
-	    std::string next = ReceiveLine();
-	    
-	    LOWERCASE(next);
-	    
-	    if(!CompStrings(next,"yes"))
+      if(++i !=  num_mail) {
+	  Send(Color()->get(GREEN) + "Read Next Mail? (Y/n):");
+	  std::string next = ReceiveLine();
+	  
+	  LOWERCASE(next);
+	  
+	  if(!CompStrings(next,"yes"))
 	    {
-		break;
+	      break;
 	    }
 	}
-	
+      
     }
-
-    PQclear(dbresult);
+    
 
     return true;
 }

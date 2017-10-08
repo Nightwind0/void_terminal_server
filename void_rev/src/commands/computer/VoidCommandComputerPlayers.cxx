@@ -56,14 +56,7 @@ bool VoidCommandComputerPlayers::CommandComputerPlayers(const std::string &argum
 
     std::string query = "select player.sname, player.npoints, shipmanufacturer.sname, shiptype.sname, shiptype.nforecolor,shiptype.nbackcolor, player.kalliance from player left outer join ship on (ship.nkey = player.kcurrentship)  left outer join shiptype on (ship.ktype = shiptype.nkey) left outer join shipmanufacturer on (shiptype.kmanufacturer = shipmanufacturer.nkey) order by player.npoints desc;";
 
-    PGresult *dbresult = get_thread()->DBExec(query);
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-	DBException e("Player list error: " + std::string(PQresultErrorMessage(dbresult)));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
     ostringstream os;
 
@@ -85,39 +78,38 @@ bool VoidCommandComputerPlayers::CommandComputerPlayers(const std::string &argum
     os << Color()->blackout();
     os << endr;
 
-    int numplayers = PQntuples(dbresult);
+    int numplayers = dbresult.size();
 
-    for(int i=0;i<numplayers;i++)
+    for(auto row : dbresult)
     {
 	os << Color()->get(LIGHTBLUE);
 	os.width(15);
 	os << left;
-	os << PQgetvalue(dbresult,i,0);
+	os << row[0].as<std::string>();
 	os << Color()->get(RED);
 	os.width(15);
 	os << left;
-	os << PQgetvalue(dbresult,i,6);
+	os << row[6].as<std::string>();
 	os << Color()->get(LIGHTGREEN);
 	os.width(8);
 	os << left;
-	os << PQgetvalue(dbresult,i,1);
+	os << row[1].as<std::string>();
       
-	FGColor fgcolor = (FGColor)atoi(PQgetvalue(dbresult,i,4));
-	BGColor bgcolor = (BGColor)atoi(PQgetvalue(dbresult,i,5));
+	FGColor fgcolor = (FGColor)row[4].as<int>();
+	BGColor bgcolor = (BGColor)row[5].as<int>();
 
 	os << Color()->get(fgcolor,bgcolor);
 	os.width(6);
 	os << left;
-	os << PQgetvalue(dbresult,i,2);
+	os << row[2].as<std::string>();
 	os.width(20);
 	os << left;
-	os << PQgetvalue(dbresult,i,3);
+	os << row[3].as<std::string>();
 	os << Color()->blackout();
 	os << endr;
 
     }
 
-    PQclear(dbresult);
 
     Send(os.str());
 

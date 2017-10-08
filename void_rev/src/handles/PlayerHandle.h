@@ -15,7 +15,7 @@ class PlayerHandle : public SerialObject
 
 
  public:
-    PlayerHandle(PGconn *dbconn, const PrimaryKey &key, bool isnew = false);
+    PlayerHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew = false);
     ~PlayerHandle(){CloseDownObject();}
 
 

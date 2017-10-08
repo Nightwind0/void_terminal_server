@@ -27,7 +27,7 @@ class VoidCommandStatus : public VoidCommand
     std::string ToBool(const std::string &value);
     std::string SendValue(const std::string &name, const std::string &value);
     std::string SendRow(const std::string &col1,const  std::string &col2,const std::string &col3);
-    std::string PrettyValue(PGresult *dbresult, int row, int column, bool usedash= false);
+    std::string PrettyValue(const pqxx::result& dbresult, int row, int column, bool usedash= false);
     void ShowStatus();
     VoidCommandStatus();
 

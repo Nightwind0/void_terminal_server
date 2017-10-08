@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include "libpq-fe.h"
+#include <pqxx/pqxx>
 #include <set>
 #include <memory>
 #include <vector>
@@ -18,18 +18,18 @@ class Universe
     ~Universe();
 
     static std::vector<Sector> GetAdjacentSectors(Sector sector);
-    static int GetNumSectors(PGconn *dbconn);
-    static std::string GetToday(PGconn *dbconn) ;
-    static std::vector<StardockData> GetStardockData(PGconn * dbconn);
+    static int GetNumSectors(pqxx::connection_base&);
+    static std::string GetToday(pqxx::connection_base&) ;
+    static std::vector<StardockData> GetStardockData(pqxx::connection_base&);
     static std::deque<Sector> GetFlightPath(const std::set<Sector>& avoids, Sector fromsector, Sector tosector) ;
 
  private:
     struct PathNode
     {
-	int sector;
+      int sector;
       std::shared_ptr<PathNode> parent;
     };
-
+    static int m_numsectors;
 };
 
 

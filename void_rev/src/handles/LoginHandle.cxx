@@ -3,35 +3,34 @@
 #include <string>
 #include <map>
 #include "void_util.h"
-
-#define PGV(d,x,y) PQgetvalue(d,x,y),PQgetisnull(d,x,y)?true:false 
-
+#include "ResourceMaster.h"
 
 
- const char * LoginHandle::FIELD_NAMES[] = {"slogin","spassword","dfirstlogin","dlastlogin","slastip","semail","bdisabled","nlogins"};
+const std::string LoginHandle::FIELD_NAMES[] = {"slogin","spassword","dfirstlogin","dlastlogin","slastip","semail","bdisabled","nlogins"};
 
 void LoginHandle::LoadFromDB()
 {
-    PGresult *dbresult;
-    std::string query = "select slogin,spassword,dfirstlogin,dlastlogin,slastip,semail,bdisabled,nlogins from login where " + CreateWhereClause() + ";";
+  std::string query = "select slogin,spassword,dfirstlogin,dlastlogin,slastip,semail,bdisabled,nlogins from login where " + CreateWhereClause() + ";";
 
-    dbresult  = PQexec(m_dbconn,query.c_str());
+  ResourceMaster::GetInstance()->Log(AUDIT, query);
+  pqxx::work work{*m_dbconn};
+  pqxx::result r = work.exec(query);
+  
     
-    if(PQntuples(dbresult) != 1)
-    {
-	throw DBException("LoginHandle::LoadFromDB: ntuples != 1");
-    }
+  if(r.size() != 1){
+    throw DBException("LoginHandle::LoadFromDB: ntuples != 1");
+  }
 
 
-    m_fields[LOGIN] = new Text(FIELD_NAMES[LOGIN],PQgetvalue(dbresult,0,0),PQgetisnull(dbresult,0,0)?true:false);
-    m_fields[PASSWORD] = new Text(FIELD_NAMES[PASSWORD],PQgetvalue(dbresult,0,1),PQgetisnull(dbresult,0,1)?true:false);
-    m_fields[FIRSTLOGIN] = new Timestamp(FIELD_NAMES[FIRSTLOGIN],PQgetvalue(dbresult,0,2),PQgetisnull(dbresult,0,2)?true:false);
-    m_fields[LASTLOGIN] = new Timestamp(FIELD_NAMES[LASTLOGIN],PQgetvalue(dbresult,0,3),PQgetisnull(dbresult,0,3)?true:false);
-    m_fields[LASTIP] = new Text(FIELD_NAMES[LASTIP],PGV(dbresult,0,4));
-    m_fields[EMAIL] = new Text(FIELD_NAMES[EMAIL],PGV(dbresult,0,5));
-    m_fields[DISABLED] = new Boolean(FIELD_NAMES[DISABLED],PGV(dbresult,0,6));
-    m_fields[LOGINS] = new Integer(FIELD_NAMES[LOGINS],PGV(dbresult,0,7));
-
+  m_fields[LOGIN] = std::make_shared<Text>(FIELD_NAMES[LOGIN],r[0][0].as<std::string>());
+  m_fields[PASSWORD] = std::make_shared<Text>(FIELD_NAMES[PASSWORD],r[0][1].as<std::string>());
+  m_fields[FIRSTLOGIN] = std::make_shared<Timestamp>(FIELD_NAMES[FIRSTLOGIN],r[0][2].as<std::string>(), r[0][2].is_null());
+  m_fields[LASTLOGIN] = std::make_shared<Timestamp>(FIELD_NAMES[LASTLOGIN],r[0][3].as<std::string>(),r[0][3].is_null());
+  m_fields[LASTIP] = std::make_shared<Text>(FIELD_NAMES[LASTIP],r[0][4].as<std::string>());
+  m_fields[EMAIL] = std::make_shared<Text>(FIELD_NAMES[EMAIL],r[0][5].as<std::string>());
+  m_fields[DISABLED] = std::make_shared<Boolean>(FIELD_NAMES[DISABLED],r[0][6].as<std::string>());
+  m_fields[LOGINS] = std::make_shared<Integer>(FIELD_NAMES[LOGINS],r[0][7].as<std::string>());
+  work.commit();
 }
 
 
@@ -87,40 +86,40 @@ void LoginHandle::SetLogin(const Text &login)
 
 void LoginHandle::SetLogin(const std::string &login)
 {
-    SetField(LOGIN, new Text(GetFieldName(LOGIN),login));
+  SetField(LOGIN, std::make_shared<Text>(GetFieldName(LOGIN),login));
 }
 
 
 void LoginHandle::SetPassword(const std::string &password)
 {
-    SetField(PASSWORD, new Text(GetFieldName(PASSWORD),password));
+  SetField(PASSWORD, std::make_shared<Text>(GetFieldName(PASSWORD),password));
 }
 
 void LoginHandle::SetFirstLogin(const std::string &date)
 {
-    SetField(FIRSTLOGIN, new Timestamp(GetFieldName(FIRSTLOGIN),date));
+  SetField(FIRSTLOGIN, std::make_shared<Timestamp>(GetFieldName(FIRSTLOGIN),date));
 }
 void LoginHandle::SetLastLogin(const std::string &date)
 {
-    SetField(LASTLOGIN, new Timestamp(GetFieldName(LASTLOGIN),date));
+  SetField(LASTLOGIN, std::make_shared<Timestamp>(GetFieldName(LASTLOGIN),date));
 }
 
 void LoginHandle::SetEmail(const std::string &email)
 {
-    SetField(EMAIL, new Text(GetFieldName(EMAIL),email));
+  SetField(EMAIL, std::make_shared<Text>(GetFieldName(EMAIL),email));
 }
 
 void LoginHandle::SetLastIP(const std::string &ip)
 {
-    SetField(LASTIP, new Text(GetFieldName(LASTIP),ip));
+  SetField(LASTIP, std::make_shared<Text>(GetFieldName(LASTIP),ip));
 }
 
 void LoginHandle::SetDisabled(const bool &b)
 {
-    SetField(DISABLED, new Boolean(GetFieldName(DISABLED),BooleanToString(b)));
+  SetField(DISABLED, std::make_shared<Boolean>(GetFieldName(DISABLED),BooleanToString(b)));
 }
 
 void LoginHandle::SetLogins(const int &logins)
 {
-    SetField(LOGINS, new Integer(GetFieldName(LOGINS),IntToString(logins)));
+  SetField(LOGINS, std::make_shared<Integer>(GetFieldName(LOGINS),IntToString(logins)));
 }

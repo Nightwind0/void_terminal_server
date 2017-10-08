@@ -13,10 +13,10 @@
 #include <syslog.h>
 #include "void_util.h"
 #include "ResourceMaster.h"
-#include "libpq-fe.h"
 #include "EdgeLoadThread.h"
 #include "VoidThreadSpawner.h"
 #include <unistd.h>
+#include <pqxx/pqxx>
 #include <unordered_map>
 #include "SocketException.h"
 
@@ -25,24 +25,24 @@ const int DEFAULT_VOID_PORT = 5005;
 
 using namespace std;
 
-char  shutdownstr[] = "SHUTDOWN";
+const char  shutdownstr[] = "SHUTDOWN";
 
 
 static void daemon()
 {
   pid_t pid;
-
+  
   /* Fork off the parent process */
   pid = fork();
-
+  
   /* An error occurred */
   if (pid < 0)
     exit(EXIT_FAILURE);
-
+  
   /* Success: Let the parent terminate */
   if (pid > 0)
     exit(EXIT_SUCCESS);
-
+  
   /* On success: The child process becomes session leader */
   if (setsid() < 0)
     exit(EXIT_FAILURE);
@@ -79,6 +79,7 @@ static void daemon()
 
 void usage() {
   std::cout << "Void Usage" << std::endl;
+  std::cout << "-n disable daemon mode." << std::endl;
   std::cout << "-p <port> use specified TCP port. Config file overrides." << std::endl;
   std::cout << "--db <database name> use specified database. Config file overrides." << std::endl;
   std::cout << "-i <instance name> give this process a specific name for control." << std::endl;
@@ -96,8 +97,8 @@ int main(int argc, char** argv)
   std::string configpath = "/etc/void/void.conf";
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
-    if(arg == "-d") {
-
+    if(arg == "-n") {
+      daemon_mode = false;
     } else if(arg == "-c" && argc >= i+1) {
       configpath = argv[i+1];
     } else if(arg == "-p" && argc >= i+1) {
@@ -110,7 +111,6 @@ int main(int argc, char** argv)
     }
   }
 
-  daemon();
   
   std::unordered_map<std::string, std::string> conf_values;
   std::ifstream conf_in(configpath);
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
   srand(time(NULL));
 
   char str[1024];
-  PGconn *RMconn;
+
 
   ResourceMaster::GetInstance()->SetInstanceName(instance);
   ResourceMaster::GetInstance()->SetDatabaseName(database);
@@ -160,17 +160,7 @@ int main(int argc, char** argv)
   bool done = false;
     
 
-  RMconn = PQsetdbLogin(NULL,NULL,NULL,NULL,database.c_str(),"void","tiTVPok?");
-
-  if(PQstatus(RMconn) == CONNECTION_BAD) {
-    
-    std::cerr << PQerrorMessage(RMconn) << std::endl;
-    
-    throw DBException(PQerrorMessage(RMconn));
-  }
-  
-
-  ResourceMaster::GetInstance()->SetDBConn(RMconn);
+  ResourceMaster::GetInstance()->SetDatabaseConnectionString("dbname=" + database + " user=void password='tiTVPok?'");
 
 
     
@@ -181,14 +171,14 @@ int main(int argc, char** argv)
 
 
   try{
-
     threadspawner->Start();
-
     ResourceMaster::GetInstance()->Log(DEBUG,"[Void Server Starting]"s + instance);
   }
-  catch(DBException e) {
+  catch(pqxx::sql_error &se){
+    std::cerr << se.what() << se.query() << std::endl;
+    exit(1);
+  }catch(DBException e) {
     syslog(LOG_ERR, e.GetMessage().c_str());
-    PQfinish(RMconn);
     exit(1);
   }
 
@@ -249,8 +239,7 @@ int main(int argc, char** argv)
       syslog(LOG_NOTICE, "Listing connections:");
       for(vector<TCPSocketPtr>::iterator i = ResourceMaster::GetInstance()->GetSocketsBegin();
 	  i != ResourceMaster::GetInstance()->GetSocketsEnd();
-	  i++)
-	{
+	  i++) {
 	  TCPSocketPtr s = *i;
 	  syslog(LOG_NOTICE, s->GetAddress().c_str());
 	}
@@ -262,9 +251,9 @@ int main(int argc, char** argv)
 	  i++) {
 	VoidServerThread *t = *i;
 	LoginHandlePtr login = t->GetLogin();
-
+	
 	syslog(LOG_NOTICE, ((std::string)login->GetLogin()).c_str());
-		
+	
       }
 
     }
@@ -296,7 +285,4 @@ int main(int argc, char** argv)
   catch(DBException e) {
     cerr  << "Logging exception:" << e.GetMessage() << endl;
   }
-
-  PQfinish(RMconn);
-
 }

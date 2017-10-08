@@ -63,7 +63,7 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
     }
 
 
-    if(sec <0 || sec >= Universe::GetNumSectors(get_thread()->GetDBConn()))
+    if(sec <0 || sec >= Universe::GetNumSectors(*get_thread()->GetDatabaseConn()))
     {
 	os << Color()->get(LIGHTRED) << "Sector " << Color()->get(RED) << sec << Color()->get(LIGHTRED) << " does not exist." << endr;
 	get_thread()->Send(os.str());

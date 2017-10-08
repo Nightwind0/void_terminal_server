@@ -92,21 +92,11 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     query += ";";
 
-    PGresult *dbresult;
 
-    dbresult = get_thread()->DBExec(query);
-
-
-    if(PQresultStatus(dbresult) != PGRES_TUPLES_OK)
-    {
-
-	DBException e(PQresultErrorMessage(dbresult));
-	PQclear(dbresult);
-	throw e;
-    }
+    pqxx::result dbresult = get_thread()->DBExec(query);
 
 
-    int numoutposts = PQntuples(dbresult);
+    int numoutposts = dbresult.size();
     int whichoutpost;
 
     if(numoutposts == 0)
@@ -125,7 +115,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 	for(int i=0;i<numoutposts;i++)
 	{
-	    get_thread()->Send(Color()->get(WHITE)+ IntToString(i+1) + ")" + Color()->get(LIGHTPURPLE) + PQgetvalue(dbresult,0,i) + endr);
+	  get_thread()->Send(Color()->get(WHITE)+ IntToString(i+1) + ")" + Color()->get(LIGHTPURPLE) + dbresult[i][0].as<std::string>() + endr);
 	}
 
 	std::string selection = get_thread()->ReceiveLine();
@@ -133,16 +123,14 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	whichoutpost = atoi(selection.c_str()) -1;
     }
     
-    std::string outpostname = PQgetvalue(dbresult,whichoutpost,0);
+    std::string outpostname = dbresult[whichoutpost][0].as<std::string>();
 
-    
-//    PQclear(dbresult);
 
-    Text outpostt(OutpostHandle::FieldName(OutpostHandle::NAME), outpostname);
-    PrimaryKey key(&outpostt);
+    std::shared_ptr<Text> outpostt = std::make_shared<Text>(OutpostHandle::FieldName(OutpostHandle::NAME), outpostname);
+    PrimaryKey key(outpostt);
     
     
-    OutpostHandlePtr outpost = std::make_shared<OutpostHandle>(get_thread()->GetDBConn(),key,false);
+    OutpostHandlePtr outpost = std::make_shared<OutpostHandle>(get_thread()->GetDatabaseConn(),key,false);
     
 
     get_thread()->Send(Color()->get(BLUE, BG_WHITE) + "Docking at " + outpostname + "..." + Color()->blackout() + endr);
@@ -151,13 +139,15 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     player->SetTurnsLeft( cur_turns - 1);
     player->Unlock();
 
-    const bool buyplasma = (strcmp(PQgetvalue(dbresult,whichoutpost,2),"t") == 0); 
-    const bool buymetals = (strcmp(PQgetvalue(dbresult,whichoutpost,3),"t") == 0); 
-    const bool buycarbon = (strcmp(PQgetvalue(dbresult,whichoutpost,4),"t") == 0); 
+    auto outpostrow = dbresult[whichoutpost];
 
-    const double plasma_price_mult = atof(PQgetvalue(dbresult,whichoutpost,13));
-    const double metals_price_mult = atof(PQgetvalue(dbresult,whichoutpost,14));
-    const double carbon_price_mult = atof(PQgetvalue(dbresult,whichoutpost,15));
+    const bool buyplasma = outpostrow[2].as<std::string>() == "t";
+    const bool buymetals = outpostrow[3].as<std::string>() == "t";
+    const bool buycarbon = outpostrow[4].as<std::string>() == "t";
+
+    const double plasma_price_mult = outpostrow[13].as<double>();
+    const double metals_price_mult = outpostrow[14].as<double>();
+    const double carbon_price_mult = outpostrow[15].as<double>();
 
     const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
     const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
@@ -168,19 +158,19 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     double carbon_price = carbon_price_mult * double(base_carbon_price);
 
 
-    if(!PQgetisnull(dbresult,0,6))
+    if(!outpostrow[6].is_null())
     {
     
 	std::string visited;
 	
-	int years = -atoi(PQgetvalue(dbresult,whichoutpost,7));
-	int months = -atoi(PQgetvalue(dbresult,whichoutpost,8));
-	int days = -atoi(PQgetvalue(dbresult,whichoutpost,9));
-	int hours = -atoi(PQgetvalue(dbresult,whichoutpost,10));
-	int minutes = -atoi(PQgetvalue(dbresult,whichoutpost,11));
-	int minutes_delta = atoi(PQgetvalue(dbresult,whichoutpost,12));
+	int years = - outpostrow[7].as<int>();
+	int months = -outpostrow[8].as<int>();
+	int days = -outpostrow[9].as<int>();
+	int hours = -outpostrow[10].as<int>();
+	int minutes = -outpostrow[11].as<int>();
+	int minutes_delta = outpostrow[12].as<int>();
 	
-	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + PQgetvalue(dbresult,whichoutpost,6) ;
+	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + outpostrow[6].as<std::string>();
 	visited += Color()->get(WHITE) + ' ';
 	
 	if(years >0) visited += IntToString(years) + " years ";
@@ -229,7 +219,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     outpost->Lock();
     outpost->SetLastVisitor(player->GetName());
-    outpost->SetLastVisit(Universe::GetToday(get_thread()->GetDBConn()));
+    outpost->SetLastVisit(Universe::GetToday(*get_thread()->GetDatabaseConn()));
     outpost->Unlock();
 
 
@@ -249,8 +239,6 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     int empty_holds = max_holds - cur_holds;
     
     int credits = player->GetCredits();
-
-    PQclear(dbresult);
 
     
     get_thread()->Send(Color()->get(WHITE) + IntToString(credits) + Color()->get(CYAN) + " credits" + endr);
