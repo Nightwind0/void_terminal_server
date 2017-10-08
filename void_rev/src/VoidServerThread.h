@@ -44,9 +44,6 @@ public:
     ShipHandlePtr CreateNewShip(int shiptype);	
 
 protected:
-
-    void Log(LOG_SEVERITY severity, const std::string& message)const;
-
     bool DoCommand(const std::string &command, const std::string &arguments, bool frompost);
 
     std::vector<std::shared_ptr<VoidCommand>> m_commandlist; 

@@ -46,13 +46,13 @@
 using namespace std;
 
 const std::string kSetSectorFlagStmt {"setSectorFlag"};
-const std::string kClearSectorFlagStmt {"clearSectorFlagStmt"};
-const std::string kGetSectorFlagsStmt {"getSectorFlagsStmt"};
+const std::string kClearSectorFlagStmt {"clearSectorFlag"};
+const std::string kGetSectorFlagsStmt {"getSectorFlags"};
 
 void sigpipeHandler(int x)
 {
     signal(SIGPIPE, sigpipeHandler);  //reset the signal handler
-    ResourceMaster::GetInstance()->Log(EMERGENCY, "SIGPIPE");
+    LOG(EMERGENCY, "SIGPIPE");
 }
 
 void VoidServerThread::add_command(std::shared_ptr<VoidCommand>  cmd)
@@ -63,7 +63,7 @@ void VoidServerThread::add_command(std::shared_ptr<VoidCommand>  cmd)
 pqxx::result VoidServerThread::DBExec(const std::string &query)
 {
   pqxx::work work{*m_dbconn};
-  ResourceMaster::GetInstance()->Log(DEBUG2, "<DBExec: " + work.quote(query) + ">");
+  LOG(DEBUG2, "<DBExec: " + work.quote(query) + ">");
   
   pqxx::result r = work.exec(query);
   work.commit();
@@ -84,11 +84,11 @@ LoginHandlePtr VoidServerThread::GetLogin() const
 
 void VoidServerThread::HandleSystemMessage(const Message &msg)
 {
-    ResourceMaster::GetInstance()->Log(DEBUG2, "<System Message=" + msg.GetString());
+    LOG(DEBUG2, "<System Message=" + msg.GetString());
     if(msg.GetString() == "SHUTDOWN")
     {
 	Send(Color()->get(LIGHTRED) + endr + "**** " + Color()->get(BLACK, BG_RED) + "IMMEDIATE SYSTEM SHUTDOWN" + Color()->get(LIGHTRED) + " ****" + endr);
-	ResourceMaster::GetInstance()->Log(DEBUG2, "<Shutdown in VST>");
+	LOG(DEBUG2, "<Shutdown in VST>");
 	throw ShutdownException(false);
     }
     if(msg.GetString() == "KILL")
@@ -119,7 +119,7 @@ void VoidServerThread::HandleSystemMessage(const Message &msg)
 
 void VoidServerThread::HandleLocalMessage(const Message &msg)
 {
-    ResourceMaster::GetInstance()->Log(DEBUG,"<MSG=" + msg.GetString() + ">");
+    LOG(DEBUG,"<MSG=" + msg.GetString() + ">");
 
     if(msg.GetType() == Message::SYSTEM)
 	HandleSystemMessage(msg);
@@ -182,7 +182,7 @@ bool VoidServerThread::DoCommand(const std::string &command, const std::string &
     {
 	if(*iter == NULL)
 	{
-	    ResourceMaster::GetInstance()->Log(EMERGENCY, "<COMMAND WAS NULL!>");
+	    LOG(EMERGENCY, "<COMMAND WAS NULL!>");
 	}
 	
 
@@ -232,7 +232,7 @@ bool VoidServerThread::thread_init()
     try {
       OpenDataBaseConnection();
     }catch(const pqxx::sql_error& dbe){
-      ResourceMaster::GetInstance()->Log(EMERGENCY, dbe.what());
+      LOG(EMERGENCY, dbe.what());
       throw dbe;
     }
     
@@ -243,7 +243,7 @@ bool VoidServerThread::thread_init()
 void VoidServerThread::thread_destroy()
 {
     try {
-	ResourceMaster::GetInstance()->Log(DEBUG,"<Thread Destroy>");
+	LOG(DEBUG,"<Thread Destroy>");
 	m_socket->Close();
 	CloseDataBaseConnection();
 	CloseLocalSocket();
@@ -253,12 +253,12 @@ void VoidServerThread::thread_destroy()
     catch ( SocketException e)
     {
 	std::cout << "Caught socket exception." << std::endl;
-	ResourceMaster::GetInstance()->Log(ERROR,"<thread_destroy SocketException>");
+	LOG(ERROR,"<thread_destroy SocketException>");
     }
     catch( pqxx::sql_error db)
     {
 	std::cout << "Caught DB exception" << std::endl;
-	ResourceMaster::GetInstance()->Log(ERROR,"<thread_destroy DBException>");
+	LOG(ERROR,"<thread_destroy DBException>");
     }
 }
 
@@ -276,16 +276,16 @@ bool     VoidServerThread::run()
 	   
     }
     catch(const std::exception &e){
-      ResourceMaster::GetInstance()->Log(ERROR, "Execute: " + std::string(e.what()));
+      LOG(ERROR, "Execute: " + std::string(e.what()));
     }
     catch(DBException &ex)
     {
 	// TODO: Print exception reason to stderr or log
-	ResourceMaster::GetInstance()->Log(ERROR, "Execute: " + ex.GetMessage());
+	LOG(ERROR, "Execute: " + ex.GetMessage());
     }
     catch(MissingConfig& exmc)
     {
-	ResourceMaster::GetInstance()->Log(EMERGENCY, "Missing Config: " + exmc.getKey());
+	LOG(EMERGENCY, "Missing Config: " + exmc.getKey());
     }
     catch(ShutdownException &exp)
     {
@@ -319,8 +319,8 @@ std::string VoidServerThread::DisplayNews()
     
     for(auto row : r)
     {
-      os  << endr << Color()->get(LIGHTPURPLE) << row[0].as<std::string>() << endr
-	  << Color()->get(WHITE) << row[1].as<std::string>() << endr;
+      os  << endr << Color()->get(LIGHTPURPLE) << row[0].as<std::string>("") << endr
+	  << Color()->get(WHITE) << row[1].as<std::string>("") << endr;
     }
 
     work.commit();
@@ -342,12 +342,6 @@ std::string VoidServerThread::DisplayCommands()
 
     return os.str();
 }
-
-
-void VoidServerThread::Log(LOG_SEVERITY severity, const std::string& message) const {
-    ResourceMaster::GetInstance()->Log(severity, message);
-}
-
 
 
 
@@ -374,7 +368,7 @@ std::string VoidServerThread::ReceiveLine()
 		auto it = input.find("\x0A");
 		if(it != string::npos) {
 		    instring += input.substr(0,it-1);
-		    Log(AUDIT, "Got input: '" + instring + '\'');
+		    LOG(AUDIT, "Got input: '" + instring + '\'');
 		    m_inputbuffer = input.substr(it+1);
 		    // Clean this up. Should be a util...
 		    if(m_inputbuffer.back() == '\x0D'){
@@ -391,10 +385,10 @@ std::string VoidServerThread::ReceiveLine()
 
 	    Message msg;
 	    std::string from;
-	    ResourceMaster::GetInstance()->Log(DEBUG,"<Received MSG...>");
+	    LOG(DEBUG,"<Received MSG...>");
 
 	    from = msg.ReadFromSocket(m_unixsocket);
-	    ResourceMaster::GetInstance()->Log(DEBUG,"<MSG From: " + from + ">");
+	    LOG(DEBUG,"<MSG From: " + from + ">");
 
 	    HandleLocalMessage(msg);
 	} else if(result == Socket::eSelectResult::TIMEOUT) {
@@ -477,7 +471,7 @@ bool VoidServerThread::Login()
 
     loginid = ReceiveLine();
 
-    ResourceMaster::GetInstance()->Log(AUDIT, "<Pre-login: login = " + loginid + ">");
+    LOG(AUDIT, "<Pre-login: login = " + loginid + ">");
 
     Send(Color()->get(RED, BG_WHITE) +  "    Password:" + Color()->get(BLACK) + ' ');
 
@@ -490,19 +484,19 @@ bool VoidServerThread::Login()
     os << work.quote(password);
     os << ");";
     
-    ResourceMaster::GetInstance()->Log(AUDIT, os.str());
+    LOG(AUDIT, os.str());
     pqxx::result login_result = work.exec(os.str());
     work.commit();
-    if(login_result.size() < 1 || login_result[0][0].as<int>() != 1)
+    if(login_result.size() < 1 || login_result[0][0].as<int>(0) != 1)
     {
-      ResourceMaster::GetInstance()->Log(DEBUG, loginid + " failed to log in.");
+      LOG(DEBUG, loginid + " failed to log in.");
       return false;
     }
 
     std::shared_ptr<Text> logint = std::make_shared<Text>(LoginHandle::FieldName(LoginHandle::LOGIN),loginid);
     PrimaryKey key(logint);
 
-    ResourceMaster::GetInstance()->Log(DEBUG2, loginid + " successful authentication.");
+    LOG(DEBUG2, loginid + " successful authentication.");
 
     // Kill other logins from this account if any
     for(std::vector<VoidServerThread*>::iterator i = ResourceMaster::GetInstance()->GetServerThreadsBegin();
@@ -521,7 +515,7 @@ bool VoidServerThread::Login()
 	    {
 		// This login is already in use on the system.
 		// Kill the other login so that we can proceed
-		ResourceMaster::GetInstance()->Log(WARNING, "<LOGIN: " + loginid + " KILLED EXISTING LOGIN>");
+		LOG(WARNING, "<LOGIN: " + loginid + " KILLED EXISTING LOGIN>");
 		MessagePtr msg = std::make_shared<Message>(Message::SYSTEM, "KILL");
 	       
 		ResourceMaster::GetInstance()->
@@ -535,10 +529,10 @@ bool VoidServerThread::Login()
     }
 
     m_login = std::make_shared<LoginHandle>(m_dbconn, key, false);
-    ResourceMaster::GetInstance()->Log(DEBUG2, loginid + " created login handle, getting last ip...");
+    LOG(DEBUG2, loginid + " created login handle, getting last ip...");
     std::string ip = m_login->GetLastIP();
 
-    ResourceMaster::GetInstance()->Log(DEBUG, "<LOGIN: " + loginid + " Logged In. Last IP = " + ip + ">");
+    LOG(DEBUG, "<LOGIN: " + loginid + " Logged In. Last IP = " + ip + ">");
 
     m_login->Lock();
     const int logins = m_login->GetLogins() + 1;
@@ -637,7 +631,7 @@ bool VoidServerThread::RegisterNewLogin()
 
     pqxx::result epresult = work.exec(query);
 
-    encpassword = epresult[0][0].as<std::string>();
+    encpassword = epresult[0][0].as<std::string>("");
     work.commit();
 
     SendWordWrapped(Color()->get(GREEN) + "Please enter a VALID e-mail address. The administrator of this game will" + endr + "be contacting you by this address and verifying it's validity. It will NOT be given out.",80);
@@ -844,7 +838,7 @@ void VoidServerThread::ChoosePlayer()
   std::string login = m_login->GetLogin();
   pqxx::work work{*m_dbconn};
   std::string query = "SELECT SNAME FROM Player WHERE klogin = " + work.quote(login) + ";";
-  ResourceMaster::GetInstance()->Log(AUDIT, query);
+  LOG(AUDIT, query);
   pqxx::result r = work.exec(query);
   work.commit();
 
@@ -862,7 +856,7 @@ void VoidServerThread::ChoosePlayer()
 	
     m_player = std::make_shared<PlayerHandle>(m_dbconn, key, false);
 
-    ResourceMaster::GetInstance()->Log(DEBUG, "Player: " + (std::string)m_player->GetName() + " joins realm.");
+    LOG(DEBUG, "Player: " + (std::string)m_player->GetName() + " joins realm.");
 	return;
     }				 
     else
@@ -915,7 +909,6 @@ void VoidServerThread::SendWordWrapped(const std::string &str, int screen_width)
 std::string VoidServerThread::CommandPrompt()
 {
     Integer ship = m_player->GetCurrentShip();
-
  
     std::shared_ptr<Integer> shipkey = std::make_shared<Integer>(ShipHandle::FieldName(ShipHandle::NKEY), ship.GetAsString());
     PrimaryKey key(shipkey);
@@ -951,10 +944,10 @@ void VoidServerThread::SetTurnsLeft()
   pqxx::result r = work.exec(sql);
 
 
-  int play_doy = r[0][0].as<int>();
-  int play_year = r[0][1].as<int>();
-  int cur_doy = r[0][2].as<int>();
-  int cur_year = r[0][3].as<int>();
+  int play_doy = r[0][0].as<int>(0);
+  int play_year = r[0][1].as<int>(0);
+  int cur_doy = r[0][2].as<int>(0);
+  int cur_year = r[0][3].as<int>(0);
   
   work.commit();
 
@@ -991,7 +984,7 @@ void VoidServerThread::Service()
 
 	m_pColor = std::make_shared<ANSIColor>();
 
-	ResourceMaster::GetInstance()->Log(DEBUG,"<Connection from:" + std::string(m_socket->GetAddress()) +  ">");
+	LOG(DEBUG,"<Connection from:" + std::string(m_socket->GetAddress()) +  ">");
 
 	signal(SIGPIPE, sigpipeHandler);
 
@@ -1039,7 +1032,7 @@ void VoidServerThread::Service()
 
 	    if(tries == 3) 
 	    {
-		ResourceMaster::GetInstance()->Log(DEBUG, "<Unsuccessful Login Recorded>");
+		LOG(DEBUG, "<Unsuccessful Login Recorded>");
 		Send(Color()->get(LIGHTRED,BG_WHITE) + "Too many failed login attempts. Goodbye." + endr);
 		return; // Drop carrier.
 	    }
@@ -1049,19 +1042,19 @@ void VoidServerThread::Service()
 	ChoosePlayer();
     }
     catch(pqxx::sql_error &er) {
-      ResourceMaster::GetInstance()->Log(ERROR, er.what() + er.query());
+      LOG(ERROR, er.what() + er.query());
       return;
     }catch(const DBException &e) {
 	std::string err = "<DB Error during login: " + e.GetMessage() + ">";
-	ResourceMaster::GetInstance()->Log(ERROR, err);
+	LOG(ERROR, err);
 	return;
     }
     catch(SocketException &e)
     {
-	ResourceMaster::GetInstance()->Log(ERROR, "Socket Error #" + IntToString(e.GetType()));
+	LOG(ERROR, "Socket Error #" + IntToString(e.GetType()));
 	return;
     }catch(std::exception &e){
-      ResourceMaster::GetInstance()->Log(ERROR, "Exception caught in service: " + std::string(e.what()));
+      LOG(ERROR, "Exception caught in service: " + std::string(e.what()));
       return;
     }
 
@@ -1084,24 +1077,24 @@ void VoidServerThread::Service()
 	    PostCommand("checkmail","");
 	}
     }catch(pqxx::sql_error& se){
-      ResourceMaster::GetInstance()->Log(ERROR, "Post-login SQL Error #" + std::string(se.what()));
+      LOG(ERROR, "Post-login SQL Error #" + std::string(se.what()));
       return;
     }catch(SocketException &e) {
-      ResourceMaster::GetInstance()->Log(ERROR, "Socket Error #" + IntToString(e.GetType()));
+      LOG(ERROR, "Socket Error #" + IntToString(e.GetType()));
       return;
     }
 	
     if(m_player->GetIsDead())
     {
       std::string playername = m_player->GetName();
-      Log(DEBUG, "Player name is " + playername);
+      LOG(DEBUG, "Player name is " + playername);
       pqxx::work work{*m_dbconn};
       std::string checkdeadtime = "select extract(day from age(now(),dlastplay)) from player where sname = " + work.quote(playername) + ";";
 	    
       pqxx::result r = work.exec(checkdeadtime);
       work.commit();
 	    
-      int days = r[0][0].as<int>();
+      int days = r[0][0].as<int>(0);
 	    
 	    
       if(days < 1) {
@@ -1158,20 +1151,19 @@ void VoidServerThread::Service()
 		Send(endr);
 		line = CommandPrompt();
 		gotinput = true;
-		ResourceMaster::GetInstance()->Log(AUDIT, "<Got command: " + line + ">");
+		LOG(AUDIT, "<Got command: " + line + ">");
 	    }
 	    catch(pqxx::sql_error &se) {
-	      ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + std::string(se.what()) );
+	      LOG(EMERGENCY,"<DB Exception:" + std::string(se.what()));
 	    }catch(DBException dbe)
 	    {
-		ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + dbe.GetMessage() + ">");
-		std::cerr << "DB Exception: " << dbe.GetMessage() << std::endl;
+		LOG(EMERGENCY,"<DB Exception:" + dbe.GetMessage() + ">");
 		done = true;
 		break;
 	    }
 	    catch(SocketException e)
 	    {
-		ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + IntToString(e.GetType()) + ">");
+		LOG(EMERGENCY,"<Socket Exception:" + IntToString(e.GetType()) + ">");
 		done = true;
 		gotinput = true;
 		break;
@@ -1184,7 +1176,7 @@ void VoidServerThread::Service()
 	    }
 	    catch(DeathException de)
 	    {
-		ResourceMaster::GetInstance()->Log(DEBUG,"<Death Exception Caught>");
+		LOG(DEBUG,"<Death Exception Caught>");
 		Send(Color()->get(GREEN) + "You will now be disconnected." + endr);
 		done = true;
 		gotinput = true;
@@ -1257,7 +1249,7 @@ void VoidServerThread::Service()
         }
         catch (SocketException &excep)
         {
-	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<Socket Exception:" + IntToString(excep.GetType()) + ">");
+	    LOG(EMERGENCY,"<Socket Exception:" + IntToString(excep.GetType()) + ">");
 	    m_socket->Close();
             if (excep.GetType() != NOTCONN)
             {
@@ -1271,24 +1263,25 @@ void VoidServerThread::Service()
         }
 	catch(ShutdownException ex)
 	{
-	    ResourceMaster::GetInstance()->Log(DEBUG,"<Shutdown Exception Caught>");
+	    LOG(DEBUG,"<Shutdown Exception Caught>");
 	    m_socket->Close();
 	    done = true;
 	}
 	catch(pqxx::sql_error &se) {
-	  ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + std::string(se.what()) + ':' + se.query());
+	  LOG(ERROR,"<DB Exception:" + std::string(se.what()) + ':' + se.query());
 	}
 	catch(DBException e)
 	{
-	    ResourceMaster::GetInstance()->Log(EMERGENCY,"<DB Exception:" + e.GetMessage() + ">");
+	    LOG(ERROR,"<DB Exception:" + e.GetMessage() + ">");
 	    std::cerr << "DB Exception: " << e.GetMessage() << std::endl;
 	    done = true;
 	    break;
 	}
-	catch(exception ex)
+	catch(std::exception& ex)
 	{
-	    done = true;
-	    break;
+	  LOG(ERROR, "Command exception: " + std::string(ex.what()));
+	  done = true;
+	  break;
 	}
 	catch(ControlException ce)
 	{
@@ -1298,9 +1291,9 @@ void VoidServerThread::Service()
 
 
     if(m_login)
-	ResourceMaster::GetInstance()->Log(DEBUG,"<LOGOUT: " + m_login->GetLogin().GetAsString() + ">");
+	LOG(DEBUG,"<LOGOUT: " + m_login->GetLogin().GetAsString() + ">");
 
-    ResourceMaster::GetInstance()->Log(DEBUG,"<Done servicing:" + std::string(m_socket->GetAddress()) +  ">");
+    LOG(DEBUG,"<Done servicing:" + std::string(m_socket->GetAddress()) +  ">");
 
 }
 

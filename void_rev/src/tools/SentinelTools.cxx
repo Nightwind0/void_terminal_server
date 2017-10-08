@@ -66,7 +66,7 @@ void SentinelTools::DeploySentinelsAndUnload(int num, PlayerHandlePtr pPlayer, S
     if(dbresult.size() >0)
     {
 	// There already are some here. Therefore, theres an entry to update.
-      int numsentinels = dbresult[0][0].as<int>();
+      int numsentinels = dbresult[0][0].as<int>(0);
 	
       numsentinels += num;
 
@@ -97,7 +97,7 @@ int SentinelTools::GetPersonalSentinelCount(const std::string &player, int curse
   int numsentinels = 0;
     
   if(dbresult.size() >0){
-    numsentinels = dbresult[0][0].as<int>();
+    numsentinels = dbresult[0][0].as<int>(0);
   }
   
 
@@ -116,7 +116,7 @@ int SentinelTools::GetApplicableSentinelCount(const std::string &target,int maxa
   int numsentinels = 0;
   
     if(dbresult.size() >0) {
-      numsentinels = dbresult[0][0].as<int>();
+      numsentinels = dbresult[0][0].as<int>(0);
     }
     
     return std::min(numsentinels,maxattack);
@@ -158,7 +158,7 @@ void SentinelTools::RemoveSentinels(int num, const std::string &player, int sect
 
   for(auto row: dbresult) {
       std::string owner = row[1].as<std::string>();
-      int sentinels = row[0].as<int>();
+      int sentinels = row[0].as<int>(0);
 
       sentinels = std::min(sentinels,num);
 

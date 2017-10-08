@@ -161,23 +161,25 @@ void PlayerHandle::SetCurrentShip(const int &ship)
 
 void PlayerHandle::AddSectorFlag(const eSectorFlags &flag, Sector sector)
 {
-  pqxx::work work{*m_dbconn};
   std::string name = GetName();
+  pqxx::work work{*m_dbconn};
   work.prepared("setSectorFlag")(static_cast<int>(flag))(static_cast<int>(sector))(name).exec();
   work.commit();
 }
 
 void PlayerHandle::ClearSectorFlag(const eSectorFlags &flag, Sector sector)
 {
+  std::string name = GetName();
   pqxx::work work{*m_dbconn};
-  work.prepared("clearSectorFlag")(static_cast<int>(flag))(static_cast<int>(sector))((std::string)GetName()).exec();
+  work.prepared("clearSectorFlag")(static_cast<int>(flag))(static_cast<int>(sector))(name).exec();
   work.commit();
 }
 
 unsigned int PlayerHandle::GetSectorFlags(Sector sector)
 {
+  std::string name = GetName();
   pqxx::work work{*m_dbconn};
-  pqxx::result r = work.prepared("getSectorFlags")(static_cast<int>(sector))((std::string)GetName()).exec();
+  pqxx::result r = work.prepared("getSectorFlags")(static_cast<int>(sector))(name).exec();
   work.commit();
   if(r.size() < 1){
     return 0;

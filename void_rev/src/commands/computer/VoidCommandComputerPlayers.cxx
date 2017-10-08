@@ -78,33 +78,33 @@ bool VoidCommandComputerPlayers::CommandComputerPlayers(const std::string &argum
     os << Color()->blackout();
     os << endr;
 
-    int numplayers = dbresult.size();
+    size_t numplayers = dbresult.size();
 
     for(auto row : dbresult)
     {
 	os << Color()->get(LIGHTBLUE);
 	os.width(15);
 	os << left;
-	os << row[0].as<std::string>();
+	os << row[0].as<std::string>("Unknown");
 	os << Color()->get(RED);
 	os.width(15);
 	os << left;
-	os << row[6].as<std::string>();
+	os << row[6].as<std::string>("None");
 	os << Color()->get(LIGHTGREEN);
 	os.width(8);
 	os << left;
-	os << row[1].as<std::string>();
+	os << row[1].as<int>(0);
       
-	FGColor fgcolor = (FGColor)row[4].as<int>();
-	BGColor bgcolor = (BGColor)row[5].as<int>();
+	FGColor fgcolor = (FGColor)row[4].as<int>(0);
+	BGColor bgcolor = (BGColor)row[5].as<int>(0);
 
 	os << Color()->get(fgcolor,bgcolor);
 	os.width(6);
 	os << left;
-	os << row[2].as<std::string>();
+	os << row[2].as<std::string>("Unknown");
 	os.width(20);
 	os << left;
-	os << row[3].as<std::string>();
+	os << row[3].as<std::string>("Unknown");
 	os << Color()->blackout();
 	os << endr;
 

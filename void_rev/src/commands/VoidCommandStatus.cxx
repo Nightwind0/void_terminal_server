@@ -127,7 +127,7 @@ void VoidCommandStatus::ShowStatus()
     os << SendRow("Turns:",dbresult[0][2].as<std::string>(), CONFIG_STRING(ResourceMaster::GetInstance(),"turns_per_day")) << endr; // TODO: Get actual turns per day value
     
     
-    int tps = dbresult[0][33].as<int>();
+    int tps = dbresult[0][33].as<int>(0);
     
     if(!dbresult[0][22].is_null())
     {
@@ -141,8 +141,8 @@ void VoidCommandStatus::ShowStatus()
     }
 
     os << SendValue("Turns/Sector", IntToString(tps)) << endr;
-    os << SendValue("Points:",dbresult[0][3].as<std::string>()) << endr;
-    os << SendValue("Alliance:",dbresult[0][4].as<std::string>()) << endr;
+    os << SendValue("Points:",dbresult[0][3].as<std::string>("")) << endr;
+    os << SendValue("Alliance:",dbresult[0][4].as<std::string>("")) << endr;
     // os << SendRow("Ship:",PQgetvalue(dbresult,0,5), PQgetvalue(dbresult,0,6)) << endr;
     os << Color()->get(GREEN);
     os.width(20);
@@ -150,7 +150,7 @@ void VoidCommandStatus::ShowStatus()
     os << Color()->get(LIGHTBLUE);
     os << "    ";
     os.width(20 + sizeof(Color()->get(LIGHTBLUE)));
-    os << std::left <<  dbresult[0][6].as<std::string>() << endr;
+    os << std::left <<  dbresult[0][6].as<std::string>("") << endr;
     os << SendValue("Ship Number:", dbresult[0][5].as<std::string>()) << endr;
     os << SendValue("Ship Type:", dbresult[0][23].as<std::string>()) << endr;
     os << SendRow("Sentinels:",PrettyValue(dbresult,0,9), PrettyValue(dbresult,0,28)) << endr;
@@ -158,8 +158,8 @@ void VoidCommandStatus::ShowStatus()
     os << SendRow("Mines:", PrettyValue(dbresult,0,11), PrettyValue(dbresult,0,30)) << endr;
     os << SendRow("Trackers:",PrettyValue(dbresult,0,12), PrettyValue(dbresult,0,29)) << endr;
     os << SendRow("Shields:",PrettyValue(dbresult,0,13), PrettyValue(dbresult,0,25)) << endr;
-    os << SendRow("Holds:", IntToString(dbresult[0][14].as<int>() + dbresult[0][15].as<int>() 
-					+ dbresult[0][16].as<int>()), dbresult[0][20].as<std::string>()) << endr;
+    os << SendRow("Holds:", IntToString(dbresult[0][14].as<int>(0) + dbresult[0][15].as<int>(0) 
+					+ dbresult[0][16].as<int>(0)), dbresult[0][20].as<std::string>()) << endr;
     os << SendValue("Plasma:",PrettyValue(dbresult,0,14)) << endr;
     os << SendValue("Metals:",PrettyValue(dbresult,0,15)) << endr;
     os << SendValue("Carbon:",PrettyValue(dbresult,0,16)) << endr;
@@ -168,9 +168,9 @@ void VoidCommandStatus::ShowStatus()
     os << SendValue("Tow:", PrettyValue(dbresult,0,22,true)) << endr;
     os << SendValue("Beam Range:", PrettyValue(dbresult,0,39)) << endr;
     os << SendValue("Scan:", PrettyValue(dbresult,0,37,true)) << endr;
-    os << SendValue("Warp Drive:", dbresult[0][36].as<std::string>()) << endr;
-    os << SendValue("Cloak:",ToBool(dbresult[0][35].as<std::string>())) << endr;
-    os << SendValue("Analyzer:", ToBool(dbresult[0][36].as<std::string>())) << endr;
+    os << SendValue("Warp Drive:", ToBool(dbresult[0][36].as<std::string>("f"))) << endr;
+    os << SendValue("Cloak:",ToBool(dbresult[0][35].as<std::string>("f"))) << endr;
+    os << SendValue("Analyzer:", ToBool(dbresult[0][36].as<std::string>("f"))) << endr;
 
 
     Send(os.str());

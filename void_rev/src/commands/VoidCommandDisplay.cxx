@@ -47,7 +47,7 @@ bool VoidCommandDisplay::HandleCommand(const string &command, const string &argu
     {
 	std::vector<std::string> words = WordsFromString( arguments );
 	
-	if( words.size())
+	if(words.size())
 	{
 	    std::string sector_str = words[0];
 
@@ -84,7 +84,7 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
     os << Color()->get(LIGHTGREEN) << endr <<  "Sector " << Color()->get(WHITE) << sector;
     if(dbresult.size() > 0 && !dbresult[0][0].is_null())
     {
-      os << Color()->get(GRAY) << ' ' <<  dbresult[0][0].as<std::string>();
+      os << Color()->get(GRAY) << ' ' <<  dbresult[0][0].as<std::string>("");
     }
 
     os << endr;
@@ -131,11 +131,11 @@ std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
 
     pqxx::result dbresult = get_thread()->DBExec(query);
 
-    Boolean has_stardock("bstardock", dbresult[0][0].as<std::string>(), dbresult[0][0].is_null());
+    Boolean has_stardock("bstardock", dbresult[0][0].as<std::string>("f"), dbresult[0][0].is_null());
 
     if((bool)has_stardock)
     {
-      Text stardock("sstardockname",dbresult[0][1].as<std::string>(), dbresult[0][1].is_null());
+      Text stardock("sstardockname",dbresult[0][1].as<std::string>("f"), dbresult[0][1].is_null());
       os << Color()->get(GREEN) << "Stardock: " << Color()->get(WHITE) << (std::string)stardock << endr;
     }
 
@@ -147,7 +147,7 @@ std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
 std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cloaked)
 {
     std::ostringstream os;
-    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector ='"+IntToString(sector) + "' and s.ktype = t.nkey and tm.nkey = t.kmanufacturer ";
+    std::string shipquery = "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector =" + IntToString(sector) + " and s.ktype = t.nkey and tm.nkey = t.kmanufacturer ";
 
     if( !show_cloaked)
 	shipquery +="and (s.bcloaked = false or s.bcloaked is null)";
@@ -170,8 +170,8 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 	
       int ship = row[0].as<int>();
 
-      int shields = row[11].as<int>();
-      int maxshields = row[12].as<int>();
+      int shields = row[11].as<int>(0);
+      int maxshields = row[12].as<int>(1);
       double percent =(double) shields / (double)maxshields;
  
       int pc = truncf(percent * 10) * 10;
@@ -179,9 +179,9 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 	
 
 	os << '\t' << Color()->get(GREEN) << '[' << Color()->get(WHITE) << ship << Color()->get(GREEN) << ']';
-	os << ' ' << Color()->get(LIGHTBLUE) << row[1].as<std::string>() << ' ';
-	os << Color()->get((FGColor)row[5].as<int>(),(BGColor)row[6].as<int>()) << row[2].as<std::string>() <<' ' <<  row[3].as<std::string>() << Color()->get(GREEN);
-	os << " w/" << Color()->get(WHITE) << row[4].as<int>() << Color()->get(GREEN) << " missiles ";
+	os << ' ' << Color()->get(LIGHTBLUE) << row[1].as<std::string>("") << ' ';
+	os << Color()->get((FGColor)row[5].as<int>(0),(BGColor)row[6].as<int>(0)) << row[2].as<std::string>() <<' ' <<  row[3].as<std::string>() << Color()->get(GREEN);
+	os << " w/" << Color()->get(WHITE) << row[4].as<int>(0) << Color()->get(GREEN) << " missiles ";
 	os << Color()->get(LIGHTPURPLE) << '(' << Color()->get(GRAY) << pc << '%' << Color()->get(LIGHTPURPLE) << ')' << Color()->get(GREEN) + " shields " <<  endr;
 
 	PlayerHandlePtr player = create_handle_to_player_in_ship(ship);
@@ -220,7 +220,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 */
 
 
-	if(row[9].is_null() || row[9].as<std::string>() != "t")
+	if(row[9].is_null() || row[9].as<std::string>("f") != "t")
 	{
 	    os << Color()->get(LIGHTCYAN);
 	}
@@ -230,7 +230,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 	    os << Color()->get(LIGHTPURPLE);
 	}
 	
-	os << row[9].as<std::string>();
+	os << row[9].as<std::string>("");
 	
 	if(!row[10].is_null())
 	{
@@ -266,20 +266,18 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
 
     for(auto row : dbresult)
     {
-      os << '\t' << Color()->get(LIGHTPURPLE) << row[0].as<std::string>();
+      os << '\t' << Color()->get(LIGHTPURPLE) << row[0].as<std::string>("Unknown");
       os << Color()->get(WHITE) << " (";
 
-      int minutes = row[7].as<int>();
+      int minutes = row[7].as<int>(0);
 
+      Boolean buyplasma("bbuyplasma", row[1].as<std::string>("f"), row[1].is_null());
+      Boolean buymetals("bbuymetals", row[2].as<std::string>("f"), row[2].is_null());
+      Boolean buycarbon("bbuycarbon", row[3].as<std::string>("f"), row[3].is_null());
 
-
-      Boolean buyplasma("bbuyplasma", row[1].as<std::string>(), row[1].is_null());
-      Boolean buymetals("bbuymetals", row[2].as<std::string>(), row[2].is_null());
-      Boolean buycarbon("bbuycarbon", row[3].as<std::string>(), row[3].is_null());
-
-      const double plasmapricemult = row[4].as<double>();
-      const double metalspricemult = row[5].as<double>();
-      const double carbonpricemult = row[6].as<double>();
+      const double plasmapricemult = row[4].as<double>(1.0);
+      const double metalspricemult = row[5].as<double>(1.0);
+      const double carbonpricemult = row[6].as<double>(1.0);
 
       const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
       const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
@@ -343,8 +341,8 @@ std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
 
     for(auto row : dbresult)
     {
-      std::string count  = row[0].as<std::string>();
-      std::string player = row[1].as<std::string>();
+      std::string count  = row[0].as<std::string>("");
+      std::string player = row[1].as<std::string>("");
       
       os << '\t' << Color()->get(WHITE) << count << Color()->get(BROWN) << " sentinel(s) owned by " <<
 	Color()->get(LIGHTCYAN) << player;

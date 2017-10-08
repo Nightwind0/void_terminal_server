@@ -83,7 +83,7 @@ class ResourceMaster
     std::vector<Sector>::iterator GetEdgesEnd(int sector);
 
 
-    void Log(LOG_SEVERITY severity, const std::string& message); // TODO: Would also like to know which thread, player, etc
+    void Log(LOG_SEVERITY severity, const std::string& message, const std::string& filename="", int line = -1); // TODO: Would also like to know which thread, player, etc
 
  private:
     ResourceMaster();

@@ -129,6 +129,7 @@ std::string BooleanToString(const bool &b);
 std::vector<std::string> WordsFromString(const std::string &str);
 
 #define LOWERCASE(x) std::transform (x.begin(), x.end(), x.begin(), ToLower())
-
+#define LOG(level,message) \
+  (ResourceMaster::GetInstance()->Log(level,message,__FILE__,__LINE__))
 
 #endif

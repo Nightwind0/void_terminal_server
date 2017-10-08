@@ -38,7 +38,7 @@ ResourceMaster *ResourceMaster::GetInstance()
 void ResourceMaster::create_prepared_statements() {
    m_dbconn->prepare(kGetConfigStmt, "SELECT svalue FROM Config WHERE sname = $1;");
    m_dbconn->prepare(kSendMailStmt, "INSERT INTO mail values(nextval('mail_id_seq'), now(),$1,NULL,TRUE,$2);");
-   m_dbconn->prepare(kInsertLogStmt, "INSERT INTO Log (dstamp,nseverity,smessage) values (now(), $1, $2);");
+   m_dbconn->prepare(kInsertLogStmt, "INSERT INTO Log (dstamp,nseverity,smessage,sfilename,nline) values (now(), $1, $2, $3, $4);");
    m_dbconn->prepare(kLoadEdgesStmt, "SELECT nsector2 from edges where nsector = $1 union select nsector from edges where nsector2 = $1;");
 }
 
@@ -262,7 +262,7 @@ void ResourceMaster::ReleaseResource(ResourceType type, const PrimaryKey &key)
 
 }
 
-void ResourceMaster::Log(LOG_SEVERITY severity, const std::string& message) 
+void ResourceMaster::Log(LOG_SEVERITY severity, const std::string& message, const std::string& filename, int line) 
 {
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
@@ -274,7 +274,7 @@ void ResourceMaster::Log(LOG_SEVERITY severity, const std::string& message)
 	return;
     }
     pqxx::work work { *m_dbconn };
-    pqxx::result r = work.prepared(kInsertLogStmt)(static_cast<int>(severity))(message).exec();
+    pqxx::result r = work.prepared(kInsertLogStmt)(static_cast<int>(severity))(message)(filename)(line).exec();
     work.commit();
 }
 

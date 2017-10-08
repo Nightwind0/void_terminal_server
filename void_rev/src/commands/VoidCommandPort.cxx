@@ -115,7 +115,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
 	for(int i=0;i<numoutposts;i++)
 	{
-	  get_thread()->Send(Color()->get(WHITE)+ IntToString(i+1) + ")" + Color()->get(LIGHTPURPLE) + dbresult[i][0].as<std::string>() + endr);
+	  get_thread()->Send(Color()->get(WHITE)+ IntToString(i+1) + ")" + Color()->get(LIGHTPURPLE) + dbresult[i][0].as<std::string>("") + endr);
 	}
 
 	std::string selection = get_thread()->ReceiveLine();
@@ -123,7 +123,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	whichoutpost = atoi(selection.c_str()) -1;
     }
     
-    std::string outpostname = dbresult[whichoutpost][0].as<std::string>();
+    std::string outpostname = dbresult[whichoutpost][0].as<std::string>("");
 
 
     std::shared_ptr<Text> outpostt = std::make_shared<Text>(OutpostHandle::FieldName(OutpostHandle::NAME), outpostname);
@@ -141,13 +141,13 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     auto outpostrow = dbresult[whichoutpost];
 
-    const bool buyplasma = outpostrow[2].as<std::string>() == "t";
-    const bool buymetals = outpostrow[3].as<std::string>() == "t";
-    const bool buycarbon = outpostrow[4].as<std::string>() == "t";
+    const bool buyplasma = outpostrow[2].as<std::string>("f") == "t";
+    const bool buymetals = outpostrow[3].as<std::string>("f") == "t";
+    const bool buycarbon = outpostrow[4].as<std::string>("f") == "t";
 
-    const double plasma_price_mult = outpostrow[13].as<double>();
-    const double metals_price_mult = outpostrow[14].as<double>();
-    const double carbon_price_mult = outpostrow[15].as<double>();
+    const double plasma_price_mult = outpostrow[13].as<double>(1.0);
+    const double metals_price_mult = outpostrow[14].as<double>(1.0);
+    const double carbon_price_mult = outpostrow[15].as<double>(1.0);
 
     const int base_plasma_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_plasma_price"));
     const int base_metals_price = std::stoi(ResourceMaster::GetInstance()->GetConfig("base_metals_price"));
@@ -163,12 +163,12 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
     
 	std::string visited;
 	
-	int years = - outpostrow[7].as<int>();
-	int months = -outpostrow[8].as<int>();
-	int days = -outpostrow[9].as<int>();
-	int hours = -outpostrow[10].as<int>();
-	int minutes = -outpostrow[11].as<int>();
-	int minutes_delta = outpostrow[12].as<int>();
+	int years = - outpostrow[7].as<int>(0);
+	int months = -outpostrow[8].as<int>(0);
+	int days = -outpostrow[9].as<int>(0);
+	int hours = -outpostrow[10].as<int>(0);
+	int minutes = -outpostrow[11].as<int>(0);
+	int minutes_delta = outpostrow[12].as<int>(0);
 	
 	visited  = Color()->get(BROWN) + "Last visited by " + Color()->get(LIGHTCYAN) + outpostrow[6].as<std::string>();
 	visited += Color()->get(WHITE) + ' ';

@@ -131,7 +131,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
 
     pqxx::result result = get_thread()->DBExec(checkterritory);
 
-    if(!result[0][0].is_null() && result[0][0].as<int>() == 0) ///@todo get from config table
+    if(!result[0][0].is_null() && result[0][0].as<int>(0) == 0) ///@todo get from config table
     {
 	fedterritory = true;
     }
@@ -153,11 +153,11 @@ bool VoidCommandAttack::CommandAttack(int othership)
     
     pqxx::result dbresult = get_thread()->DBExec(shipquery);
     
-    int missiles = dbresult[0][0].as<int>();
-    int shields = dbresult[0][1].as<int>();
-    int maxattack = dbresult[0][2].as<int>();
+    int missiles = dbresult[0][0].as<int>(0);
+    int shields = dbresult[0][1].as<int>(0);
+    int maxattack = dbresult[0][2].as<int>(0);
     int shiptype = dbresult[0][3].as<int>();
-    int maxshields = dbresult[0][4].as<int>();
+    int maxshields = dbresult[0][4].as<int>(0);
     std::string shipname = dbresult[0][5].as<std::string>();
     int shipn = dbresult[0][6].as<int>();
     
@@ -186,12 +186,12 @@ bool VoidCommandAttack::CommandAttack(int othership)
 	return true; 
     }
     
-    int omissiles = dbresult[0][0].as<int>();
-    int omaxattack = dbresult[0][1].as<int>();
-    int oshields = dbresult[0][2].as<int>();
+    int omissiles = dbresult[0][0].as<int>(0);
+    int omaxattack = dbresult[0][1].as<int>(0);
+    int oshields = dbresult[0][2].as<int>(0);
     std::string oplayer = dbresult[0][3].as<std::string>();
     int oshiptype = dbresult[0][4].as<int>();
-    int omaxshields = dbresult[0][5].as<int>();
+    int omaxshields = dbresult[0][5].as<int>(0);
     std::string oshipname = dbresult[0][6].as<std::string>();
     bool targetdestroyed = false;
     
