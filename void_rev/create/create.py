@@ -20,9 +20,9 @@ carbon_price = 20
 buy_range = (0.8, 1.2)
 sell_range = (0.6, 1.0)
 database = "void_large"
-connectivity = 6
+connectivity = 4
 emptiness = 20
-connect_range =  emptiness * connectivity
+connect_range = emptiness
 
 parser = optparse.OptionParser()
 parser.set_defaults(instance='default',command='list')
@@ -135,6 +135,16 @@ def generate_outpost_name():
 
         return name
 
+
+def destroy_universe():
+        try:
+                cur = conn.cursor()
+                cur.execute("truncate table login, player, alliance, ship, sectors, sectorflags, edges, territory cascade;")
+        except psycopg2.DatabaseError, e:
+                if conn:
+                        conn.rollback()
+                print 'Error %s' % e
+                sys.exit(1)
 def delete_edges():
         try:
                 cur = conn.cursor()
@@ -144,10 +154,42 @@ def delete_edges():
                         conn.rollback()
                 print 'Error %s' % e
                 sys.exit(1)
+
+def delete_alliances():
+        try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM Alliance;")
+        except pysocpg2.DatabaseError, e:
+                if conn:
+                        conn.rollback()
+                print 'Error %s' % e
+                sys.exit(1)
+        
+
+def delete_players():
+        try:
+                cur = conn.cursor()
+                cur.execute("BEGIN TRANSACTION; set constraints all deferred; delete from login; delete from player; END TRANSACTION;")
+        except psycopg2.DatabaseError, e:
+                if conn:
+                        conn.rollback()
+                print 'Error %s' % e
+                sys.exit(1)
+
+def delete_ships():
+        try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM Ship;")
+        except psycopg2.DatabaseError, e:
+                if conn:
+                        conn.rollback()
+                print 'Error %s' % e
+                sys.exit(1)
                 
 def delete_sectors():
         try:
                 cur = conn.cursor()
+                cur.execute("DELETE FROM SectorFlags;")
                 cur.execute("DELETE FROM Sectors;")
         except  psycopg2.DatabaseError, e:
                 if conn:
@@ -283,7 +325,7 @@ def connect_sectors(numsectors):
                 # first, lets scatter a bunch of points about a temporary virtual 2D plane
                 print "Placing sectors in the universe..."
                 for n in range(1,numsectors):
-                        random_points.append((random.randint(-size/2.0,size/2.0), random.randint(-size/2.0, -size/20)))
+                        random_points.append((random.randint(-size/2.0,size/2.0), random.randint(-size/2.0, size/2.0)))
                 # then, lets order those points by their distance to Terra (sector 0 at location 0,0)
                 sorted_points = sorted(random_points,key = lambda point: math.hypot(0.0 - point[0], 0.0 - point[1]))
                 # then, lets assign those points to sectors by their order (so, the sector closest to sector 0 is sector 1, and the furthest is sector N-1, where N is numsectors
@@ -300,16 +342,19 @@ def connect_sectors(numsectors):
                 #cur.execute("UPDATE Sectors set fx = 0, fy = 0 where nsector = 0;")
                 # then, we go through the sectors and search near them for other sectors to connect to, and we connect to approximately C of them
                 for sector in range(0,numsectors):
-                        conn_count = int(random.gauss(connectivity, 2))
+                        conn_count = max(1,int(random.gauss(connectivity, 1)))
                         # Find any neighbors within a circle centered on this sector.
-                        circle = Circle(sorted_points[sector], connect_range)
-                        print "Looking for neighbors of sector %d at %s within %f:" % (sector, sorted_points[sector], connect_range)
+                        circle_radius = connect_range
+                        if sector == 0:
+                                circle_radius = circle_radius * 2
+                        circle = Circle(sorted_points[sector], circle_radius)
                         neighbors = quadtree.findObjects(circle)
+                        print "Looking for %d neighbors of sector %d at %s within %f: Found %d" % (conn_count, sector, sorted_points[sector], circle_radius, len(neighbors)-1)
                         random.shuffle(neighbors)
                         for i in range(0, min(conn_count, len(neighbors))):
                                 adj = neighbors[i].getSector()
                                 if adj != sector and not adj in adjacency[sector] and not sector in adjacency[adj]:
-                                        #print "    connecting sector %d at %s to %d at %s" % (sector, sorted_points[sector], adj, sorted_points[adj])
+                                        print "    connecting sector %d at %s to %d at %s" % (sector, sorted_points[sector], adj, sorted_points[adj])
                                         adjacency[sector].append(adj) # build adjacency list
                                         adjacency[adj].append(sector)
                                         cur.execute("INSERT INTO Edges (nsector, nedge, nsector2) VALUES (%s, %s, %s);", (sector,len(adjacency[sector])+1, adj))
@@ -369,16 +414,14 @@ def mark_territory():
         for row in cur.fetchall():
                 sector = row[0]
                 mark_adjacent_territory(sector, 0, 0, 2)
+        mark_adjacent_territory(0, 0, 0, 2)
         
         
 # have to delete this in a particular order due to constraints
                     # Try to connect                
 
 print "BAM! With a thunderous bang, and a horrible zap, the universe, as it was, is voilently destroyed!"
-delete_edges()
-delete_outposts()                
-delete_sectors()
-delete_territory()
+destroy_universe();
 print
 print "BA-BANG!!!!!! Suddenly, there is a huge explosion, a new universe is forming!"
 print

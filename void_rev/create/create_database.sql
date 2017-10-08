@@ -128,6 +128,8 @@ CREATE TABLE log (
     dstamp timestamp without time zone NOT NULL,
     nseverity integer NOT NULL,
     smessage text NOT NULL,
+    sfilename text,
+    nline integer,
     CONSTRAINT log_nseverity_check CHECK (((nseverity >= 0) AND (nseverity < 6)))
 );
 
