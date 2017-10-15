@@ -40,7 +40,7 @@ public:
 	
     void Send(const std::string& str);
     void SendClearScreen();
-    void SendWordWrapped(const std::string &str, int screen_width);
+    void SendWordWrapped(const std::string &str, size_t screen_width);
     std::shared_ptr<ColorType> Color()const{ return m_pColor; }
     std::string ReceiveLine();
 	

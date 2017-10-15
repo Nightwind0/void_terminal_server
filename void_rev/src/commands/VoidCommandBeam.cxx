@@ -5,6 +5,7 @@
 #include <deque>
 #include "Universe.h"
 #include "void_util.h"
+#include "ShipTypeHandle.h"
 #include <sstream>
 
 using std::ostringstream;
@@ -49,7 +50,7 @@ bool VoidCommandBeam::HandleCommand(const string &command, const string &argumen
 
 
 
-std::list<int> VoidCommandBeam::GetValidShipList(Sector cur_sector, int beamrange, int cur_ship)
+std::list<int> VoidCommandBeam::GetValidShipList(Sector cur_sector, size_t beamrange, int cur_ship)
 {
 
     std::list<int> ships  = GetOwnedShips();

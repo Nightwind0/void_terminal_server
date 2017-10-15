@@ -78,8 +78,6 @@ bool VoidCommandComputerPlayers::CommandComputerPlayers(const std::string &argum
     os << Color()->blackout();
     os << endr;
 
-    size_t numplayers = dbresult.size();
-
     for(auto row : dbresult)
     {
 	os << Color()->get(LIGHTBLUE);

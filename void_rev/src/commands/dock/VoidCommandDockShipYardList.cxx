@@ -62,9 +62,6 @@ void VoidCommandDockShipYardList::DockShipYardList()
 
     ostringstream os;
 
-    int numships = dbresult.size();
-
-
     Send(Color()->get(RED, BG_WHITE) + "        Ship List        " + Color()->blackout() + endr);
 
 

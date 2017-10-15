@@ -59,8 +59,6 @@ std::list<std::string> VoidCommandTransmit::get_players_in_sector(int sector)
 
     pqxx::result dbresult = get_thread()->DBExec(query);
 
-    int numplayers = dbresult.size();
-
     for(auto row : dbresult) {
 	playerlist.push_back(row[0].as<std::string>());
     }

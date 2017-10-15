@@ -2,7 +2,7 @@
 #include <libpq-fe.h>
 #include <string>
 #include <sstream>
-
+#include "ResourceMaster.h"
 
 using namespace std;
 
@@ -200,20 +200,6 @@ std::string PrepareForSQL(std::string message)
 
 }*/
 
-std::string PrepareForSQL(std::string message)
-{
-    std::string str;
-    char *buffer = new char[(message.size() * 2)  +  1];
-
-
-    PQescapeString(buffer,message.c_str(),message.size());
-
-    str = buffer;
-
-    delete[] buffer;
-    return str;
-}
-
 
 std::string IntToString(const int &i)
 {
@@ -231,6 +217,17 @@ std::string BooleanToString(const bool &b)
     else return "f";
 }
 
+double config_float(ResourceMaster * rm, const std::string& key) {
+  return std::stod(rm->GetConfig(key));
+}
+
+int config_int(ResourceMaster * rm, const std::string& key) {
+  return std::stoi(rm->GetConfig(key));
+}
+
+std::string config_string(ResourceMaster *rm, const std::string& key) {
+  return rm->GetConfig(key);
+}
 
 std::vector<std::string> WordsFromString(const std::string &str)
 {
@@ -281,4 +278,4 @@ ShipDestroyedException::~ShipDestroyedException()
 {
 }
 
-const char * endr =  "\n\r";
+const std::string endr =  "\n\r"s;

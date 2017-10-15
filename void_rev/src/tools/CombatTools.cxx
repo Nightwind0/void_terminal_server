@@ -68,7 +68,7 @@ void CombatTools::DestroyShip(ShipHandlePtr pShip, PlayerHandlePtr pPlayer, Play
     std::string target = pTarget->GetName();
 
     /// Other player loses points
-    int point_loss = CONFIG_INT(RM,"point_loss_ship_destroy");
+    int point_loss =  config_int(RM, "point_loss_ship_destroy");
     int points = pTarget->GetPoints();
 
     pTarget->Lock();
@@ -87,8 +87,8 @@ int CombatTools::FireMissilesAtShip(int missiles, ShipHandlePtr pShip, ShipHandl
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    float mean_damage = CONFIG_FLOAT(RM, "mean_missile_dmg");
-    float deviation = CONFIG_FLOAT(RM,"missile_dmg_deviation");
+    float mean_damage = config_float(RM, "mean_missile_dmg");
+    float deviation = config_float(RM,"missile_dmg_deviation");
 
     int odamage = (int)g_random(missiles, mean_damage, deviation);
     
@@ -122,7 +122,7 @@ void CombatTools::KillPlayer(PlayerHandlePtr pPlayer, PlayerHandlePtr pTarget)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
 
-    int points = CONFIG_INT(RM,"point_loss_kill");
+    int points = config_int(RM,"point_loss_kill");
 
     std::string target = pTarget->GetName();
     std::string player = pPlayer->GetName();
@@ -207,7 +207,7 @@ void CombatTools::MoveShipRandomly(ShipHandlePtr ship)
 void CombatTools::AwardPointsForShipDestroy(PlayerHandlePtr player)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
-    int points = CONFIG_INT(RM,"point_gain_ship_destroy");
+    int points = config_int(RM,"point_gain_ship_destroy");
     
     player->Lock();
     player->SetPoints( player->GetPoints() + points);
@@ -218,7 +218,7 @@ void CombatTools::AwardPointsForShipDestroy(PlayerHandlePtr player)
 void CombatTools::AwardPointsForKill(PlayerHandlePtr player)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
-    int kill_points = CONFIG_INT(RM,"point_gain_kill");
+    int kill_points = config_int(RM,"point_gain_kill");
     player->Lock();
     player->SetPoints( player->GetPoints() + kill_points);
     player->Unlock();

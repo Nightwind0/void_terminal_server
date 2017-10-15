@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-static const char * RESOURCE_TYPE_STRINGS[] = {"LOGIN","PLAYER","SPACESHIP","PLANET","OUTPOST","SECTOR"};
+static const std::string RESOURCE_TYPE_STRINGS[] = {"LOGIN","PLAYER","SHIP", "SHIPTYPE","PLANET","OUTPOST","SECTOR""TERRITORY", "PLANETCLASS"};
 
 //Provided for the map<> only..
 Resource::Resource()

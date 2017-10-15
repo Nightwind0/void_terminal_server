@@ -5,6 +5,7 @@
 #include <deque>
 #include "Universe.h"
 #include "void_util.h"
+#include "ShipTypeHandle.h"
 #include <sstream>
 
 using std::ostringstream;

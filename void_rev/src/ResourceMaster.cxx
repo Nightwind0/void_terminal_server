@@ -72,7 +72,7 @@ std::string ResourceMaster::GetConfig(const std::string &key)
 {
     static Mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
-    pqxx::work work { *m_dbconn }; 
+    pqxx::read_transaction work { *m_dbconn }; 
     pqxx::result r = work.prepared(kGetConfigStmt)(key).exec();
     if( r.size() != 1){
       throw DBException("Must have exactly one value for config named " + key);

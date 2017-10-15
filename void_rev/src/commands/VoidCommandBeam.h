@@ -23,9 +23,7 @@ class VoidCommandBeam : public VoidCommand, private ShipListBehavior
     virtual bool HandleCommand(const string &command, const string &arguments, bool bFromPost);
     
  private:
-
-
-    std::list<int> GetValidShipList(Sector cur_sector, int beamrange, int cur_ship);
+    std::list<int> GetValidShipList(Sector cur_sector, size_t beamrange, int cur_ship);
 
     VoidCommandBeam();
     bool CommandBeam(const std::string &arguments);

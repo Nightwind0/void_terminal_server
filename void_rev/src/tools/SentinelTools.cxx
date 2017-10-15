@@ -35,7 +35,7 @@ int SentinelTools::SentinelCapacity ( int sector )
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    int maximum = CONFIG_INT(RM,"sentinels_per_sector");
+    int maximum = config_int(RM,"sentinels_per_sector");
 
     std::string sql = "select sum(ncount) from sentinels where ksector = '" + IntToString(sector) + "';";
 
@@ -131,8 +131,8 @@ int SentinelTools::InflictSentinelDamage(int numsentinels, ShipHandlePtr pTarget
 {
     ResourceMaster * RM = ResourceMaster::GetInstance();
 
-    float mean_damage = CONFIG_FLOAT(RM, "mean_sentinel_dmg");
-    float deviation = CONFIG_FLOAT(RM, "sentinel_dmg_deviation");
+    float mean_damage = config_float(RM, "mean_sentinel_dmg");
+    float deviation = config_float(RM, "sentinel_dmg_deviation");
 
     int damage  = std::max((int)g_random(numsentinels, mean_damage,deviation),0);
     pTarget->Lock();

@@ -11,22 +11,19 @@
 class ShipTypeHandle : public SerialObject
 {
  private:
-    static const char * FIELD_NAMES[];
     std::string m_manufacturer;
 
  public:
- ShipTypeHandle(DatabaseConnPtr dbconn, const PrimaryKey &key):SerialObject(dbconn,key,false){}
-    ~ShipTypeHandle(){CloseDownObject();}
+    ShipTypeHandle(DatabaseConnPtr dbconn, const PrimaryKey &key);
+    virtual ~ShipTypeHandle(){CloseDownObject();}
 
 
-    ResourceType GetType()const{return ResourceType::SHIP;};
+    ResourceType GetType()const{return ResourceType::SHIPTYPE;};
 
-    enum FIELDS{NKEY,MANUFACTURER,NAME,MAXMISSILES,MAXSHIELDS,MAXATTACK,MAXHOLDS,INITHOLDS,MAXSENTINELS,MAXTRACKERS,MAXMINES,MAXPEOPLE,MAXPROBES,TURNSPERSECTOR,HASWARPDRIVE, ISCLOAKABLE,HASANALYZER,SCANDISTANCE,COST,FORECOLOR,BACKCOLOR, TRANSRANGE,FORSALE};
-
+    enum FIELDS {NKEY,MANUFACTURER,NAME,MAXMISSILES,MAXSHIELDS,MAXATTACK,MAXHOLDS,INITHOLDS,MAXSENTINELS,MAXTRACKERS,MAXMINES,MAXPEOPLE,MAXPROBES,TURNSPERSECTOR,HASWARPDRIVE, ISCLOAKABLE,HASANALYZER,SCANDISTANCE,COST,FORECOLOR,BACKCOLOR, TRANSRANGE,FORSALE};
+    static std::string FieldName(int fieldnum);
     virtual std::string GetFieldName(int fieldnum)const;
-    static std::string FieldName(int fieldnum){ return FIELD_NAMES[fieldnum]; }
     virtual void LoadFromDB();
-
 
     Integer GetNkey()const;
     Integer GetManufacturer()const;

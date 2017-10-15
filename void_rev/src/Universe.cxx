@@ -44,9 +44,8 @@ int Universe::GetNumSectors(pqxx::connection_base& conn)
     m_numsectors = r[0][0].as<int>();
     txn.commit();
   }
-  else {
-    return m_numsectors;
-  }
+
+  return m_numsectors;
 }
 
 std::string Universe::GetToday(pqxx::connection_base& conn)

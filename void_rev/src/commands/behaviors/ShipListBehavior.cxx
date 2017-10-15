@@ -1,4 +1,5 @@
 #include "ShipListBehavior.h"
+#include "ShipTypeHandle.h"
 #include <list>
 #include <sstream>
 
@@ -23,8 +24,6 @@ std::list<int> ShipListBehavior::GetOwnedShips()
     std::string query = "select nkey from ship where kowner = '" + (std::string)player->GetName() + "';";
 
     pqxx::result dbresult = get_behavior_thread()->DBExec(query);
-    int numships = dbresult.size();
-
     std::list<int> ships;
 
     for(auto row : dbresult)

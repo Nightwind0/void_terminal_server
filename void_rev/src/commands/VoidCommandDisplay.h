@@ -27,6 +27,7 @@ class VoidCommandDisplay : public VoidCommand
     std::string DisplayStardockInSector(Sector sector);
     std::string DisplayShipsInSector(Sector sector, bool showcloaked=false);
     std::string DisplayOutpostsInSector(Sector sector);
+    std::string DisplayPlanetsInSector(Sector sector);
     std::string DisplaySector(Sector sector, bool showcloaked=false);
     std::string DisplaySentinelsInSector(Sector sector);
 

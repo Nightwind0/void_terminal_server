@@ -5,6 +5,7 @@
 #include "ResourceMaster.h"
 #include "VoidServerThread.h"
 #include "PlayerHandle.h"
+#include "ShipTypeHandle.h"
 #include <sstream>
 
 VoidCommandReclaim::VoidCommandReclaim(VoidServerThread *thread):VoidCommand(thread),m_sentinel_tools(thread->GetDatabaseConn(), thread->GetLocalSocket())

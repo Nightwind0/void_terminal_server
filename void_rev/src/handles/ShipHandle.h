@@ -2,35 +2,31 @@
 #define VOID_SHIP_HANDLE_H
 
 #include "SerialObject.h"
-#include <libpq-fe.h>
 #include "Resource.h"
 #include "PrimaryKey.h"
 #include <string>
-#include "ShipTypeHandle.h"
 
-class ShipHandle;
-using ShipHandlePtr = std::shared_ptr<ShipHandle>;
+
+
 
 class ShipHandle : public SerialObject
 {
- private:
-    static const char * FIELD_NAMES[];
-
  public:
- ShipHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew = false):SerialObject(dbconn,key,isnew){}
+    ShipHandle(DatabaseConnPtr dbconn, const PrimaryKey &key, bool isnew = false);
     virtual ~ShipHandle(){CloseDownObject();}
 	
 
     ResourceType GetType()const{return ResourceType::SHIP;};
 
     enum FIELDS{NKEY,NAME,TYPE,ISALLIANCEOWNED,OWNER,ALLIANCE,ISPERSONAL,SENTINELS,MISSILES,MINES,TRACKERS,SHIELDS,PLASMA,METALS,CARBON,PEOPLE,DEBRIS,EXPLOSIVES,PROBES,HOLDS, ISCLOAKED,SECTOR,TOWSHIP};
-
+    static std::string FieldName(int fieldnum);
     virtual std::string GetFieldName(int fieldnum)const;
-    static std::string FieldName(int fieldnum){return FIELD_NAMES[fieldnum];}
     virtual void LoadFromDB();
 
     ShipTypeHandlePtr  GetShipTypeHandle()const;
-    
+
+    unsigned int GetHoldsUsed()const;
+    unsigned int GetHoldsFree()const;
 
     Integer GetNkey()const;
     Text GetName()const;
@@ -91,6 +87,7 @@ class ShipHandle : public SerialObject
 };
 
 
+using ShipHandlePtr = std::shared_ptr<ShipHandle>;
 
 
 #endif

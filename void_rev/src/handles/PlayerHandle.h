@@ -21,7 +21,7 @@ class PlayerHandle : public SerialObject
 
     ResourceType GetType()const{return ResourceType::PLAYER;};
 
-    enum FIELDS{NAME, LOGIN, ISMOB, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY, ISDEAD};
+    enum FIELDS{NAME, LOGIN, MOB, CREDITS, TURNSLEFT, POINTS, ALLIANCE, CURRENTSHIP, FIRSTPLAY, LASTPLAY, ISDEAD};
 
     virtual std::string GetFieldName(int fieldnum)const;
     static std::string FieldName(int fieldnum){return FIELD_NAMES[fieldnum];}
@@ -30,7 +30,6 @@ class PlayerHandle : public SerialObject
     Text GetLogin()const;
     Timestamp GetFirstPlay()const;
     Timestamp GetLastPlay()const;
-    Boolean GetIsMob()const;
     Integer GetCredits()const;
     Integer GetTurnsLeft()const;
     Integer GetCurrentShip()const;

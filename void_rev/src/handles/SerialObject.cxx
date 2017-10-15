@@ -334,4 +334,31 @@ void SerialObject::SetField(int fieldnum, FieldPtr field)
 }
 
 
+void SerialObject::SetField(int fieldnum, const std::string& value){
+  SetField(fieldnum, std::make_shared<Text>(GetFieldName(fieldnum), value));
+}
 
+void SerialObject::SetField(int fieldnum, double value){
+  SetField(fieldnum, std::make_shared<Float>(GetFieldName(fieldnum),std::to_string(value)));
+}
+
+void SerialObject::SetField(int fieldnum, int value){
+  SetField(fieldnum, std::make_shared<Integer>(GetFieldName(fieldnum),std::to_string(value)));
+}
+
+void SerialObject::SetField(int fieldnum, bool value){
+  std::string svalue = "f";
+  if(value) svalue = "t";
+  SetField(fieldnum, std::make_shared<Boolean>(GetFieldName(fieldnum), svalue));
+}
+
+
+void SerialObject::add_field(int id, const std::string name)
+{
+  m_field_names[id] = name;
+}
+
+std::string SerialObject::GetFieldName(int field)const
+{
+  return m_field_names[field];
+}

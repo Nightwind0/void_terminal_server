@@ -2,6 +2,7 @@
 #include "VoidCommandPort.h"
 #include "void_util.h"
 #include "OutpostHandle.h"
+#include "OutpostTools.h"
 #include "PlayerHandle.h"
 #include "ShipHandle.h"
 #include "Universe.h"
@@ -66,8 +67,6 @@ int VoidCommandPort::BuyGoods(const std::string &goods, int price_each,  int uni
 
 bool VoidCommandPort::CommandPort(const std::string &arguments)
 {
-    ResourceMaster * RM = ResourceMaster::GetInstance();
-
     PlayerHandlePtr player = get_player();
     ShipHandlePtr ship = create_handle_to_current_ship(player);
 
@@ -186,16 +185,16 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 	
 	// TODO: Adjust for minutes_delta gone by for each of plasma, metals and carbon
 	if(buyplasma)
-	    plasma_price = OutpostHandle::GetBuyRateAfterTime(minutes_delta, plasma_price);
-	else plasma_price = OutpostHandle::GetSellRateAfterTime(minutes_delta,plasma_price);
+	    plasma_price = OutpostTools::GetBuyRateAfterTime(minutes_delta, plasma_price);
+	else plasma_price = OutpostTools::GetSellRateAfterTime(minutes_delta,plasma_price);
 
 	if(buymetals)
-	    metals_price = OutpostHandle::GetBuyRateAfterTime(minutes_delta, metals_price );
-	else metals_price = OutpostHandle::GetSellRateAfterTime(minutes_delta, metals_price );
+	    metals_price = OutpostTools::GetBuyRateAfterTime(minutes_delta, metals_price );
+	else metals_price = OutpostTools::GetSellRateAfterTime(minutes_delta, metals_price );
 
 	if(buycarbon)
-	    carbon_price = OutpostHandle::GetBuyRateAfterTime(minutes_delta, carbon_price );
-	else carbon_price = OutpostHandle::GetSellRateAfterTime(minutes_delta, carbon_price );
+	    carbon_price = OutpostTools::GetBuyRateAfterTime(minutes_delta, carbon_price );
+	else carbon_price = OutpostTools::GetSellRateAfterTime(minutes_delta, carbon_price );
 
 	outpost->Lock();
 	outpost->SetPlasmaPriceMultiplier(plasma_price / double(base_plasma_price));
@@ -230,13 +229,12 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 
     bool deal = false;
     
-    int max_holds = ship->GetHolds();
     int ship_plasma = ship->GetPlasma();
     int ship_metals = ship->GetMetals();
     int ship_carbon = ship->GetCarbon();
 
-    int cur_holds = ship_plasma + ship_metals + ship_carbon;
-    int empty_holds = max_holds - cur_holds;
+
+    int empty_holds = ship->GetHoldsFree();
     
     int credits = player->GetCredits();
 
@@ -263,7 +261,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		player->SetCredits(player->GetCredits() + (sold * nplasma_price ));
 		player->Unlock();
 
-		plasma_price = OutpostHandle::GetBuyRateAfterPurchase( sold, plasma_price );
+		plasma_price = OutpostTools::GetBuyRateAfterPurchase( sold, plasma_price );
 		outpost->Lock();
 		outpost->SetPlasmaPriceMultiplier( plasma_price / double(base_plasma_price));
 		outpost->Unlock();
@@ -302,7 +300,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		player->SetCredits(player->GetCredits() + (sold * (nmetals_price )));
 		player->Unlock();
 
-		metals_price = OutpostHandle::GetBuyRateAfterPurchase( sold, metals_price );
+		metals_price = OutpostTools::GetBuyRateAfterPurchase( sold, metals_price );
 		outpost->Lock();
 		outpost->SetMetalsPriceMultiplier( metals_price / double(base_metals_price) );
 		outpost->Unlock();
@@ -340,7 +338,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		player->SetCredits(player->GetCredits() + (sold * (ncarbon_price )));
 		player->Unlock();
 
-		carbon_price = OutpostHandle::GetBuyRateAfterPurchase( sold, carbon_price );
+		carbon_price = OutpostTools::GetBuyRateAfterPurchase( sold, carbon_price );
 		outpost->Lock();
 		outpost->SetCarbonPriceMultiplier( carbon_price / double(base_carbon_price) );
 		outpost->Unlock();
@@ -382,7 +380,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		player->Unlock();
 
 
-		plasma_price = OutpostHandle::GetSellRateAfterSale ( bought, plasma_price );
+		plasma_price = OutpostTools::GetSellRateAfterSale ( bought, plasma_price );
 		outpost->Lock();
 		outpost->SetPlasmaPriceMultiplier( plasma_price / double(base_plasma_price) );
 		outpost->Unlock();
@@ -417,7 +415,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		player->SetCredits(player->GetCredits() - (bought * (nmetals_price )));
 		player->Unlock();
 
-		metals_price = OutpostHandle::GetSellRateAfterSale ( bought, metals_price );
+		metals_price = OutpostTools::GetSellRateAfterSale ( bought, metals_price );
 		outpost->Lock();
 		outpost->SetMetalsPriceMultiplier( metals_price / double(base_metals_price) );
 		outpost->Unlock();
@@ -453,7 +451,7 @@ bool VoidCommandPort::CommandPort(const std::string &arguments)
 		player->SetCredits(player->GetCredits() - (bought * (ncarbon_price )));
 		player->Unlock();
 
-		carbon_price = OutpostHandle::GetSellRateAfterSale ( bought, carbon_price );
+		carbon_price = OutpostTools::GetSellRateAfterSale ( bought, carbon_price );
 		outpost->Lock();
 		outpost->SetCarbonPriceMultiplier( carbon_price / double(base_carbon_price) );
 		outpost->Unlock();

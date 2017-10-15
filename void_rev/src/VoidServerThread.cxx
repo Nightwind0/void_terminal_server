@@ -41,6 +41,7 @@
 #include "VoidCommandDeploy.h"
 #include "VoidCommandReclaim.h"
 #include "VoidCommandScan.h"
+#include "VoidCommandLand.h"
 #include <pqxx/pqxx>
 
 using namespace std;
@@ -365,7 +366,7 @@ std::string VoidServerThread::ReceiveLine()
 
 	if(result == Socket::eSelectResult::THIS_SOCKET) {
 	    std::string input;
-	    int bytes = m_socket->Recv(buffer,65535, MSG_DONTWAIT);
+	    int bytes = m_socket->Recv(buffer,65535,MSG_DONTWAIT);
 	    if(bytes > 0){
 		buffer[bytes] = '\0';
 		input = buffer;
@@ -881,7 +882,7 @@ void VoidServerThread::Send(const std::string &str)
     m_socket->Send(str.c_str(),str.size(), MSG_NOSIGNAL);
 }
 
-void VoidServerThread::SendWordWrapped(const std::string &str, int screen_width)
+void VoidServerThread::SendWordWrapped(const std::string &str, size_t screen_width)
 {
     ostringstream os;
 
@@ -1146,8 +1147,6 @@ void VoidServerThread::Service()
     {
 
 	bool gotinput = false;
-	int newline = 0;
-
 	    
 	while(!gotinput)
 	{
@@ -1323,7 +1322,7 @@ void VoidServerThread::RegisterCommands()
     add_command(std::make_shared<VoidCommandDeploy>(this));
     add_command(std::make_shared<VoidCommandReclaim>(this));
     add_command(std::make_shared<VoidCommandScan>(this));
-
+    add_command(std::make_shared<VoidCommandLand>(this));
 }
 
 VoidServerThread::VoidServerThread(TCPSocketPtr socket):m_socket(socket)

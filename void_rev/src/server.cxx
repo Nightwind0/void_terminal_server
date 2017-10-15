@@ -19,6 +19,7 @@
 #include <pqxx/pqxx>
 #include <unordered_map>
 #include "SocketException.h"
+#include "PlanetUpdateThread.h"
 
 const int DEFAULT_VOID_PORT = 5005;
 
@@ -155,6 +156,7 @@ int main(int argc, char** argv)
   std::unique_ptr<UNIXDatagramSocket>  unixsocket = std::make_unique<UNIXDatagramSocket>(pipe_path);
   std::unique_ptr<VoidThreadSpawner> threadspawner = std::make_unique<VoidThreadSpawner>(port);
   std::unique_ptr<EdgeLoadThread>   edge_thread = std::make_unique<EdgeLoadThread>();
+  std::unique_ptr<PlanetUpdateThread> planet_thread = std::make_unique<PlanetUpdateThread>();
 
 
   bool done = false;
@@ -190,6 +192,7 @@ int main(int argc, char** argv)
 
 
   edge_thread->Start();
+  planet_thread->Start();
 
 
   while(!done) {
@@ -269,6 +272,7 @@ int main(int argc, char** argv)
   }
 
   edge_thread->Wait();
+  planet_thread->Wait();
   
   try{
     unixsocket->Close();

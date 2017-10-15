@@ -1,7 +1,7 @@
 CREATE TABLE Player(
 sname varchar(30) PRIMARY KEY,
 klogin varchar(20) REFERENCES Login(SLOGIN) NOT NULL,
-bmob boolean,
+kmob varchar(30) REFERENCES Mob(sname),
 ncredits integer,
 nturnsleft integer,
 npoints integer,

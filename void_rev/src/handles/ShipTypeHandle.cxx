@@ -1,16 +1,53 @@
 #include "ShipTypeHandle.h"
 #include "void_util.h"
+#include <cassert>
 
 
-//enum FIELDS{NKEY,KMANUFACTURER,SNAME,MAXMISSILES,MAXSHIELDS,MAXATTACK,MAXHOLDS,INITHOLDS,MAXSENTINELS,MAXTRACKERS,MAXMINES,MAXPEOPLE,MAXPROBES,TURNSPERSECTOR,HASWARPDRIVE, ISCLOAKABLE,HASANALYZER,SCANDISTANCE,COST,FORECOLOR,BACKCOLOR};
+const FieldPair fields[] = {{ShipTypeHandle::NKEY, "nkey"},
+			    {ShipTypeHandle::MANUFACTURER, "kmanufacturer"},
+			    {ShipTypeHandle::NAME, "sname"},
+			    {ShipTypeHandle::MAXMISSILES, "nmaxmissiles"},
+			    {ShipTypeHandle::MAXSHIELDS, "nmaxshields"},
+			    {ShipTypeHandle::MAXATTACK, "nmaxattack"},
+			    {ShipTypeHandle::INITHOLDS, "nmaxholds"},
+			    {ShipTypeHandle::MAXSENTINELS, "nmaxsentinels"},
+			    {ShipTypeHandle::MAXTRACKERS, "nmaxtrackers"},
+			    {ShipTypeHandle::MAXMINES, "nmaxmines"},
+			    {ShipTypeHandle::MAXPEOPLE, "nmaxpeople"},
+			    {ShipTypeHandle::MAXPROBES, "nmaxprobes"},
+			    {ShipTypeHandle::TURNSPERSECTOR, "nturnspersector"},
+			    {ShipTypeHandle::HASWARPDRIVE, "bwarpdrive"},
+			    {ShipTypeHandle::ISCLOAKABLE, "bcloakable"},
+			    {ShipTypeHandle::HASANALYZER, "banalyzer"},
+			    {ShipTypeHandle::SCANDISTANCE, "nscandistance"},
+			    {ShipTypeHandle::COST, "ncost"},
+			    {ShipTypeHandle::FORECOLOR, "nforecolor"},
+			    {ShipTypeHandle::BACKCOLOR, "nbackcolor"},
+			    {ShipTypeHandle::TRANSRANGE, "ntransrange"},
+			    {ShipTypeHandle::FORSALE, "bforsale"}};
 
-const char * ShipTypeHandle::FIELD_NAMES[] = {"nkey","kmanufacturer","sname","nmaxmissiles","nmaxshields","nmaxattack","nmaxholds","ninitholds","nmaxsentinels","nmaxtrackers","nmaxmines","nmaxpeople","nmaxprobes","nturnspersector","bwarpdrive","bcloakable","banalyzer","nscandistance","ncost","nforecolor","nbackcolor", "ntransrange","bforsale"};
 
-
-std::string ShipTypeHandle::GetFieldName(int fieldnum)const
-{
-    return FIELD_NAMES[fieldnum];
+std::string ShipTypeHandle::FieldName(int fieldnum) {
+  for ( auto field : fields ) {
+    if (field.first == fieldnum) {
+      return field.second;
+    }
+  }
+  assert(0);
+  return "";
 }
+
+std::string ShipTypeHandle::GetFieldName(int fieldnum) const {
+  return FieldName(fieldnum);
+}
+
+ShipTypeHandle::ShipTypeHandle(DatabaseConnPtr dbconn, const PrimaryKey &key):SerialObject(dbconn,key,false){
+  for( auto field : fields ) {
+    add_field(field.first, field.second);
+  }
+}
+
+
 void ShipTypeHandle::LoadFromDB(){} // We never call this, since we don't make new ship types, we will never lock and therefore never use this
 
 

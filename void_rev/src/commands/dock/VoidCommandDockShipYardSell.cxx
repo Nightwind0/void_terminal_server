@@ -70,7 +70,7 @@ bool VoidCommandDockShipYardSell::DockShipYardSell(const string &arguments)
     PlayerHandlePtr player = get_thread()->GetPlayer();
     int shipnum = atoi(arguments.c_str());
 
-    if(!arguments.size() || (shipnum == 0 && arguments.c_str() != "0"))
+    if(!arguments.size() || (shipnum == 0 && arguments != "0"))
     {
 	return false;
     }

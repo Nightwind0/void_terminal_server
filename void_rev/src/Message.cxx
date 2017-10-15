@@ -61,10 +61,8 @@ std::string Message::ReadFromSocket(DatagramSocketPtr socket)
     msg_hdr header;
     buffer = new char[1024];
     orig_buffer = buffer;
-    bool gotit = false;
 
     int str_size =0;
-    int from_size = 0;
 
     RM->Log(AUDIT, "- Decoding MSG - ");
 
@@ -76,8 +74,6 @@ std::string Message::ReadFromSocket(DatagramSocketPtr socket)
 
     m_type = header.type;
     str_size = header.str_len;
-    from_size = header.from_len;
-
 
     RM->Log(AUDIT, " - MSG Indicated String Size = " + IntToString(str_size));
 

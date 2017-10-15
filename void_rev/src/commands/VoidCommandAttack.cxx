@@ -107,7 +107,7 @@ bool VoidCommandAttack::CommandAttack(int othership)
 {
     ResourceMaster *RM = ResourceMaster::GetInstance();
 
-    int escapepod_num = CONFIG_INT(RM,"escape_pod_nkey");
+    int escapepod_num = std::stoi(RM->GetConfig("escape_pod_nkey"));
     
     ShipHandlePtr  ship (create_handle_to_current_ship(get_player()));
 

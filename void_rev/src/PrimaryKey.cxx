@@ -34,6 +34,18 @@ PrimaryKey::PrimaryKey(FieldPtr field1, FieldPtr field2, FieldPtr field3)
     m_fields.push_back(field3);
 }
 
+PrimaryKey::PrimaryKey(const std::string &dbname, int field)
+  :PrimaryKey(std::make_shared<Integer>(dbname, std::to_string(field))){
+      
+}
+  
+PrimaryKey::PrimaryKey(const std::string &dbname, const std::string& field):PrimaryKey(std::make_shared<Text>(dbname, field)){
+  
+}
+
+PrimaryKey::PrimaryKey(const std::string& dbname,double field):PrimaryKey(std::make_shared<Float>(dbname, std::to_string(field))){
+}
+
 
 const PrimaryKey & PrimaryKey::operator=(const PrimaryKey &key)
 {

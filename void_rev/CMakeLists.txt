@@ -4,6 +4,7 @@ project(void_server)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS                "-Wall -fstack-protector")
 set(CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "" FORCE)
 
 
@@ -23,7 +24,7 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(PQXX REQUIRED libpqxx)
 
 
-INCLUDE_DIRECTORIES(${PostgreSQL_INCLUDE_DIRS} ${LIBPQXX_INCLUDE_DIRS} src src/commands src/thread src/commands/computer src/commands/dock src/commands/behavior src/tools src/handles src/thread src/socket src/commands/behaviors/)
+INCLUDE_DIRECTORIES(${PostgreSQL_INCLUDE_DIRS} ${LIBPQXX_INCLUDE_DIRS} src src/commands src/thread src/commands/computer src/commands/dock src/commands/behavior src/tools src/handles src/thread src/socket src/commands/behaviors/ src/commands/land)
 
 # Executables
 
@@ -60,6 +61,9 @@ set(void_HEADERS
   src/commands/VoidCommandReclaim.h
   src/commands/VoidCommandSubCommands.h
   src/commands/VoidCommandWho.h
+  src/commands/VoidCommandLand.h
+  src/commands/land/VoidCommandLandDisplay.h
+  src/commands/land/VoidCommandLandCargoBase.h
   src/commands/behaviors/Behavior.h
   src/commands/behaviors/EvaluateShipBehavior.h
   src/commands/behaviors/ShipListBehavior.h
@@ -79,6 +83,8 @@ set(void_HEADERS
   src/handles/LoginHandle.h
   src/handles/OutpostHandle.h
   src/handles/PlayerHandle.h
+  src/handles/PlanetHandle.h
+  src/handles/PlanetClassHandle.h
   src/handles/SerialObject.h
   src/handles/ShipHandle.h
   src/handles/ShipTypeHandle.h
@@ -94,6 +100,7 @@ set(void_HEADERS
   src/tools/SentinelTools.h
   src/tools/ShipTools.h
   src/tools/ToolSet.h
+  src/tools/OutpostTools.h
 )
 
 set(void_SOURCES 
@@ -129,6 +136,12 @@ set(void_SOURCES
   src/commands/VoidCommandReclaim.cxx
   src/commands/VoidCommandSubCommands.cxx
   src/commands/VoidCommandWho.cxx
+  src/commands/VoidCommandLand.cxx
+  src/commands/land/VoidCommandLandDisplay.cxx
+  src/commands/land/VoidCommandLandCargoBase.cxx
+  src/commands/land/VoidCommandLandUnload.cxx
+  src/commands/land/VoidCommandLandLoad.cxx
+  src/commands/land/VoidCommandLandClaim.cxx
   src/commands/behaviors/EvaluateShipBehavior.cxx
   src/commands/behaviors/ShipListBehavior.cxx
   src/commands/computer/VoidCommandComputerCloak.cxx
@@ -148,6 +161,8 @@ set(void_SOURCES
   src/handles/LoginHandle.cxx
   src/handles/OutpostHandle.cxx
   src/handles/PlayerHandle.cxx
+  src/handles/PlanetHandle.cxx
+  src/handles/PlanetClassHandle.cxx
   src/handles/SerialObject.cxx
   src/handles/ShipHandle.cxx
   src/handles/ShipTypeHandle.cxx
@@ -161,6 +176,8 @@ set(void_SOURCES
   src/tools/SentinelTools.cxx
   src/tools/ShipTools.cxx
   src/tools/ToolSet.cxx
+  src/tools/OutpostTools.cxx
+  src/PlanetUpdateThread.cxx
   src/server.cxx
 )
 

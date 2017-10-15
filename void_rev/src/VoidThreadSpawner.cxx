@@ -130,6 +130,7 @@ bool VoidThreadSpawner::run()
 	}
 	
     }
+    return true;
 }
 
 

@@ -29,7 +29,7 @@ bool EdgeLoadThread::run()
     std::unique_ptr<pqxx::connection_base> conn = RM->CreateDatabaseConnection();
     size_t sectorcount = Universe::GetNumSectors(*conn);
 
-    for(int i =0; i < sectorcount; i++)
+    for(size_t i =0; i < sectorcount; i++)
     {
 	RM->LoadEdge(i);
     }

@@ -116,15 +116,12 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	}
 	else if(CompStrings(answer, "x"))
 	{
-	    bool done = false;
 	    while(!path.empty())
 	    {
 		int ns = path.front();
 		path.pop_front();
 		
 		move_player_to_sector(ns);
-
-		
 	    }
 	}
 
@@ -138,5 +135,4 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
     
 
     return true;
-    
 }

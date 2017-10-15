@@ -86,40 +86,40 @@ void LoginHandle::SetLogin(const Text &login)
 
 void LoginHandle::SetLogin(const std::string &login)
 {
-  SetField(LOGIN, std::make_shared<Text>(GetFieldName(LOGIN),login));
+  SetField(LOGIN, login);
 }
 
 
 void LoginHandle::SetPassword(const std::string &password)
 {
-  SetField(PASSWORD, std::make_shared<Text>(GetFieldName(PASSWORD),password));
+  SetField(PASSWORD, password);
 }
 
 void LoginHandle::SetFirstLogin(const std::string &date)
 {
-  SetField(FIRSTLOGIN, std::make_shared<Timestamp>(GetFieldName(FIRSTLOGIN),date));
+  SetField(FIRSTLOGIN, date);
 }
 void LoginHandle::SetLastLogin(const std::string &date)
 {
-  SetField(LASTLOGIN, std::make_shared<Timestamp>(GetFieldName(LASTLOGIN),date));
+  SetField(LASTLOGIN, date);
 }
 
 void LoginHandle::SetEmail(const std::string &email)
 {
-  SetField(EMAIL, std::make_shared<Text>(GetFieldName(EMAIL),email));
+  SetField(EMAIL, email);
 }
 
 void LoginHandle::SetLastIP(const std::string &ip)
 {
-  SetField(LASTIP, std::make_shared<Text>(GetFieldName(LASTIP),ip));
+  SetField(LASTIP, ip);
 }
 
 void LoginHandle::SetDisabled(const bool &b)
 {
-  SetField(DISABLED, std::make_shared<Boolean>(GetFieldName(DISABLED),BooleanToString(b)));
+  SetField(DISABLED, b);
 }
 
 void LoginHandle::SetLogins(const int &logins)
 {
-  SetField(LOGINS, std::make_shared<Integer>(GetFieldName(LOGINS),IntToString(logins)));
+  SetField(LOGINS, logins);
 }

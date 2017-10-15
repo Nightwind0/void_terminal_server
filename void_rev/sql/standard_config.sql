@@ -18,6 +18,8 @@ hold_price,1000
 sentinel_price,750
 missile_price,300
 shield_price,200
+mine_price,800
+tracker_price,5000
 mean_missile_dmg,2
 missile_dmg_deviation,1.75
 sentinel_dmg_deviation,1.75
@@ -30,4 +32,5 @@ sellrate_linear_delta,4
 buyrate_cap,75
 sellrate_floor,20
 idle_timeout_secs,600
+resource_generation_divisor,2000
 \.

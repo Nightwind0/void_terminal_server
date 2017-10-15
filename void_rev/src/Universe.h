@@ -26,7 +26,7 @@ class Universe
  private:
     struct PathNode
     {
-      int sector;
+      Sector sector;
       std::shared_ptr<PathNode> parent;
     };
     static int m_numsectors;

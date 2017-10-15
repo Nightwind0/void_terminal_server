@@ -18,6 +18,9 @@ class PrimaryKey
  public:
     PrimaryKey();
     PrimaryKey(FieldPtr field);
+    PrimaryKey(const std::string& dbname, int field);
+    PrimaryKey(const std::string& dbname, const std::string& field);
+    PrimaryKey(const std::string& dbname, double field);
     PrimaryKey(FieldPtr field1, FieldPtr field2);
     PrimaryKey(FieldPtr field1, FieldPtr field2, FieldPtr field3);
     ~PrimaryKey();

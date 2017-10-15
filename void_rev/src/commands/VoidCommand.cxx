@@ -6,6 +6,7 @@
 #include "ShipHandle.h"
 #include "VoidServerThread.h"
 #include "void_util.h"
+#include "ShipTypeHandle.h"
 #include <memory>
 #include "ResourceMaster.h"
 

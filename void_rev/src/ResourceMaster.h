@@ -58,11 +58,11 @@ class ResourceMaster
     void RegisterResource(ResourceType type, const PrimaryKey &key);
     void ReleaseResource(ResourceType type, const PrimaryKey &key);
 
-    std::vector<TCPSocketPtr>::iterator GetSocketsBegin(){ return m_sockets.begin();}
-    std::vector<TCPSocketPtr>::iterator GetSocketsEnd(){ return m_sockets.end();}
+    std::vector<TCPSocketPtr>::iterator GetSocketsBegin(){ return m_sockets.begin(); }
+    std::vector<TCPSocketPtr>::iterator GetSocketsEnd(){ return m_sockets.end(); }
 
-    std::vector<VoidServerThread*>::iterator GetServerThreadsBegin(){ return m_threads.begin();}
-    std::vector<VoidServerThread*>::iterator GetServerThreadsEnd(){ return m_threads.end();}
+    std::vector<VoidServerThread*>::iterator GetServerThreadsBegin(){ return m_threads.begin(); }
+    std::vector<VoidServerThread*>::iterator GetServerThreadsEnd(){ return m_threads.end(); }
 
     // Sends message to player if he/she is currently online. Otherwise, return false
     bool SendMessage(DatagramSocketPtr socket,const std::string &player, MessagePtr msg);

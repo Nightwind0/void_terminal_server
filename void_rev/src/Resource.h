@@ -18,6 +18,7 @@ enum class ResourceType : unsigned char {
     OUTPOST,
     SECTOR,
     TERRITORY,
+    PLANETCLASS,
     SERIALOBJECT
 };
 

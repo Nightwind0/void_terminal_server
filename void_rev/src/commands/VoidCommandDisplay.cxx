@@ -4,9 +4,10 @@
 #include "Universe.h"
 #include "ResourceMaster.h"
 #include "OutpostHandle.h"
+#include "OutpostTools.h"
 #include <math.h>
 #include <sstream>
-
+#include <iomanip>
 
 const std::string kQueryShipsStmt{"displayQueryShips"};
 const std::string kQueryShipsCloakedStmt{"displayQueryShipsCloaked"};
@@ -14,6 +15,7 @@ const std::string kQueryOutpostsStmt{"displayQueryOutposts"};
 const std::string kQueryStardocksStmt{"displayQueryStardocks"};
 const std::string kQuerySentinelsStmt{"displayQuerySentinels"};
 const std::string kQuerySectorStmt{"displayQuerySector"};
+const std::string kQueryPlanetsStmt{"displayQueryPlanets"};
 
 VoidCommandDisplay::VoidCommandDisplay(VoidServerThread *thread):VoidCommand(thread)
 {
@@ -99,6 +101,7 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
 
     os << DisplayStardockInSector(sector);
     os << DisplayOutpostsInSector(sector);
+    os << DisplayPlanetsInSector(sector);
     os << DisplayShipsInSector(sector, show_cloaked);
     os << DisplaySentinelsInSector(sector);
 
@@ -156,10 +159,10 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
     pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
     pqxx::result dbresult ;
     if(show_cloaked) {
-       get_thread()->EnsurePreparedStatement(kQueryShipsCloakedStmt, "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector = $1 and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (p.sname = s.kowner) order by s.nkey;");
+       get_thread()->EnsurePreparedStatement(kQueryShipsCloakedStmt, "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.kmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector = $1 and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (p.sname = s.kowner) order by s.nkey;");
        dbresult = work.prepared(kQueryShipsCloakedStmt)((int)sector).exec();
     }else{
-      get_thread()->EnsurePreparedStatement(kQueryShipsStmt, "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.bmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector = $1 and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (s.bcloaked = false or s.bcloaked is null) and (p.sname = s.kowner) order by s.nkey;");
+      get_thread()->EnsurePreparedStatement(kQueryShipsStmt, "select s.nkey,s.sname, tm.sname, t.sname, s.nmissiles, t.nforecolor, t.nbackcolor, s.bcloaked, s.kowner, p.kmob, s.kalliance, s.nshields, t.nmaxshields from ship s,shiptype t, player p, shipmanufacturer tm where s.ksector = $1 and s.ktype = t.nkey and tm.nkey = t.kmanufacturer and (s.bcloaked = false or s.bcloaked is null) and (p.sname = s.kowner) order by s.nkey;");
       dbresult = work.prepared(kQueryShipsStmt)((int)sector).exec();
     }
     work.commit();
@@ -227,7 +230,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 */
 
 
-	if(row[9].is_null() || row[9].as<std::string>("f") != "t")
+	if(!row[9].is_null())
 	{
 	    os << Color()->get(LIGHTCYAN);
 	}
@@ -296,32 +299,32 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
 
       if(buyplasma.GetValue()) {
 	  os << Color()->get(LIGHTBLUE) << 'B' ;
-	  os << (int) round( OutpostHandle::GetBuyRateAfterTime(minutes,plasmaprice));
+	  os << (int) round( OutpostTools::GetBuyRateAfterTime(minutes,plasmaprice));
 	  os << ',';
       } else {
 	os << Color()->get(LIGHTCYAN) << 'S' ;
-	os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,plasmaprice));
+	os << (int) round(OutpostTools::GetSellRateAfterTime(minutes,plasmaprice));
 	os << ',';
       }
       
       
       if(buymetals.GetValue()) {
 	os << Color()->get(LIGHTBLUE) << 'B';
-	os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,metalsprice));
+	os << (int) round(OutpostTools::GetBuyRateAfterTime(minutes,metalsprice));
 	os << ',';
       } else {
 	os << Color()->get(LIGHTCYAN) << 'S' ;
-	os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,metalsprice));
+	os << (int) round(OutpostTools::GetSellRateAfterTime(minutes,metalsprice));
 	os << ',';
       }
 
 
       if(buycarbon.GetValue()) {
 	os << Color()->get(LIGHTBLUE) << 'B';
-	os << (int) round(OutpostHandle::GetBuyRateAfterTime(minutes,carbonprice));
+	os << (int) round(OutpostTools::GetBuyRateAfterTime(minutes,carbonprice));
       } else {
 	os << Color()->get(LIGHTCYAN) << 'S';
-	os << (int) round(OutpostHandle::GetSellRateAfterTime(minutes,carbonprice));
+	os << (int) round(OutpostTools::GetSellRateAfterTime(minutes,carbonprice));
       }
       
       os << Color()->get(WHITE) << ')' << endr;
@@ -329,6 +332,42 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
     }
 
     return os.str();
+}
+
+std::string VoidCommandDisplay::DisplayPlanetsInSector(Sector sector)
+{
+  pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
+  get_thread()->EnsurePreparedStatement(kQueryPlanetsStmt, "select sname, fsize, kclass, kowner, kalliance, dlastvisit from planet where ksector = $1;");
+
+  pqxx::result dbresult = work.prepared(kQueryPlanetsStmt)((int)sector).exec();
+  std::ostringstream os;
+  work.commit();
+
+  size_t numplanets = dbresult.size();
+  
+  
+  if(numplanets == 0 ) return "";
+
+  os << Color()->get(GREEN) << "Planets:" << endr;
+
+  for(auto row : dbresult) {
+    os << '\t' << Color()->get(LIGHTBLUE) << row[0].as<std::string>("Brigadoon");
+    os << Color()->get(WHITE) << " (" << Color()->get(GRAY) << std::setprecision(3) << row[1].as<double>(1.0) << 'x' << Color()->get(WHITE) << ") " << Color()->get(PURPLE) << row[2].as<std::string>() <<  " class " << endr;
+    if(!row[3].is_null()){
+      os << "\t\t" << Color()->get(GREEN) << "owned by "
+	 << Color()->get(LIGHTCYAN) << row[3].as<std::string>();
+      
+      if(row[4].is_null()){
+	os << endr;
+      }	else {
+	os << Color()->get(WHITE) << " {" << Color()->get(RED) << row[4].as<std::string>() << 
+	  Color()->get(WHITE) << "} " << endr;
+      }
+    }
+    
+  }
+
+  return os.str();
 }
 
 std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
@@ -356,10 +395,8 @@ std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
 	Color()->get(LIGHTCYAN) << player;
       
       if(row[2].is_null()){
-	
 	os << endr;
       }	else {
-	
 	os << Color()->get(WHITE) << " {" << Color()->get(RED) << row[2].as<std::string>() << 
 	  Color()->get(WHITE) << "} " << endr;
       }

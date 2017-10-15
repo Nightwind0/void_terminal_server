@@ -6,9 +6,11 @@
 #include "Resource.h"
 #include <pqxx/pqxx>
 #include "Field.h"
-#include <map>
+#include <unordered_map>
 #include <memory>
 
+
+using FieldPair = std::pair<int, const std::string>;
 
 class SerialObject
 {
@@ -17,7 +19,7 @@ class SerialObject
     virtual ~SerialObject();
 
     virtual ResourceType GetType()const{ return ResourceType::SERIALOBJECT;};
-    virtual std::string GetFieldName(int field)const =0;
+    virtual std::string GetFieldName(int field)const;
 
     virtual void LoadFromDB()=0;
     void DeleteFromDB();
@@ -30,8 +32,10 @@ class SerialObject
 
     bool Exists()const{ return RecordExistsInDB(); }
  protected:
-    void create_prepared_statements();
+    void add_field(int id, const std::string name);
     
+    void create_prepared_statements();
+    mutable std::unordered_map<int,std::string> m_field_names;
     mutable std::map<int,FieldPtr> m_fields;
     DatabaseConnPtr  m_dbconn;
     PrimaryKey m_key;
@@ -50,6 +54,10 @@ class SerialObject
     virtual Text GetText(int field)const;
     virtual Boolean GetBoolean(int field)const;
     virtual void SetField(int fieldnum, FieldPtr field);
+    virtual void SetField(int fieldnum, const std::string& value);
+    virtual void SetField(int fieldnum, double value);
+    virtual void SetField(int fieldnum, int value);
+    virtual void SetField(int fieldnum, bool value);
 
     bool RecordExistsInDB()const;
     virtual void CloseDownObject(); // don't fucking call this from the base class, it'll kill you.

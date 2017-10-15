@@ -10,32 +10,37 @@
 #include <memory>
 #include <pqxx/pqxx>
 
+
+/* Defines and constants
+ *
+ */
 const int VOID_VER_MAJOR = 0;
 
 const int VOID_VER_MINOR = 3;
 const int VOID_VER_INCR = 1;
 const int VOID_VER_INCRMINOR = 1;
 
-
+class ResourceMaster;
 using Sector = unsigned int;
 using DatabaseConnPtr = std::shared_ptr<pqxx::connection_base>;
+
 enum FGColor{BLACK=0,RED,GREEN,BROWN,BLUE,PURPLE,CYAN,GRAY,DARKGRAY,LIGHTRED,LIGHTGREEN,YELLOW,LIGHTBLUE,LIGHTPURPLE,LIGHTCYAN,WHITE};
 enum BGColor{BG_BLACK=0,BG_RED,BG_GREEN,BG_YELLOW,BG_BLUE,BG_MAGENTA,BG_CYAN,BG_WHITE};
 
-#define CONFIG_INT(rm,key) atoi(rm->GetConfig(key).c_str())
-#define CONFIG_STRING(rm,key) rm->GetConfig(key).c_str()
-#define CONFIG_FLOAT(rm,key) atof(rm->GetConfig(key).c_str())
-
-extern const char * endr ; //=  "\n\r";
-
+extern const std::string endr; //=  "\n\r";
 enum LOG_SEVERITY {EMERGENCY, ERROR, WARNING, DEBUG, DEBUG2, AUDIT};
+enum class eSectorFlags : unsigned int {VISITED = 1, AVOID = (1<<1), FAVORITE = (1<<2)};
 
-enum class eSectorFlags : unsigned int {VISITED = 1, AVOID = (1<<1), FAVORITE = (1<<2)}; 
+
+/* Config utilities
+ *
+ */
+double config_float(ResourceMaster * rm, const std::string& key);
+int config_int(ResourceMaster * rm, const std::string& key);
+std::string config_string(ResourceMaster *rm, const std::string& key);
 
 class ColorType
 {
-
-
  public:
     virtual std::string get(FGColor fg, BGColor bg = BG_BLACK)const=0;
     virtual std::string blackout()const=0;
@@ -121,7 +126,12 @@ using StardockData = std::tuple<Sector,std::string>;
                                                                                 
 bool CompStrings(std::string s1, std::string s2);
 
-                                                                               
+
+class ShipHandle;
+class ShipTypeHandle;
+using ShipHandlePtr = std::shared_ptr<ShipHandle>;
+using ShipTypeHandlePtr = std::shared_ptr<ShipTypeHandle>;
+
 std::string IntToString(const int &i);
 std::string DoubleToString(const double &d);
 std::string BooleanToString(const bool &b);

@@ -50,10 +50,7 @@ class OutpostHandle : public SerialObject
     void SetPlasmaPriceMultiplier(double price);
     void SetCarbonPriceMultiplier(double price);
 
-    static double GetBuyRateAfterTime(unsigned int minutes, double current_price);
-    static double GetSellRateAfterTime(unsigned int minutes, double current_price);
-    static double GetBuyRateAfterPurchase(unsigned int stock, double current_price);
-    static double GetSellRateAfterSale(unsigned int stock, double current_price);
+  
     virtual std::string DBTable()const { return "Outpost";};
 
 

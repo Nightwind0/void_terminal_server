@@ -2,6 +2,7 @@
 #include "void_util.h"
 #include "VoidCommandStatus.h"
 #include "Universe.h"
+#include "ShipTypeHandle.h"
 #include <sstream>
 #include "ResourceMaster.h"
 
@@ -124,7 +125,7 @@ void VoidCommandStatus::ShowStatus()
     os << Color()->get(CYAN,BG_WHITE) << "        Status        " +  Color()->blackout() +endr;
     os << SendValue("Player Name:",dbresult[0][0].as<std::string>()) << endr;
     os << SendValue("Credits:",dbresult[0][1].as<std::string>()) << endr;
-    os << SendRow("Turns:",dbresult[0][2].as<std::string>(), CONFIG_STRING(ResourceMaster::GetInstance(),"turns_per_day")) << endr; // TODO: Get actual turns per day value
+    os << SendRow("Turns:",dbresult[0][2].as<std::string>(), ResourceMaster::GetInstance()->GetConfig("turns_per_day")) << endr; 
     
     
     int tps = dbresult[0][33].as<int>(0);

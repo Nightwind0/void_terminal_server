@@ -43,7 +43,6 @@ bool VoidCommandDock::ClaimCommand(const string &command)
 
 bool VoidCommandDock::HandleCommand(const string &command, const string &arguments, bool bFromPost)
 {
-
     std::vector<std::string> argument_vector = WordsFromString(arguments);
     PlayerHandlePtr player = get_player();
     ShipHandlePtr ship = create_handle_to_current_ship(player);
@@ -56,8 +55,6 @@ bool VoidCommandDock::HandleCommand(const string &command, const string &argumen
     }
 
     int sector = ship->GetSector();
-
-
 
     std::string query = "select bstardock from sectors where nsector = '" + IntToString(sector) + "';";
 

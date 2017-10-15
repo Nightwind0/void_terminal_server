@@ -20,16 +20,9 @@ class VoidCommandComputer : public VoidCommandSubCommands
     virtual string GetSyntax()const;
     
     virtual bool ClaimCommand(const string &command);
-
-
     
  private:
-
-
-
-
     VoidCommandComputer();
-
 
     void DisplayIntro()const;
     void DisplayOutro()const;
@@ -37,8 +30,6 @@ class VoidCommandComputer : public VoidCommandSubCommands
     void DisplayOptionsFull();
     std::string GetOptionDescriptionColor()const;
     std::string GetOptionColor()const;
-
-
 };
 
 #endif

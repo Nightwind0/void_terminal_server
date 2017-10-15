@@ -4,6 +4,7 @@
 #include <deque>
 #include "Universe.h"
 #include "void_util.h"
+#include "ShipTypeHandle.h"
 #include <sstream>
 
 using std::ostringstream;
@@ -56,16 +57,13 @@ std::list<int> VoidCommandTow::GetValidShipList(int cur_sector, int cur_ship)
 	+ "' and kowner = '" + player->GetName().GetAsString() + "' and nkey != '" + IntToString(cur_ship) + "' and (bcloaked != 'T' or bcloaked is null);";
 
     pqxx::result dbresult = get_thread()->DBExec(query);
-    int numships = dbresult.size();
 
     for(auto row : dbresult)
     {
       valid_ships.push_back(row[0].as<int>());
     }
 
-
     return valid_ships;
-
 }
 
 
