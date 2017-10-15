@@ -20,20 +20,28 @@ carbon_price = 20
 buy_range = (0.8, 1.2)
 sell_range = (0.6, 1.0)
 database = "void_large"
-connectivity = 4
+connectivity = 3
 emptiness = 20
-connect_range = emptiness
+connect_range = emptiness * 1.25
+# claim distance should go down as connectivity goes up
+federation_claim_distance = 3
+world_seed = random.randint(0, pow(2,63))
+
 
 parser = optparse.OptionParser()
 parser.set_defaults(instance='default',command='list')
-parser.add_option('--instance', action='store_true', dest='instance')
-parser.add_option('--db', action='store_true', dest='database')
-parser.add_option('--sectors', action='store_true', dest='sectors')
-parser.add_option('--stardocks', action='store_true', dest='stardocks')
-parser.add_option('--connectivity', action='store_true', dest='connectivity')
-parser.add_option('--connect_range', action='store_true', dest='connect_range')
+parser.add_option('--instance', action='store', dest='instance')
+parser.add_option('--db', action='store', dest='database')
+parser.add_option('--sectors', action='store', dest='sectors')
+parser.add_option('--stardocks', action='store', dest='stardocks')
+parser.add_option('--connectivity', action='store', dest='connectivity')
+parser.add_option('--connect_range', action='store', dest='connect_range')
+parser.add_option('--seed', action='store', dest='world_seed')
 (options, args) = parser.parse_args()
 
+if options.world_seed:
+        world_seed = options.world_seed
+        
 if options.instance:
         instance = options.instance
 
@@ -62,16 +70,21 @@ prefixes = ("Black","Huge","Amazing","Galactic", "Space", "Magic", "Super","Half
 
 suffixes = ("Hut", "Palace", "Mall", "Space Port", "Dungeon", "Spot", "Place", "Madhouse", "Store", "Outpost", "Destination", "Location", "Trade Post", "Marketplace", "Town", "City", "Shop","Outlet", "Five-and-dime", "Stand", "Warehouse", "Bazaar", "Stop-n-go", "Mart", "Landing", "Port", "Station", "Shanty", "Shack" )
 
-stardock_prefixes = ("Dark", "Mega", "Stellar", "Deep Space", "Galactic", "Deep", "Shining", "Luminous", "Gleaming", "Radiant", "Ethereal", "Bright", "Hidden", "Remote", "Distant", "Alpha", "Omega", "Epsilon", "Gamma", "Delta", "Echo")
+stardock_prefixes = ("Dark", "Mega", "Stellar", "Deep Space", "Galactic", "Deep", "Shining", "Luminous", "Gleaming", "Radiant", "Ethereal", "Bright", "Hidden", "Remote", "Distant", "Alpha", "Omega", "Epsilon", "Gamma", "Delta", "Echo", "Sigma")
 stardock_suffixes = ("Zero", "Metropolis", "Palace", "Base", "World", "Beacon", "Zone", "Stardock", "Harbor", "Haven", "Terminal", "Station", "Sanctuary", "Central", "Prime")
 
+planet_suffixes = ("Prime", "Core", "II", "III", "IV", "V", "Omega", "Alpha", "Epsilon", "Gamma", "Delta", "Mu", "Sigma")
+
 #print len(lnames) * len(fnames) * len(prefixes) * len(suffixes)
+
+
 
 try:
         
         conn=psycopg2.connect("dbname='%s' user='void' password='tiTVPok?'" % (database))
 except:
         print "I am unable to connect to the database."
+
 
 
 class Sector:
@@ -94,6 +107,8 @@ def random_syllable():
 def generate_stardock_name():
         return random.choice(stardock_prefixes) + ' ' + random.choice(stardock_suffixes)
 
+
+                   
 def generate_name():
         name = ""
         syllables = random.randint(2,5)
@@ -101,6 +116,21 @@ def generate_name():
                 name += random_syllable()
         name = name[0].upper() + name[1:]
         return name
+
+planet_names = set()
+def generate_planet_name():
+        while True:
+                   if random.random() < 0.5:
+                           name = generate_name()
+                   else:
+                           name = random.choice(lnames);
+                   if random.random() < 0.25:
+                           name += ' ' + random.choice(planet_suffixes)
+                   if name not in planet_names:
+                           planet_names.add(name)
+                           return name
+
+
 outpost_names = set()
 def generate_outpost_name():
         while True:
@@ -236,6 +266,29 @@ def generate_sectors(numsectors):
                 print 'Error %s' % e
                 sys.exit(1)
 #
+def generate_planets(numsectors):
+        try:
+                cur = conn.cursor()
+                cur.execute("SELECT sname, fprevalence, fmeansize, fvariance, ndefaultflags from PlanetClass;");
+                classes = cur.fetchall();
+                for sector in range(1, numsectors):
+                        for pc in classes:
+                                r = random.random()
+                                if random.random() < pc[1]:
+                                        name = generate_planet_name()
+                                        planet_size = random.gauss(pc[2], pc[3])
+                                        flags = pc[4]
+                                        class_name = pc[0]
+                                        print "The planet %s is born in sector %d" %(name, sector)
+                                        cur.execute("INSERT INTO Planet (sname, ksector, fsize, kclass, nflags) VALUES (%s, %s, %s, %s, %s);", (name,sector,planet_size,class_name,flags))
+        except psycopg2.DatabaseError, e:
+                if conn:
+                        conn.rollback()
+                print 'Error %s' % e
+                sys.exit(1)
+                                
+
+
 def generate_outposts(prevalence):
         try:
                 cur = conn.cursor()
@@ -268,7 +321,7 @@ def generate_outposts(prevalence):
                                         fcarbon = random.uniform(sell_range[0], sell_range[1])
                                         print "Creating Outpost in sector %d named %s" % (sector,name)
                                 cur.execute("INSERT INTO Outpost (sname,ksector,bbuyplasma,bbuymetals,bbuycarbon,fplasmaprice,fmetalsprice,fcarbonprice) VALUES (%s,%s,%s,%s,%s,%s,%s,%s);" , (name, sector, buysplasma, buysmetals, buyscarbon, fplasma, fmetals, fcarbon))
-                #                print sql
+                                #                print sql
                 
         except RuntimeError as err:
                 print err
@@ -387,21 +440,22 @@ def connect_sectors(numsectors):
                 conn.rollback()
                 raise
                 
-        # and when choosing our C/2 edges, we pick a normal random number centered around our own index, but with a sizeable std deviation so that we can connect to far away sectors potentially. 
+
 
 def create_stardocks(numstardocks):
         cur = conn.cursor()
         cur.execute("select nsector, (a.c + b.c) as c from (select nsector, count(0) as c from edges group by nsector) as a, (select nsector2, count(0) as c from edges group by nsector2) as b where nsector = nsector2 order by c desc limit %s;", (numstardocks,))
-        for row in cur.fetchall():
+        for row in cur:
                 name = generate_stardock_name()
                 print "Creating Stardock named %s in sector %d" % (name, row[0])
-                cur.execute("UPDATE Sectors SET bstardock = 't', sstardockname = %s WHERE nsector = %s;", (name, row[0]))
+                insertcur = conn.cursor()
+                insertcur.execute("UPDATE Sectors SET bstardock = 't', sstardockname = %s WHERE nsector = %s;", (name, row[0]))
 
 def mark_adjacent_territory(sector, territory, cur_depth, max_depth):
         cur = conn.cursor()
         cur.execute("UPDATE Sectors set kterritory = %s where nsector = %s;", (territory, sector))
         cur.execute("select nsector2 from edges where nsector = %s union select nsector from edges where nsector2 = %s;", (sector,sector))
-        for row in cur.fetchall():
+        for row in cur:
                 adj = row[0]
                 if cur_depth < max_depth:
                         mark_adjacent_territory(adj, territory, cur_depth +1, max_depth)
@@ -411,21 +465,25 @@ def mark_territory():
         cur.execute("INSERT INTO Territory (nkey, sname) VALUES (0, 'Federation');")
         # Find all stardocks, plus sector 0, mark all adjacent as federation. 
         cur.execute("SELECT nsector FROM Sectors WHERE bstardock = 't';")
-        for row in cur.fetchall():
+        for row in cur:
                 sector = row[0]
-                mark_adjacent_territory(sector, 0, 0, 2)
-        mark_adjacent_territory(0, 0, 0, 2)
+                mark_adjacent_territory(sector, 0, 0, federation_claim_distance)
+        # terra is fed territory
+        mark_adjacent_territory(0, 0, 0, federation_claim_distance)
         
         
 # have to delete this in a particular order due to constraints
                     # Try to connect                
-
+print "And God said: '%s'" %(world_seed,)
+random.seed(world_seed)
 print "BAM! With a thunderous bang, and a horrible zap, the universe, as it was, is voilently destroyed!"
 destroy_universe();
 print
 print "BA-BANG!!!!!! Suddenly, there is a huge explosion, a new universe is forming!"
 print
 print
+cur = conn.cursor()
+cur.execute("UPDATE Config SET svalue = %s WHERE sname = 'world_seed';", (world_seed,))
 print "[creating the empty universe]"
 generate_sectors(numsectors)
 print "[filling the universe with outposts]"
@@ -434,6 +492,8 @@ print "[connecting sectors]"
 connect_sectors(numsectors)
 print "[creating stardocks]"
 create_stardocks(numstardocks)
+print "[creating planets]"
+generate_planets(numsectors)
 print "[claiming territory]"
 mark_territory()
 
