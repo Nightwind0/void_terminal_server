@@ -6,7 +6,7 @@
 #include "void_util.h"
 
 
-VoidCommandMove::VoidCommandMove(VoidServerThread *thread):VoidCommand(thread)
+VoidCommandMove::VoidCommandMove(VoidServerThread *thread):VoidCommandDisplay(thread)
 {
 }
 VoidCommandMove::~VoidCommandMove()
@@ -101,7 +101,7 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 	
 	std::string answer = get_thread()->ReceiveLine();
 
-	if(CompStrings(answer, "yes"))
+	if(CompStrings(answer, "yes") || CompStrings(answer, "YES"))
 	{
 	    bool done = false;
 	    while(!path.empty() && !done)
@@ -109,8 +109,16 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
 		int ns = path.front();
 		path.pop_front();
 		
-		if(!move_player_to_sector(ns))
+		if(!move_player_to_sector(ns) && !path.empty()) {
+		  Send(endr);
+		  Send("Continue? (Y/n): ");
+		  std::string proceed = get_thread()->ReceiveLine();
+		  if(CompStrings(proceed, "yes")){
+		    done = false;
+		  } else {
 		    done = true;
+		  }
+		}
 		
 	    }
 	}
@@ -135,4 +143,15 @@ bool VoidCommandMove::CommandMove(const std::string &arguments)
     
 
     return true;
+}
+
+
+bool VoidCommandMove::move_player_to_sector(Sector sector){
+  //  ShipHandlePtr ship = create_handle_to_current_ship(get_player());
+  // ShipTypeHandlePtr ship_type = ship.GetShipTypeHandle();
+  bool stop = false;
+  std::string sector_data = DisplaySector(sector, false, stop);
+  VoidCommand::move_player_to_sector(sector);
+  Send(sector_data);
+  return !stop;
 }

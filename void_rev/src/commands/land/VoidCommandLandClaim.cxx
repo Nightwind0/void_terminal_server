@@ -45,4 +45,5 @@ bool VoidCommandLandClaim::HandleCommand(const string &command, const string &ar
     }
   }
   Send(os.str());
+  return true;
 }

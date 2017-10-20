@@ -8,27 +8,28 @@
 
 
 const FieldPair fields[] = {{ShipHandle::NKEY,"nkey"},
-			  {ShipHandle::NAME,"sname"},
-			  {ShipHandle::TYPE,"ktype"},
-			  {ShipHandle::ISALLIANCEOWNED, "ballianceowned"},
-			  {ShipHandle::OWNER, "kowner"},
-			  {ShipHandle::ALLIANCE, "kalliance"},
-			  {ShipHandle::ISPERSONAL, "bpersonal"},
-			  {ShipHandle::SENTINELS,"nsentinels"},
-			  {ShipHandle::MINES,"nmines"},
-			  {ShipHandle::TRACKERS,"ntrackers"},
-			  {ShipHandle::SHIELDS,"nshields"},
-			  {ShipHandle::PLASMA,"nplasma"},
-			  {ShipHandle::METALS,"nmetals"},
-			  {ShipHandle::CARBON,"ncarbon"},
-			  {ShipHandle::PEOPLE,"npeople"},
-			  {ShipHandle::DEBRIS,"ndebris"},
-			  {ShipHandle::EXPLOSIVES,"nexplosives"},
-			  {ShipHandle::PROBES,"nprobes"},
-			  {ShipHandle::HOLDS,"nholds"},
-			  {ShipHandle::ISCLOAKED,"bcloaked"},
-			  {ShipHandle::SECTOR,"ksector"},
-			  {ShipHandle::TOWSHIP,"ktowship"}};
+			    {ShipHandle::NAME,"sname"},
+			    {ShipHandle::TYPE,"ktype"},
+			    {ShipHandle::ISALLIANCEOWNED, "ballianceowned"},
+			    {ShipHandle::OWNER, "kowner"},
+			    {ShipHandle::ALLIANCE, "kalliance"},
+			    {ShipHandle::ISPERSONAL, "bpersonal"},
+			    {ShipHandle::SENTINELS,"nsentinels"},
+			    {ShipHandle::MISSILES, "nmissiles"},
+			    {ShipHandle::MINES,"nmines"},
+			    {ShipHandle::TRACKERS,"ntrackers"},
+			    {ShipHandle::SHIELDS,"nshields"},
+			    {ShipHandle::PLASMA,"nplasma"},
+			    {ShipHandle::METALS,"nmetals"},
+			    {ShipHandle::CARBON,"ncarbon"},
+			    {ShipHandle::PEOPLE,"npeople"},
+			    {ShipHandle::DEBRIS,"ndebris"},
+			    {ShipHandle::EXPLOSIVES,"nexplosives"},
+			    {ShipHandle::PROBES,"nprobes"},
+			    {ShipHandle::HOLDS,"nholds"},
+			    {ShipHandle::ISCLOAKED,"bcloaked"},
+			    {ShipHandle::SECTOR,"ksector"},
+			    {ShipHandle::TOWSHIP,"ktowship"}};
 
 std::string ShipHandle::FieldName(int fieldnum) {
   for(auto field : fields) {
@@ -36,7 +37,6 @@ std::string ShipHandle::FieldName(int fieldnum) {
       return field.second;
     }
   }
-  assert(0);
   return "";
 }
 

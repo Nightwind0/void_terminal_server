@@ -75,13 +75,13 @@ bool VoidCommandDisplay::HandleCommand(const string &command, const string &argu
 	ShipHandlePtr ship=  create_handle_to_current_ship(get_thread()->GetPlayer());
 	sector = ship->GetSector();
     }
-
-    get_thread()->Send(DisplaySector( sector, show_cloaked ));
+    bool stop = false;
+    get_thread()->Send(DisplaySector( sector, show_cloaked, stop ));
 
     return true;
 }
     
-std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
+std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked, bool& should_stop)
 {
     std::vector<Sector> sectors = Universe::GetAdjacentSectors(sector);
     std::ostringstream os;
@@ -90,7 +90,6 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
 
     pqxx::result dbresult = get_thread()->DBExec(query);
 
-    ResourceMaster::GetInstance()->Log(AUDIT, "^Displaying sector^");
     os << Color()->get(LIGHTGREEN) << endr <<  "Sector " << Color()->get(WHITE) << sector;
     if(dbresult.size() > 0 && !dbresult[0][0].is_null())
     {
@@ -98,12 +97,12 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
     }
 
     os << endr;
-
-    os << DisplayStardockInSector(sector);
-    os << DisplayOutpostsInSector(sector);
-    os << DisplayPlanetsInSector(sector);
-    os << DisplayShipsInSector(sector, show_cloaked);
-    os << DisplaySentinelsInSector(sector);
+    size_t stardocks, outposts, planets, ships, sentinels = 0;
+    os << DisplayStardockInSector(sector, stardocks);
+    os << DisplayOutpostsInSector(sector, outposts);
+    os << DisplayPlanetsInSector(sector, planets);
+    os << DisplayShipsInSector(sector, show_cloaked, ships);
+    os << DisplaySentinelsInSector(sector, sentinels);
 
     os << Color()->get(GRAY) << "Adjacent Sectors: ";
 
@@ -126,14 +125,18 @@ std::string VoidCommandDisplay::DisplaySector(Sector sector, bool show_cloaked)
       os << Color()->get(RED) << '[' << Color()->get(sector_color) << *i << Color()->get(RED) << "] ";
     }
 
+    if(planets > 0 || outposts > 0 || sentinels > 0 || stardocks > 0 || ships > 0) {
+      should_stop = true;
+    } else {
+      should_stop = false;
+    }
+
     return os.str();   
-
-
 
 }
 
 
-std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
+std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector, size_t& count)
 {
     std::ostringstream os;
     get_thread()->EnsurePreparedStatement(kQueryStardocksStmt, "select bstardock,sstardockname from sectors where nsector = $1;");
@@ -141,9 +144,10 @@ std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
     pqxx::result dbresult = work.prepared(kQueryStardocksStmt)((int)sector).exec();
     work.commit();
     Boolean has_stardock("bstardock", dbresult[0][0].as<std::string>("f"), dbresult[0][0].is_null());
-
+    count = 0;
     if((bool)has_stardock)
     {
+      count = 1;
       Text stardock("sstardockname",dbresult[0][1].as<std::string>("f"), dbresult[0][1].is_null());
       os << Color()->get(GREEN) << "Stardock: " << Color()->get(WHITE, BG_BLUE) << (std::string)stardock << endr;
     }
@@ -153,7 +157,7 @@ std::string VoidCommandDisplay::DisplayStardockInSector(Sector sector)
  
 
 
-std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cloaked)
+std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cloaked, size_t& count)
 {
     std::ostringstream os;
     pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
@@ -167,11 +171,12 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
     }
     work.commit();
 
-    int numships = dbresult.size();
-
-
+    size_t numships = dbresult.size();
+    count = numships;
+    
     if(numships)
     {
+   
 	os << Color()->get(GREEN) << "Ships:" << endr;
     }
 
@@ -258,7 +263,7 @@ std::string VoidCommandDisplay::DisplayShipsInSector(Sector sector, bool show_cl
 
 }
 
-std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
+std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector, size_t& count)
 {
   pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
   get_thread()->EnsurePreparedStatement(kQueryOutpostsStmt, "select sname, bbuyplasma, bbuymetals, bbuycarbon, fplasmaprice, fmetalsprice,fcarbonprice, floor((round(date_part('epoch',now())) - round(date_part('epoch',dlastvisit))) / 60) from Outpost where ksector = $1;");
@@ -267,10 +272,10 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
   std::ostringstream os;
   work.commit();
 
-  int numoutposts = dbresult.size();
+  size_t numoutposts = dbresult.size();
+  count = numoutposts;
 
-
-    if(numoutposts == 0 ) return "";
+  if(numoutposts == 0 ) return "";
 
     os << Color()->get(GREEN) << "Outposts:" << endr;
 
@@ -334,7 +339,7 @@ std::string VoidCommandDisplay::DisplayOutpostsInSector(Sector sector)
     return os.str();
 }
 
-std::string VoidCommandDisplay::DisplayPlanetsInSector(Sector sector)
+std::string VoidCommandDisplay::DisplayPlanetsInSector(Sector sector, size_t& count)
 {
   pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
   get_thread()->EnsurePreparedStatement(kQueryPlanetsStmt, "select sname, fsize, kclass, kowner, kalliance, dlastvisit from planet where ksector = $1;");
@@ -344,7 +349,7 @@ std::string VoidCommandDisplay::DisplayPlanetsInSector(Sector sector)
   work.commit();
 
   size_t numplanets = dbresult.size();
-  
+  count = numplanets;   
   
   if(numplanets == 0 ) return "";
 
@@ -370,7 +375,7 @@ std::string VoidCommandDisplay::DisplayPlanetsInSector(Sector sector)
   return os.str();
 }
 
-std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
+std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector, size_t& total_count)
 {
   pqxx::read_transaction work{*get_thread()->GetDatabaseConn()};
   get_thread()->EnsurePreparedStatement(kQuerySentinelsStmt, "select ncount, kplayer, player.kalliance from sentinels, player where sentinels.kplayer = player.sname and sentinels.ksector = $1;");
@@ -379,6 +384,7 @@ std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
   work.commit();
 
     int groups = dbresult.size();
+    total_count = 0;
 
     if(groups == 0) return "";
 
@@ -388,7 +394,8 @@ std::string VoidCommandDisplay::DisplaySentinelsInSector(Sector sector)
 
     for(auto row : dbresult)
     {
-      std::string count  = row[0].as<std::string>("");
+      size_t count  = row[0].as<int>(0);
+      total_count += count;
       std::string player = row[1].as<std::string>("");
       
       os << '\t' << Color()->get(WHITE) << count << Color()->get(BROWN) << " sentinel(s) owned by " <<

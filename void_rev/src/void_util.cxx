@@ -168,7 +168,7 @@ string GUIColor::get(FGColor fg, BGColor bg) const
 
 
 
-bool CompStrings(std::string s1, std::string s2)
+bool CompStrings(const std::string& s1,const std::string& s2)
 {
    std::string s2b = s2.substr(0,s1.size());
                                                                                 

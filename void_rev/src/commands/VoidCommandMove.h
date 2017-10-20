@@ -3,12 +3,13 @@
 #define VOID_COMMAND_MOVE
 
 #include "VoidCommand.h"
+#include "VoidCommandDisplay.h"
 #include "VoidServerThread.h"
 #include <string>
 
 using std::string;
 
-class VoidCommandMove : public VoidCommand
+class VoidCommandMove : public VoidCommandDisplay 
 {
  public:
     VoidCommandMove(VoidServerThread *thread);
@@ -22,7 +23,7 @@ class VoidCommandMove : public VoidCommand
     virtual bool HandleCommand(const string &command, const string &arguments, bool bFromPost);
     
  private:
-
+    virtual bool move_player_to_sector(Sector sector) override;
 
     VoidCommandMove();
     bool CommandMove(const std::string &arguments);

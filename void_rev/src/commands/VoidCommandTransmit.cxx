@@ -54,7 +54,7 @@ bool VoidCommandTransmit::HandleCommand(const string &command, const string &arg
 std::list<std::string> VoidCommandTransmit::get_players_in_sector(int sector)
 {
     std::list<std::string> playerlist;
-    std::string query = "select player.sname from player,ship where (bmob = 'F' or bmob is null) and ship.ksector = '" + IntToString(sector)
+    std::string query = "select player.sname from player,ship where  kmob is null and ship.ksector = '" + IntToString(sector)
 	+  "' and player.kcurrentship = ship.nkey;";
 
     pqxx::result dbresult = get_thread()->DBExec(query);

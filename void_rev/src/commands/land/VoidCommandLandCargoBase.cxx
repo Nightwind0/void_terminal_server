@@ -43,6 +43,7 @@ std::string VoidCommandLandCargoBase::TypeToString(CargoType type)const{
   case CargoType::INVALID:
     return "INVALID";
   }
+  return "";
 }
 
 size_t VoidCommandLandCargoBase::PlanetAmountOfType(CargoType type)const{

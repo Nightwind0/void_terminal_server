@@ -124,7 +124,7 @@ class DeathException : public ShipDestroyedException
 using StardockData = std::tuple<Sector,std::string>;
 
                                                                                 
-bool CompStrings(std::string s1, std::string s2);
+bool CompStrings(const std::string& s1,const std::string& s2);
 
 
 class ShipHandle;

@@ -154,7 +154,6 @@ void SentinelTools::RemoveSentinels(int num, const std::string &player, int sect
     
   pqxx::result dbresult = DBExec(sentquery);
         
-  int entries = dbresult.size();
 
   for(auto row: dbresult) {
       std::string owner = row[1].as<std::string>();

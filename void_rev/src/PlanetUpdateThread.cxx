@@ -39,7 +39,7 @@ double PlanetUpdateThread::CalculatePopulation(double current, double daily_grow
 }
 
 double PlanetUpdateThread::CalculateResource(double current, double multiplier, double population, double seconds, double divisor)const{
-  return current + (population * double(seconds)) / divisor;
+  return current + ((population * double(seconds)) / divisor) * multiplier;
 }
 
 bool PlanetUpdateThread::run(){

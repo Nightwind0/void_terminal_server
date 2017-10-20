@@ -84,6 +84,7 @@ bool SerialObject::RecordExistsInDB()const
 
     pqxx::read_transaction work{*m_dbconn};
     pqxx::result r = work.exec(str);
+    work.commit();
 
     if(r.size() != 1)
     {
@@ -214,7 +215,7 @@ std::string SerialObject::GetField(int field, bool *b)const
     ResourceMaster::GetInstance()->Log(AUDIT, query.str());
     pqxx::result r = work.exec(query.str());
 
-
+    work.commit();
     if(r[0][0].is_null()) {
       *b = true;
       return "";

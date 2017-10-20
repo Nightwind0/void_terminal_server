@@ -43,7 +43,7 @@ class VoidCommand
     ShipHandlePtr create_handle_to_current_ship(PlayerHandlePtr player) const;
     PlayerHandlePtr create_handle_to_player_in_ship(int ship)const;
 
-    bool move_player_to_sector(Sector sector);
+    virtual bool move_player_to_sector(Sector sector);
     static const char * endr;
     // static const char * blackout;
     VoidServerThread *get_thread() const;

@@ -24,12 +24,12 @@ class VoidCommandDisplay : public VoidCommand
     virtual bool HandleCommand(const string &command, const string &arguments, bool bFromPost);
     
  protected:
-    std::string DisplayStardockInSector(Sector sector);
-    std::string DisplayShipsInSector(Sector sector, bool showcloaked=false);
-    std::string DisplayOutpostsInSector(Sector sector);
-    std::string DisplayPlanetsInSector(Sector sector);
-    std::string DisplaySector(Sector sector, bool showcloaked=false);
-    std::string DisplaySentinelsInSector(Sector sector);
+    std::string DisplayStardockInSector(Sector sector, size_t& count);
+    std::string DisplayShipsInSector(Sector sector, bool showcloaked, size_t& count);
+    std::string DisplayOutpostsInSector(Sector sector, size_t& count);
+    std::string DisplayPlanetsInSector(Sector sector, size_t& count);
+    std::string DisplaySector(Sector sector, bool showcloaked, bool& should_stop);
+    std::string DisplaySentinelsInSector(Sector sector, size_t& count);
 
     VoidCommandDisplay();
 

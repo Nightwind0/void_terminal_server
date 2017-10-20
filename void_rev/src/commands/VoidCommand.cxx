@@ -127,11 +127,6 @@ bool VoidCommand::move_player_to_sector(Sector sector)
 	  pship->Lock();
 	  pship->SetSector(sector);
 	  pship->Unlock();
-
-	    
-	    
-	    
-	  get_thread()->PostCommand("display", "");
 	}
       else
 	{

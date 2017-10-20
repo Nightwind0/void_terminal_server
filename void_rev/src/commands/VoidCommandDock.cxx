@@ -59,7 +59,7 @@ bool VoidCommandDock::HandleCommand(const string &command, const string &argumen
     std::string query = "select bstardock from sectors where nsector = '" + IntToString(sector) + "';";
 
     pqxx::result dbresult = get_thread()->DBExec(query);
-    Boolean stardock("bstardock",dbresult[0][0].as<std::string>(), dbresult[0][0].is_null());
+    Boolean stardock("bstardock",dbresult[0][0].as<std::string>("f"), dbresult[0][0].is_null());
 
 
     if(!(bool)stardock)

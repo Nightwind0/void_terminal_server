@@ -227,7 +227,7 @@ void VoidServerThread::OpenDataBaseConnection()
 
 void VoidServerThread::CloseDataBaseConnection()
 {
-  
+  m_dbconn->disconnect();
 }
 
 
@@ -585,7 +585,7 @@ bool VoidServerThread::RegisterNewLogin()
 	    Send(Color()->get(LIGHTRED) + "Please enter a login with fewer than 19 characters." + endr);
 	    continue;
 	}
-	pqxx::work work{*m_dbconn};
+	pqxx::read_transaction work{*m_dbconn};
 	std::string query = "select count(*) from login where slogin = " + work.quote(loginid) + ";";
 	
 	pqxx::result logintable_result = work.exec(query);
@@ -632,7 +632,7 @@ bool VoidServerThread::RegisterNewLogin()
 
 	
     }
-    pqxx::work work{*m_dbconn};
+    pqxx::read_transaction work{*m_dbconn};
     std::string query = "select md5(" + work.quote(password) + ");";
 
     pqxx::result epresult = work.exec(query);
